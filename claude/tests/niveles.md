@@ -4,7 +4,7 @@
 
 `MobsPoderososGameTest` tiene **varios tests independientes**, cada uno con `helper.succeed()` al final. A diferencia de Inventario Compartido, acá no hay estado global del servidor: cada test usa sus propios mobs y pueden correr en paralelo.
 
-`gradlew runGameTest` dice "7 tests" aunque los nuestros sean 6: el séptimo es de Fabric.
+`gradlew runGameTest` cuenta un test más que los de `MobsPoderososGameTest`: el que sobra es de Fabric. Los tests de loot y experiencia están en [tests: botín](botin.md).
 
 ## Qué cubre
 
@@ -31,3 +31,4 @@
 ## Ver también
 
 - [Niveles](../mod/niveles.md)
+- [Tests: botín](botin.md)

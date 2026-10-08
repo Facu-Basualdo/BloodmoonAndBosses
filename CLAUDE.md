@@ -36,6 +36,7 @@ El mismo tema en distintas áreas usa el mismo nombre de archivo (`claude/mod/ni
 | Feature | Mod | Tests |
 |---|---|---|
 | Niveles (cuándo se asignan, fórmula, estadísticas, nombre, conversiones) | [niveles](claude/mod/niveles.md) | [niveles](claude/tests/niveles.md) |
+| Botín y experiencia (tiradas extra, tags `sin_tiradas_extra` y `tiradas_extra_por_chance`, experiencia por nivel) | [botin](claude/mod/botin.md) | [botin](claude/tests/botin.md) |
 
 ## Reglas de workflow
 

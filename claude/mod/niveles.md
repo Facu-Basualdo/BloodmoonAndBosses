@@ -97,5 +97,6 @@ Los slimes se dividen con `convertTo(…, TRIGGERED, …)` desde `AbstractCubeMo
 ## Ver también
 
 - [Tests: niveles](../tests/niveles.md)
+- [Botín y experiencia](botin.md)
 - [Minecraft 26.x sin ofuscar](../general/minecraft-26-sin-ofuscar.md)
 - [Probar en el juego](../general/probar-en-el-juego.md)

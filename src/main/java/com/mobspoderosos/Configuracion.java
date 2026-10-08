@@ -15,7 +15,11 @@ public record Configuracion(
 		Escala rangoDeSeguimiento,
 		Escala resistenciaAlEmpuje,
 		int nivelRadioCreeper,
-		int radioCreeperExtra) {
+		int radioCreeperExtra,
+		int nivelesPorTiradaExtra,
+		int tiradasExtraMaximas,
+		Escala chanceTiradaExtra,
+		double experienciaPorNivel) {
 
 	public static final Configuracion POR_DEFECTO = new Configuracion(
 			150,
@@ -33,12 +37,20 @@ public record Configuracion(
 			new Escala(0.01, 0.50),
 			new Escala(0.01, 0.5),
 			30,
-			1);
+			1,
+			// Con el nivel máximo en 50, el tope de 6 se alcanza en el nivel 48
+			8,
+			// Si se sube nivelMaximo, que un mob muy lejano no suelte su tabla decenas de veces
+			6,
+			// Sólo para el tag tiradas_extra_por_chance: un evocador de nivel 30 tendría 3 tótems extra seguros
+			new Escala(0.01, 0.5),
+			0.1);
 
 	public Configuracion conVariacion(int variacion) {
 		return new Configuracion(bloquesPorNivel, nivelMaximo, extraNether, extraEnd, variacion, escalarSpawners,
 				nombreSiempreVisible, vida, danio, armadura, velocidad, rangoDeSeguimiento, resistenciaAlEmpuje,
-				nivelRadioCreeper, radioCreeperExtra);
+				nivelRadioCreeper, radioCreeperExtra, nivelesPorTiradaExtra, tiradasExtraMaximas,
+				chanceTiradaExtra, experienciaPorNivel);
 	}
 
 	public record Escala(double porNivel, double tope) {

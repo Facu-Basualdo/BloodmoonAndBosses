@@ -112,6 +112,8 @@ Sólo para mobs que ya usan equipo en vanilla (zombis, esqueletos, piglins, pill
 ### 5. Loot y experiencia (`BotinPorNivel` + mixin)
 
 En `ServerLivingEntityEvents.AFTER_DEATH`, **sólo si lo mató un jugador** (`getLastHurtByPlayer() != null`), para que las granjas automáticas no lo aprovechen:
+
+> **Implementado distinto en la fase 2:** las tiradas extra no van en `AFTER_DEATH` sino en un `@WrapOperation` sobre la llamada a `dropFromLootTable` dentro de `LivingEntity.dropAllDeathLoot`. Así se respeta `shouldDropLoot` (gamerule `mobDrops`, crías), "lo mató un jugador" es el mismo booleano de vanilla, y la tabla propia del mob (`DeathLootTable`) todavía no se borró. Los ítems raros de la fase 4 deberían ir en el mismo lugar. El evocador **no** quedó en `sin_tiradas_extra`: está en `tiradas_extra_por_chance`, donde cada tirada extra sale con una chance de 1 % por nivel (tope 50 %). Las tiradas extra quedaron en una cada 8 niveles con tope de 6 (no `floor(nivel / 10)` con tope 3). Ver [claude/mod/botin.md](../claude/mod/botin.md).
 - **Tiradas extra:** `min(floor(nivel / 10), 3)` veces `mob.getLootTable().ifPresent(tabla -> mob.dropFromLootTable(level, source, true, tabla))`. `getLootTable()` devuelve un `Optional`: hay mobs sin tabla. El overload público con `ResourceKey<LootTable>` ya está verificado en 26.3.
   - El tope de 3 (configurable: `tiradasExtraMaximas`) evita que un nivel 50 suelte 11 veces su tabla.
   - Tag `sin_tiradas_extra`: los mobs cuya tabla tiene ítems que no deberían multiplicarse. Por defecto `evoker` (uno de nivel 30 o más soltaría 4 tótems), `wither_skeleton` (en el Nether casi siempre tienen nivel alto: las calaveras serían triviales) y `shulker` (caparazones). Se puede editar con un datapack.

@@ -1,7 +1,12 @@
 package com.mobspoderosos.test;
 
 import java.util.List;
+import java.util.UUID;
 
+import com.mojang.authlib.GameProfile;
+import io.netty.channel.embedded.EmbeddedChannel;
+
+import com.mobspoderosos.BotinPorNivel;
 import com.mobspoderosos.Configuracion;
 import com.mobspoderosos.MobsPoderosos;
 import com.mobspoderosos.NivelDeMob;
@@ -13,10 +18,15 @@ import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -25,10 +35,14 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.cubemob.Slime;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
@@ -173,6 +187,85 @@ public class MobsPoderososGameTest {
 		helper.succeed();
 	}
 
+	@GameTest
+	public void tiradasExtra(GameTestHelper helper) {
+		helper.assertValueEqual(0, BotinPorNivel.tiradasExtra(7), "Tiradas extra en nivel 7");
+		helper.assertValueEqual(1, BotinPorNivel.tiradasExtra(8), "Tiradas extra en nivel 8");
+		helper.assertValueEqual(5, BotinPorNivel.tiradasExtra(47), "Tiradas extra en nivel 47");
+		helper.assertValueEqual(6, BotinPorNivel.tiradasExtra(48), "Tiradas extra en nivel 48");
+		helper.assertValueEqual(6, BotinPorNivel.tiradasExtra(200), "Las tiradas extra topean en 6");
+
+		helper.assertValueEqual(1.0, chanceConNivel(helper, EntityTypes.ZOMBIE, 25), "Las tiradas extra de un zombi son seguras");
+		helper.assertValueEqual(0.0, chanceConNivel(helper, EntityTypes.WITHER_SKELETON, 25), "El esqueleto del Wither (sin_tiradas_extra) no tiene");
+		assertCerca(helper, 0.1, chanceConNivel(helper, EntityTypes.EVOKER, 10), "Chance de cada tirada extra de un evocador de nivel 10");
+		assertCerca(helper, 0.5, chanceConNivel(helper, EntityTypes.EVOKER, 50), "La chance del evocador topea en 50 %");
+		helper.succeed();
+	}
+
+	@GameTest
+	public void botinAlMorir(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		ServerPlayer jugador = joinSurvivalPlayer(helper, "cazador");
+
+		// El devastador siempre suelta una montura: cada tirada extra es una montura más
+		Mob devastador = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
+		NivelDeMob.aplicar(devastador, 30);
+		helper.assertValueEqual(4, matarYContar(helper, devastador, level.damageSources().playerAttack(jugador), Items.SADDLE), "Un devastador de nivel 30 muerto por un jugador suelta 1 + 3 monturas");
+
+		Mob lejano = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
+		NivelDeMob.aplicar(lejano, 50);
+		helper.assertValueEqual(7, matarYContar(helper, lejano, level.damageSources().playerAttack(jugador), Items.SADDLE), "Un devastador de nivel 50 suelta 1 + 6 monturas");
+
+		Mob sinJugador = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
+		NivelDeMob.aplicar(sinJugador, 30);
+		helper.assertValueEqual(1, matarYContar(helper, sinJugador, level.damageSources().genericKill(), Items.SADDLE), "Sin jugador no hay tiradas extra");
+
+		// 20 evocadores de nivel 50: 120 tiradas extra al 50 %. Que salgan todas o ninguna tiene probabilidad 2^-120
+		int totems = 0;
+		for (int i = 0; i < 20; i++) {
+			Mob evocador = spawn(helper, EntityTypes.EVOKER, EntitySpawnReason.COMMAND);
+			NivelDeMob.aplicar(evocador, 50);
+			totems += matarYContar(helper, evocador, level.damageSources().playerAttack(jugador), Items.TOTEM_OF_UNDYING);
+		}
+		helper.assertTrue(totems > 20 && totems < 140, Component.literal("Los tótems extra del evocador salen por chance: 20 evocadores soltaron " + totems));
+
+		level.getServer().getPlayerList().remove(jugador);
+		helper.succeed();
+	}
+
+	@GameTest
+	public void experiencia(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		// El creeper no tiene equipo: su experiencia base es siempre 5, sin el extra al azar por cada pieza
+		Creeper comun = spawn(helper, EntityTypes.CREEPER, EntitySpawnReason.COMMAND);
+		Creeper conNivel = spawn(helper, EntityTypes.CREEPER, EntitySpawnReason.COMMAND);
+		NivelDeMob.aplicar(conNivel, 20);
+		helper.assertValueEqual(5, comun.getExperienceReward(level, null), "Experiencia de un creeper sin nivel");
+		helper.assertValueEqual(15, conNivel.getExperienceReward(level, null), "Experiencia de un creeper de nivel 20 (5 × 3)");
+		helper.succeed();
+	}
+
+	private static double chanceConNivel(GameTestHelper helper, EntityType<? extends Mob> tipo, int nivel) {
+		Mob mob = spawn(helper, tipo, EntitySpawnReason.COMMAND);
+		NivelDeMob.aplicar(mob, nivel);
+		double chance = BotinPorNivel.chanceTiradaExtra(mob);
+		mob.discard();
+		return chance;
+	}
+
+	private static int matarYContar(GameTestHelper helper, Mob mob, DamageSource fuente, Item item) {
+		ServerLevel level = helper.getLevel();
+		mob.hurtServer(level, fuente, 100_000);
+		helper.assertTrue(mob.isDeadOrDying(), Component.literal(mob.getType().getDescription().getString() + " no murió"));
+		int cantidad = 0;
+		// Se borran para que no los cuente el próximo mob, que muere en el mismo lugar
+		for (ItemEntity soltado : level.getEntitiesOfClass(ItemEntity.class, mob.getBoundingBox().inflate(3), e -> e.getItem().is(item))) {
+			cantidad += soltado.getItem().getCount();
+			soltado.discard();
+		}
+		return cantidad;
+	}
+
 	private static <T extends Mob> T spawn(GameTestHelper helper, EntityType<T> tipo, EntitySpawnReason motivo) {
 		return tipo.spawn(helper.getLevel(), helper.absolutePos(DENTRO), motivo);
 	}
@@ -190,6 +283,21 @@ public class MobsPoderososGameTest {
 		copia.snapTo(pos, 0, 0);
 		level.addFreshEntity(copia);
 		return copia;
+	}
+
+	/**
+	 * Como GameTestHelper.makeMockServerPlayerInLevel(), pero sin su subclase anónima, que está deprecada
+	 * y fuerza el modo creativo. Hay que sacarlo con playerList.remove al terminar.
+	 */
+	private static ServerPlayer joinSurvivalPlayer(GameTestHelper helper, String nombre) {
+		ServerLevel level = helper.getLevel();
+		CommonListenerCookie cookie = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), nombre), false);
+		ServerPlayer jugador = new ServerPlayer(level.getServer(), level, cookie.gameProfile(), cookie.clientInformation());
+		Connection conexion = new Connection(PacketFlow.SERVERBOUND);
+		new EmbeddedChannel(conexion);
+		level.getServer().getPlayerList().placeNewPlayer(conexion, jugador, cookie);
+		jugador.setGameMode(GameType.SURVIVAL);
+		return jugador;
 	}
 
 	private static void assertCerca(GameTestHelper helper, double esperado, double real, String que) {
