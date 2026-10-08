@@ -1,0 +1,15 @@
+{
+	"schemaVersion": 1,
+	"id": "mobspoderosos-test",
+	"version": "1.0.0",
+	"name": "Mobs Poderosos - Tests",
+	"environment": "*",
+	"entrypoints": {
+		"fabric-gametest": [
+			"com.mobspoderosos.test.MobsPoderososGameTest"
+		]
+	},
+	"depends": {
+		"mobspoderosos": "*"
+	}
+}

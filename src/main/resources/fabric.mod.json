@@ -1,0 +1,25 @@
+{
+	"schemaVersion": 1,
+	"id": "mobspoderosos",
+	"version": "${version}",
+	"name": "Mobs Poderosos",
+	"description": "Los mobs hostiles aparecen con niveles: cuanto más lejos del spawn, más fuertes son y mejor loot dan.",
+	"authors": [],
+	"license": "MIT",
+	"icon": "assets/mobspoderosos/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.mobspoderosos.MobsPoderosos"
+		]
+	},
+	"mixins": [
+		"mobspoderosos.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
