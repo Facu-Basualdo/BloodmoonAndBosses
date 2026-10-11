@@ -27,6 +27,7 @@ public class MobsPoderosos implements ModInitializer {
 		ServerEntityEvents.ENTITY_LOAD.register(NivelDeMob::alCargar);
 		ServerLivingEntityEvents.MOB_CONVERSION.register((viejo, nuevo, params) -> NivelDeMob.alConvertir(viejo, nuevo));
 		CommandRegistrationCallback.EVENT.register((dispatcher, contexto, seleccion) -> ComandoMobsPoderosos.registrar(dispatcher, contexto));
+		Eventos.registrar();
 	}
 
 	public static Configuracion config() {

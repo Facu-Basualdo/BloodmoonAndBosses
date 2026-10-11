@@ -51,6 +51,7 @@ Síntomas que esto evita: **un admin escribe mal un número y el servidor arranc
 | Nivel y fórmula (`bloquesPorNivel`, extras, `variacion`, `escalarSpawners`) | `nivelesPorTiradaExtra`, `tiradasExtraMaximas`, `chanceTiradaExtra` |
 | Estadísticas (son modificadores permanentes en el NBT) | `botinRaro`, `botinEpico`, `botinLegendario` |
 | Nombre y `nombreSiempreVisible` | `experienciaPorNivel` |
+| | `vidaEnElNombre`, al próximo cambio de vida de cada mob |
 | Radio del creeper, armadura, encantamientos, chances de soltar el equipo | |
 
 El mensaje de éxito de `recargar` lo dice, para que nadie lo reporte como bug.
@@ -58,7 +59,7 @@ El mensaje de éxito de `recargar` lo dice, para que nadie lo reporte como bug.
 ## Agregar un valor nuevo
 
 1. Componente nuevo en el record `Configuracion` y su valor en `POR_DEFECTO`, con un comentario si el número tiene un porqué.
-2. **Sumarlo también en `conVariacion`**, que llama al constructor canónico con todos los campos: si no, no compila.
+2. **Sumarlo también en `conVariacion` y `conExtras`**, que llaman al constructor canónico con todos los campos: si no, no compila. Un valor de un evento va dentro de su record (`Afijos`, `Estampida`, `LunaDeSangre`, `JefeDeZona`), que el JSON escribe como un objeto anidado y `mezclar` completa clave por clave.
 3. Si un valor imposible rompe algo, la regla en `validar()`.
 4. La fila en la tabla de configuración del `README.md`.
 
@@ -69,4 +70,5 @@ El nombre del componente es la clave del JSON: **renombrarlo rompe los archivos 
 - [Niveles](niveles.md)
 - [Equipo](equipo.md)
 - [Botín y experiencia](botin.md)
+- [Eventos y afijos](eventos.md)
 - [Tests: configuración](../tests/configuracion.md)

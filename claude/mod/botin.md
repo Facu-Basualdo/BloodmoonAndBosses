@@ -77,6 +77,7 @@ dropExperience(level, source.getEntity());
 - `botinesRaros(nivel)` es la lista de las que tocan, y es lo que prueban los tests. Con nivel 0 (sin nivel) da vacía aunque un `nivelMinimo` mal configurado fuera 0.
 - **Se tiran con `mob.dropFromLootTable(level, source, true, tabla)`**, el mismo overload que las tiradas extra: los parámetros son los de una muerte (`"type": "minecraft:entity"`) y los ítems aparecen donde murió el mob.
 - **Las tablas no pueden tener tótems ni monturas.** Los tests cuentan esos ítems (evocadores, devastadores) y otro ítem de la tabla los haría fallar al azar.
+- **Un jefe de zona tira además, siempre, `mejorBotin(nivel, EPICO)`**: la tabla más alta que le toca a su nivel, como mínimo la épica (`soltarBotinDeJefe`, en el mismo `@WrapOperation`). `mejorBotin(nivel, RARO)` es también el premio de la estampida, que sale con el jugador como origen. Ver [eventos](eventos.md).
 
 ### Formato de las tablas en 26.3
 
@@ -98,5 +99,6 @@ dropExperience(level, source.getEntity());
 - [Niveles](niveles.md)
 - [Equipo](equipo.md)
 - [Configuración](configuracion.md)
+- [Eventos y afijos](eventos.md)
 - [Tests: botín](../tests/botin.md)
 - [Minecraft 26.x sin ofuscar](../general/minecraft-26-sin-ofuscar.md)

@@ -10,10 +10,14 @@ import java.util.UUID;
 import com.mojang.authlib.GameProfile;
 import io.netty.channel.embedded.EmbeddedChannel;
 
+import com.mobspoderosos.Afijo;
 import com.mobspoderosos.ArchivoDeConfiguracion;
 import com.mobspoderosos.BotinPorNivel;
 import com.mobspoderosos.Configuracion;
 import com.mobspoderosos.EquipoPorNivel;
+import com.mobspoderosos.Estampida;
+import com.mobspoderosos.JefeDeZona;
+import com.mobspoderosos.LunaDeSangre;
 import com.mobspoderosos.MobsPoderosos;
 import com.mobspoderosos.NivelDeMob;
 import com.mobspoderosos.NivelDeZona;
@@ -29,6 +33,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
@@ -56,12 +61,16 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.phys.AABB;
 
 public class MobsPoderososGameTest {
 	private static final BlockPos DENTRO = new BlockPos(2, 1, 2);
+	// Para los eventos, que buscan lugar alrededor: en el medio de la estructura de 8 × 8
+	private static final BlockPos CENTRO = new BlockPos(4, 1, 4);
 
 	@GameTest
 	public void nivelPorDistancia(GameTestHelper helper) {
@@ -122,7 +131,7 @@ public class MobsPoderososGameTest {
 		assertCerca(helper, 52, zombie.getHealth(), "Aparece con la vida llena");
 		helper.assertValueEqual(1, zombie.getAttribute(Attributes.MAX_HEALTH).getModifiers().size(), "Aplicar dos veces no apila modificadores");
 		helper.assertValueEqual(20, NivelDeMob.nivel(zombie), "Nivel guardado en el attachment");
-		helper.assertTrue(zombie.getCustomName().getString().endsWith("[Nv 20]"), Component.literal("El nombre lleva el nivel: " + zombie.getCustomName().getString()));
+		helper.assertTrue(zombie.getCustomName().getString().contains("[Nv 20]"), Component.literal("El nombre lleva el nivel: " + zombie.getCustomName().getString()));
 		helper.assertFalse(zombie.isCustomNameVisible(), Component.literal("Por defecto el nombre sólo se ve al mirar el mob"));
 		helper.assertTrue(NivelDeMob.esNombreDelMod(zombie), Component.literal("El nombre es el del mod"));
 		helper.assertFalse(zombie.isPersistenceRequired(), Component.literal("El nombre puesto por el mod no evita el despawn"));
@@ -136,6 +145,42 @@ public class MobsPoderososGameTest {
 
 		zombie.setCustomName(Component.literal("Pepe"));
 		helper.assertFalse(NivelDeMob.esNombreDelMod(zombie), Component.literal("Con un name tag el nombre deja de ser del mod"));
+		helper.succeed();
+	}
+
+	@GameTest
+	public void vidaEnElNombre(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		Zombie zombie = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		NivelDeMob.aplicar(zombie, 20);
+		assertTerminaEn(helper, zombie, "[Nv 20] ❤ 52/52");
+		helper.assertTrue(NivelDeMob.esNombreDelMod(zombie), Component.literal("Con la vida, el nombre sigue siendo del mod"));
+
+		zombie.setHealth(30.4f);
+		assertTerminaEn(helper, zombie, "❤ 31/52");
+		zombie.setHealth(0.3f);
+		assertTerminaEn(helper, zombie, "❤ 1/52");
+
+		Zombie golpeado = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		NivelDeMob.aplicar(golpeado, 20);
+		golpeado.hurtServer(level, level.damageSources().generic(), 10);
+		helper.assertTrue(golpeado.getHealth() < 52, Component.literal("El golpe le sacó vida"));
+		assertTerminaEn(helper, golpeado, "❤ " + (int) Math.ceil(golpeado.getHealth()) + "/52");
+
+		// El nombre con la vida tiene que sobrevivir al NBT con la misma forma: si no, esNombreDelMod deja de reconocerlo
+		Zombie recargado = recrear(level, zombie, helper.absolutePos(DENTRO));
+		helper.assertTrue(NivelDeMob.esNombreDelMod(recargado), Component.literal("Después de guardar y cargar, el nombre sigue siendo del mod"));
+		assertTerminaEn(helper, recargado, "❤ 1/52");
+
+		// Un mob de antes de la 0.8.0 tiene el nombre sin la vida: se reconoce y la vida aparece al primer cambio
+		recargado.setCustomName(NivelDeMob.nombre(EntityTypes.ZOMBIE, 20));
+		helper.assertTrue(NivelDeMob.esNombreDelMod(recargado), Component.literal("El nombre sin la vida también es del mod"));
+		recargado.setHealth(10);
+		assertTerminaEn(helper, recargado, "[Nv 20] ❤ 10/52");
+
+		recargado.setCustomName(Component.literal("Pepe"));
+		recargado.setHealth(5);
+		helper.assertValueEqual("Pepe", recargado.getCustomName().getString(), "La vida no pisa un name tag");
 		helper.succeed();
 	}
 
@@ -432,6 +477,242 @@ public class MobsPoderososGameTest {
 	}
 
 	@GameTest
+	public void afijos(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		Zombie veloz = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		NivelDeMob.aparecer(veloz, 20, Afijo.VELOZ);
+		helper.assertTrue(veloz.getCustomName().getString().contains("[Nv 20] [Veloz]"), Component.literal("El afijo va en el nombre: " + veloz.getCustomName().getString()));
+		helper.assertTrue(NivelDeMob.esNombreDelMod(veloz), Component.literal("Con el afijo, el nombre sigue siendo del mod"));
+		AttributeModifier velocidad = veloz.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(MobsPoderosos.id("afijo"));
+		helper.assertTrue(velocidad != null, Component.literal("El veloz tiene su modificador de velocidad"));
+		assertCerca(helper, 0.3, velocidad.amount(), "El veloz corre un 30 % más");
+
+		Mob ahogado = veloz.convertTo(EntityTypes.DROWNED, ConversionParams.single(veloz, true, true), m -> {
+		});
+		helper.assertValueEqual(Afijo.VELOZ, Afijo.de(ahogado), "El afijo pasa en la conversión");
+		helper.assertTrue(ahogado.getCustomName().getString().contains("[Veloz]"), Component.literal("Y sigue en el nombre: " + ahogado.getCustomName().getString()));
+		helper.assertTrue(ahogado.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(MobsPoderosos.id("afijo")) != null, Component.literal("Y el modificador también"));
+
+		helper.assertFalse(Afijo.posibles(spawn(helper, EntityTypes.CREEPER, EntitySpawnReason.COMMAND)).contains(Afijo.VAMPIRO), Component.literal("Un creeper no puede ser vampiro"));
+		helper.assertFalse(Afijo.posibles(spawn(helper, EntityTypes.VEX, EntitySpawnReason.COMMAND)).contains(Afijo.INVOCADOR), Component.literal("Un vex (tag no_invocan) no puede ser invocador"));
+		helper.assertTrue(Afijo.paraCampeon(ahogado, RandomSource.create(42)) != null, Component.literal("Con chance 1, todo campeón tiene afijo"));
+
+		Zombie vampiro = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		NivelDeMob.aparecer(vampiro, 20, Afijo.VAMPIRO);
+		vampiro.setHealth(10);
+		Mob victima = spawn(helper, EntityTypes.VILLAGER, EntitySpawnReason.COMMAND);
+		victima.hurtServer(level, level.damageSources().mobAttack(vampiro), 8);
+		helper.assertTrue(vampiro.getHealth() > 10, Component.literal("El vampiro se cura con lo que pega (tiene " + vampiro.getHealth() + ")"));
+
+		Zombie comun = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		NivelDeMob.aplicar(comun, 20);
+		comun.setHealth(10);
+		Mob otraVictima = spawn(helper, EntityTypes.VILLAGER, EntitySpawnReason.COMMAND);
+		otraVictima.hurtServer(level, level.damageSources().mobAttack(comun), 8);
+		assertCerca(helper, 10, comun.getHealth(), "Sin el afijo no se cura");
+		helper.succeed();
+	}
+
+	@GameTest
+	public void afijoInvocador(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		ponerPiso(helper);
+		Zombie invocador = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		NivelDeMob.aparecer(invocador, 30, Afijo.INVOCADOR);
+		invocador.hurtServer(level, level.damageSources().generic(), 1);
+		List<Zombie> refuerzos = level.getEntitiesOfClass(Zombie.class, invocador.getBoundingBox().inflate(5), z -> z != invocador);
+		helper.assertValueEqual(MobsPoderosos.config().afijos().refuerzosInvocador(), refuerzos.size(), "Al lastimarlo llama refuerzos");
+		for (Zombie refuerzo : refuerzos) {
+			helper.assertTrue(NivelDeMob.nivel(refuerzo) >= 1, Component.literal("Los refuerzos tienen nivel"));
+			helper.assertFalse(refuerzo.hasAttached(NivelDeMob.PENDIENTE), Component.literal("Y no quedan pendientes"));
+			helper.assertTrue(Afijo.de(refuerzo) == null, Component.literal("Los refuerzos no son campeones"));
+		}
+		invocador.hurtServer(level, level.damageSources().generic(), 1);
+		helper.assertValueEqual(refuerzos.size(), level.getEntitiesOfClass(Zombie.class, invocador.getBoundingBox().inflate(5), z -> z != invocador).size(),
+				"Durante la espera no vuelve a invocar");
+		helper.assertValueEqual(1, invocador.getAttached(Afijo.INVOCACIONES), "Cuenta las invocaciones");
+		helper.succeed();
+	}
+
+	// La mecha dura 30 ticks: con el máximo por defecto (20) el test vencería antes de la explosión
+	@GameTest(maxTicks = 60)
+	public void afijoExplosivo(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		Zombie explosivo = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		NivelDeMob.aparecer(explosivo, 20, Afijo.EXPLOSIVO);
+		Mob victima = spawn(helper, EntityTypes.VILLAGER, EntitySpawnReason.COMMAND);
+		float vida = victima.getHealth();
+		explosivo.hurtServer(level, level.damageSources().genericKill(), 100_000);
+		assertCerca(helper, vida, victima.getHealth(), "Al morir no explota enseguida");
+		helper.runAfterDelay(MobsPoderosos.config().afijos().ticksDeMecha() + 2, () -> {
+			helper.assertTrue(victima.getHealth() < vida || victima.isDeadOrDying(), Component.literal("Un rato después explota y lastima a los que están cerca"));
+			helper.succeed();
+		});
+	}
+
+	@GameTest
+	public void invocarConNivel(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		BlockPos pos = helper.absolutePos(DENTRO);
+		Mob mob = NivelDeMob.invocarConNivel(EntityTypes.ZOMBIE, level, pos, EntitySpawnReason.EVENT, 37, false);
+		helper.assertValueEqual(37, NivelDeMob.nivel(mob), "Aparece con el nivel dado, sin el de la zona");
+		helper.assertFalse(mob.hasAttached(NivelDeMob.PENDIENTE), Component.literal("No queda pendiente aunque EVENT escale"));
+		helper.assertTrue(Afijo.de(mob) == null, Component.literal("Sin afijo"));
+		helper.assertTrue(level.getEntity(mob.getUUID()) == mob, Component.literal("Está en el mundo"));
+
+		Mob conAfijo = NivelDeMob.invocarConNivel(EntityTypes.ZOMBIE, level, pos, EntitySpawnReason.EVENT, 500, true);
+		helper.assertValueEqual(100, NivelDeMob.nivel(conAfijo), "El nivel se corta en el máximo");
+		helper.assertTrue(Afijo.de(conAfijo) != null, Component.literal("Con afijo"));
+		helper.assertTrue(NivelDeMob.invocarConNivel(EntityTypes.VILLAGER, level, pos, EntitySpawnReason.EVENT, 10, false) == null,
+				Component.literal("Un aldeano no puede tener nivel"));
+		helper.succeed();
+	}
+
+	// Al aire libre la estampida aparece sobre la superficie: con el techo de barreras del test caería arriba del techo
+	@GameTest(skyAccess = true)
+	public void estampida(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		ServerPlayer jugador = joinSurvivalPlayer(helper, "corredor");
+		ponerPiso(helper);
+		BlockPos centro = helper.absolutePos(CENTRO);
+		jugador.snapTo(centro.getX() + 0.5, centro.getY(), centro.getZ() + 0.5, 0, 0);
+		// A 2–4 bloques para que entre en la estructura del test; nivelesPorMobExtra alto: siempre 4 mobs
+		Configuracion.Estampida config = new Configuracion.Estampida(true, 1, 0, 0, 4, 1000, 16, 2, 4, 0.25, 60);
+		helper.assertValueEqual(4, Estampida.cuantos(50, config), "Cuántos mobs trae");
+		helper.assertValueEqual(16, Estampida.cuantos(50, new Configuracion.Estampida(true, 1, 0, 0, 6, 1, 16, 2, 4, 0.25, 60)), "Topea en mobsMaximos");
+
+		String error = Estampida.empezar(jugador, config);
+		helper.assertTrue(error == null, Component.literal("La estampida empieza: " + error));
+		helper.assertTrue(Estampida.activa(jugador), Component.literal("Queda activa"));
+		helper.assertTrue(Estampida.empezar(jugador, config) != null, Component.literal("No puede haber dos contra el mismo jugador"));
+		List<Mob> mobs = Estampida.mobs(jugador);
+		helper.assertTrue(mobs.size() >= 2, Component.literal("Aparecen al menos la mitad (" + mobs.size() + ")"));
+		helper.assertTrue(Afijo.de(mobs.getFirst()) != null, Component.literal("El primero es el líder, con afijo"));
+		for (Mob mob : mobs) {
+			helper.assertTrue(mob.getTarget() == jugador, Component.literal("Todos van contra el jugador"));
+			helper.assertTrue(NivelDeMob.nivel(mob) >= 1, Component.literal("Todos tienen nivel"));
+			helper.assertTrue(mob.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(MobsPoderosos.id("estampida")) != null, Component.literal("Y corren más"));
+		}
+
+		// remove(KILLED) en vez de esperar la animación de muerte: así nada pasa entre matar y premiar
+		for (Mob mob : mobs) {
+			mob.hurtServer(level, level.damageSources().playerAttack(jugador), 100_000);
+			mob.remove(Entity.RemovalReason.KILLED);
+		}
+		jugador.getInventory().clearContent();
+		Estampida.actualizarTodas();
+		helper.assertFalse(Estampida.activa(jugador), Component.literal("Con todos muertos termina"));
+		helper.assertFalse(jugador.getInventory().isEmpty(), Component.literal("Y el jugador recibe el premio en el inventario"));
+
+		jugador.getInventory().clearContent();
+		String otra = Estampida.empezar(jugador, config);
+		helper.assertTrue(otra == null, Component.literal("Otra estampida: " + otra));
+		for (Mob mob : Estampida.mobs(jugador)) {
+			mob.discard();
+		}
+		Estampida.actualizarTodas();
+		helper.assertFalse(Estampida.activa(jugador), Component.literal("Si desaparecen, termina"));
+		helper.assertTrue(jugador.getInventory().isEmpty(), Component.literal("Pero sin premio"));
+
+		// Como los zombis que se queman al amanecer: mueren, pero no los mató un jugador
+		helper.assertTrue(Estampida.empezar(jugador, config) == null, Component.literal("Una tercera estampida"));
+		for (Mob mob : Estampida.mobs(jugador)) {
+			mob.hurtServer(level, level.damageSources().genericKill(), 100_000);
+			mob.remove(Entity.RemovalReason.KILLED);
+		}
+		Estampida.actualizarTodas();
+		helper.assertFalse(Estampida.activa(jugador), Component.literal("Si mueren solos, termina"));
+		helper.assertTrue(jugador.getInventory().isEmpty(), Component.literal("Pero sin premio"));
+
+		level.getServer().getPlayerList().remove(jugador);
+		helper.succeed();
+	}
+
+	@GameTest
+	public void jefeDeZona(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		ServerPlayer jugador = joinSurvivalPlayer(helper, "cazajefes");
+		ponerPiso(helper);
+		BlockPos centro = helper.absolutePos(CENTRO);
+		jugador.snapTo(centro.getX() + 0.5, centro.getY(), centro.getZ() + 0.5, 0, 0);
+		Configuracion.JefeDeZona config = MobsPoderosos.config().jefeDeZona();
+
+		Mob jefe = JefeDeZona.aparecer(jugador, config, 2, 4);
+		helper.assertTrue(jefe != null, Component.literal("Aparece el jefe"));
+		helper.assertTrue(JefeDeZona.esJefe(jefe), Component.literal("Marcado como jefe"));
+		helper.assertTrue(jefe.isPersistenceRequired(), Component.literal("No desaparece por estar lejos"));
+		helper.assertTrue(Afijo.de(jefe) != null, Component.literal("Tiene afijo"));
+		helper.assertTrue(jefe.getTarget() == jugador, Component.literal("Va contra el jugador"));
+		assertCerca(helper, jefe.getMaxHealth(), jefe.getHealth(), "Aparece con la vida llena");
+
+		Mob igual = NivelDeMob.invocarConNivel(jefe.getType(), level, centro, EntitySpawnReason.EVENT, NivelDeMob.nivel(jefe), false);
+		assertCerca(helper, igual.getMaxHealth() * config.multiplicadorDeVida(), jefe.getMaxHealth(), "Tiene el triple de vida que uno común de su nivel");
+		igual.discard();
+
+		ServerBossEvent barra = JefeDeZona.barra(jefe);
+		helper.assertTrue(barra != null, Component.literal("Tiene barra de jefe"));
+		JefeDeZona.actualizarTodos();
+		helper.assertTrue(barra.getPlayers().contains(jugador), Component.literal("La ve el jugador que está cerca"));
+		jefe.discard();
+		JefeDeZona.actualizarTodos();
+		helper.assertTrue(JefeDeZona.barra(jefe) == null, Component.literal("Al irse deja de seguirse"));
+		helper.assertFalse(barra.getPlayers().contains(jugador), Component.literal("Y la barra se saca"));
+
+		level.getServer().getPlayerList().remove(jugador);
+		helper.succeed();
+	}
+
+	@GameTest
+	public void botinDeJefe(GameTestHelper helper) {
+		helper.assertValueEqual(BotinPorNivel.Botin.RARO, BotinPorNivel.mejorBotin(10, BotinPorNivel.Botin.RARO), "Debajo de todo, el mínimo");
+		helper.assertValueEqual(BotinPorNivel.Botin.EPICO, BotinPorNivel.mejorBotin(60, BotinPorNivel.Botin.RARO), "En nivel 60, la épica");
+		helper.assertValueEqual(BotinPorNivel.Botin.LEGENDARIO, BotinPorNivel.mejorBotin(90, BotinPorNivel.Botin.EPICO), "En nivel 90, la legendaria");
+		helper.assertValueEqual(BotinPorNivel.Botin.EPICO, BotinPorNivel.mejorBotin(10, BotinPorNivel.Botin.EPICO), "Un jefe de nivel bajo igual tira la épica");
+
+		ServerLevel level = helper.getLevel();
+		ServerPlayer jugador = joinSurvivalPlayer(helper, "verdugo");
+		// El devastador sólo suelta monturas: cualquier otra cosa es del jefe. Nivel 19: sin botín raro común
+		for (int i = 0; i < 5; i++) {
+			Mob jefe = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
+			NivelDeMob.aplicar(jefe, 19);
+			JefeDeZona.convertir(jefe, MobsPoderosos.config().jefeDeZona());
+			jefe.hurtServer(level, level.damageSources().playerAttack(jugador), 100_000);
+			helper.assertTrue(contarSoltadosMenos(helper, jefe, Items.SADDLE) > 0, Component.literal("El jefe siempre suelta la tabla épica"));
+		}
+		level.getServer().getPlayerList().remove(jugador);
+		helper.succeed();
+	}
+
+	@GameTest
+	public void lunaDeSangre(GameTestHelper helper) {
+		helper.assertFalse(NivelDeZona.esDeNoche(12_999), Component.literal("A las 12999 todavía es de día"));
+		helper.assertTrue(NivelDeZona.esDeNoche(13_000), Component.literal("A las 13000 es de noche"));
+		helper.assertTrue(NivelDeZona.esDeNoche(24_000 * 7 + 22_999), Component.literal("Cualquier día, a las 22999 es de noche"));
+		helper.assertFalse(NivelDeZona.esDeNoche(23_000), Component.literal("A las 23000 ya amaneció"));
+
+		ServerLevel level = helper.getLevel();
+		ponerPiso(helper);
+		helper.assertTrue(level.dimension() == Level.OVERWORLD, Component.literal("Los tests corren en el overworld"));
+		helper.assertValueEqual(0, LunaDeSangre.nivelesExtra(level), "Sin luna de sangre no suma");
+
+		// Todo en el mismo tick y se saca antes de volver: los otros tests no llegan a ver la luna
+		level.setAttached(LunaDeSangre.NOCHE_ACTIVA, NivelDeZona.dias(level));
+		helper.assertValueEqual(MobsPoderosos.config().lunaDeSangre().nivelesExtra(), LunaDeSangre.nivelesExtra(level), "Con luna de sangre suma");
+		// 20 spawns NATURAL al 50 %: que no venga ningún compañero tiene probabilidad 2^-20
+		for (int i = 0; i < 20; i++) {
+			spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.NATURAL);
+		}
+		level.removeAttached(LunaDeSangre.NOCHE_ACTIVA);
+		helper.assertValueEqual(0, LunaDeSangre.nivelesExtra(level), "Al terminar deja de sumar");
+
+		helper.runAfterDelay(3, () -> {
+			int zombis = level.getEntitiesOfClass(Zombie.class, new AABB(helper.absolutePos(DENTRO)).inflate(6), z -> true).size();
+			helper.assertTrue(zombis > 20, Component.literal("Con luna de sangre los mobs NATURAL traen compañía (hay " + zombis + ")"));
+			helper.succeed();
+		});
+	}
+
+	@GameTest
 	public void archivoDeConfiguracion(GameTestHelper helper) {
 		try {
 			Path carpeta = Files.createTempDirectory("mobspoderosos");
@@ -456,6 +737,12 @@ public class MobsPoderososGameTest {
 			helper.assertTrue(lanza(() -> ArchivoDeConfiguracion.leer(invalido)), Component.literal("bloquesPorNivel 0 se rechaza"));
 			helper.assertValueEqual(contenido, Files.readString(invalido), "Un archivo rechazado no se pisa");
 
+			String completo = Files.readString(nuevo);
+			helper.assertTrue(completo.contains("\"estampida\"") && completo.contains("\"chancePorMinuto\""), Component.literal("Los eventos también van al archivo"));
+			Path estampidaInvalida = carpeta.resolve("estampida.json");
+			Files.writeString(estampidaInvalida, "{\"estampida\": {\"distanciaMaxima\": 1}}");
+			helper.assertTrue(lanza(() -> ArchivoDeConfiguracion.leer(estampidaInvalida)), Component.literal("Una distanciaMaxima menor que la mínima se rechaza"));
+
 			Path roto = carpeta.resolve("roto.json");
 			Files.writeString(roto, "{\"bloquesPorNivel\": ");
 			helper.assertTrue(lanza(() -> ArchivoDeConfiguracion.leer(roto)), Component.literal("Un JSON roto se rechaza"));
@@ -471,6 +758,18 @@ public class MobsPoderososGameTest {
 		double chance = BotinPorNivel.chanceTiradaExtra(mob);
 		mob.discard();
 		return chance;
+	}
+
+	/**
+	 * El piso de la estructura de test es de barreras, y vanilla no deja aparecer mobs sobre una barrera
+	 * (isSpawnPositionOk): sin esto, lugarCerca no encuentra lugar en ningún test.
+	 */
+	private static void ponerPiso(GameTestHelper helper) {
+		for (int x = 0; x < 8; x++) {
+			for (int z = 0; z < 8; z++) {
+				helper.setBlock(x, 0, z, Blocks.STONE);
+			}
+		}
 	}
 
 	private static <T extends Mob> T sinArmadura(T mob) {
@@ -558,6 +857,11 @@ public class MobsPoderososGameTest {
 		level.getServer().getPlayerList().placeNewPlayer(conexion, jugador, cookie);
 		jugador.setGameMode(GameType.SURVIVAL);
 		return jugador;
+	}
+
+	private static void assertTerminaEn(GameTestHelper helper, Mob mob, String esperado) {
+		String nombre = mob.getCustomName().getString();
+		helper.assertTrue(nombre.endsWith(esperado), Component.literal("El nombre tendría que terminar en \"" + esperado + "\" y es \"" + nombre + "\""));
 	}
 
 	private static void assertCerca(GameTestHelper helper, double esperado, double real, String que) {

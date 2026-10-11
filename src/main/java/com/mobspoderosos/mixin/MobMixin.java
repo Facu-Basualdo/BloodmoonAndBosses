@@ -6,6 +6,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import com.mobspoderosos.LunaDeSangre;
 import com.mobspoderosos.NivelDeMob;
 
 import net.minecraft.world.DifficultyInstance;
@@ -23,6 +24,10 @@ abstract class MobMixin {
 			@Nullable SpawnGroupData datos, CallbackInfoReturnable<SpawnGroupData> cir) {
 		if (NivelDeMob.escala(motivo)) {
 			((Mob) (Object) this).setAttached(NivelDeMob.PENDIENTE, true);
+		}
+		// Sólo NATURAL: en una estructura o una patrulla, duplicar los mobs cambiaría la estructura
+		if (motivo == EntitySpawnReason.NATURAL) {
+			LunaDeSangre.alAparecerNatural((Mob) (Object) this, level.getLevel());
 		}
 	}
 }

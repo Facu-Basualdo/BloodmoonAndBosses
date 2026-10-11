@@ -1,0 +1,8 @@
+{
+	"replace": false,
+	"values": [
+		"minecraft:wither_skeleton",
+		"minecraft:piglin_brute",
+		"minecraft:blaze"
+	]
+}

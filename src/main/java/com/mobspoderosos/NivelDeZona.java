@@ -9,17 +9,21 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 
 public final class NivelDeZona {
+	// Las horas del reloj en que vanilla dibuja la noche (de 19 a 5)
+	private static final int EMPIEZA_LA_NOCHE = 13_000;
+	private static final int TERMINA_LA_NOCHE = 23_000;
+
 	private NivelDeZona() {
 	}
 
-	/** El nivel con el que aparece un mob: el de la zona, más el del tiempo, más el del campeón si le toca. */
+	/**
+	 * El nivel con el que aparece un mob en ese lugar: el de la zona, más el del tiempo, más el de la luna de sangre.
+	 * El del campeón se suma aparte (NivelDeMob.alCargar), porque los mobs de los eventos no tiran campeón.
+	 */
 	public static int calcular(ServerLevel level, BlockPos pos, RandomSource random) {
 		Configuracion config = MobsPoderosos.config();
 		BlockPos spawn = level.getServer().getRespawnData().pos();
-		int nivel = calcular(level.dimension(), spawn, pos, config, random) + porTiempo(dias(level), config);
-		if (esCampeon(config, random)) {
-			nivel += config.nivelesDeCampeon();
-		}
+		int nivel = calcular(level.dimension(), spawn, pos, config, random) + porTiempo(dias(level), config) + LunaDeSangre.nivelesExtra(level);
 		return Mth.clamp(nivel, 1, config.nivelMaximo());
 	}
 
@@ -29,6 +33,22 @@ public final class NivelDeZona {
 	 */
 	public static long dias(ServerLevel level) {
 		return level.getOverworldClockTime() / SharedConstants.TICKS_PER_GAME_DAY;
+	}
+
+	/** Con el reloj y no con isDarkOutside, que también da true en una tormenta de día. */
+	public static boolean esDeNoche(ServerLevel level) {
+		return esDeNoche(level.getOverworldClockTime());
+	}
+
+	public static boolean esDeNoche(long reloj) {
+		long hora = reloj % SharedConstants.TICKS_PER_GAME_DAY;
+		return hora >= EMPIEZA_LA_NOCHE && hora < TERMINA_LA_NOCHE;
+	}
+
+	/** Cuánto de la noche ya pasó, de 0 a 1: la barra de la luna de sangre se vacía con esto. */
+	public static float avanceDeLaNoche(ServerLevel level) {
+		long hora = level.getOverworldClockTime() % SharedConstants.TICKS_PER_GAME_DAY;
+		return Mth.clamp((hora - EMPIEZA_LA_NOCHE) / (float) (TERMINA_LA_NOCHE - EMPIEZA_LA_NOCHE), 0, 1);
 	}
 
 	public static int porTiempo(long dias, Configuracion config) {

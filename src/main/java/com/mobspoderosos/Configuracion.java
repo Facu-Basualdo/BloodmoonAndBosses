@@ -12,6 +12,7 @@ public record Configuracion(
 		int nivelesDeCampeon,
 		boolean escalarSpawners,
 		boolean nombreSiempreVisible,
+		boolean vidaEnElNombre,
 		Escala vida,
 		Escala danio,
 		Escala armadura,
@@ -31,7 +32,11 @@ public record Configuracion(
 		Rareza botinRaro,
 		Rareza botinEpico,
 		Rareza botinLegendario,
-		double experienciaPorNivel) {
+		double experienciaPorNivel,
+		Afijos afijos,
+		Estampida estampida,
+		LunaDeSangre lunaDeSangre,
+		JefeDeZona jefeDeZona) {
 
 	/*
 	 * Hasta el nivel 100 (a unos 10.000 bloques) y pensados junto con Estadísticas RPG: cada escala llega a su
@@ -54,6 +59,7 @@ public record Configuracion(
 			false,
 			// Un nombre siempre visible se dibuja a través de las paredes: sería un rayos X de mobs en las cuevas
 			false,
+			true,
 			new Escala(0.08, 8.0),
 			new Escala(0.04, 4.0),
 			new Escala(0.12, 12.0),
@@ -78,23 +84,33 @@ public record Configuracion(
 			new Rareza(20, 0.15),
 			new Rareza(50, 0.10),
 			new Rareza(80, 0.05),
-			0.05);
+			0.05,
+			// Todos los campeones con afijo: así se distinguen en el nombre. La explosión es la de un creeper común
+			new Afijos(1.0, 0.3, 0.5, 3.0f, 30, 2, 3, 10),
+			// Con 3 % por minuto, una noche (unos 7 minutos) tiene ~20 % de estampida; después hay 3 días de respiro
+			new Estampida(true, 0.03, 3, 10, 6, 10, 16, 24, 32, 0.25, 180),
+			// La luna llena es una noche de cada ocho: con 50 %, una luna de sangre cada 16 días en promedio
+			new LunaDeSangre(true, 0.5, 10, 0.5),
+			// Con 1 % por minuto, alrededor de un jefe cada hora y media de juego por jugador
+			new JefeDeZona(true, 0.01, 2, 15, 20, 3.0, 3, 48, 60));
 
 	public Configuracion conVariacion(int variacion) {
 		return new Configuracion(bloquesPorNivel, nivelMaximo, extraNether, extraEnd, variacion, diasPorNivelExtra,
-				nivelesPorTiempoMaximos, chanceDeCampeon, nivelesDeCampeon, escalarSpawners, nombreSiempreVisible, vida, danio, armadura, velocidad, rangoDeSeguimiento, resistenciaAlEmpuje,
+				nivelesPorTiempoMaximos, chanceDeCampeon, nivelesDeCampeon, escalarSpawners, nombreSiempreVisible, vidaEnElNombre, vida, danio, armadura, velocidad, rangoDeSeguimiento, resistenciaAlEmpuje,
 				nivelRadioCreeper, radioCreeperExtra, chanceArmaduraExtra, nivelesPorMaterialDeArmadura,
 				cascoParaLosQueSeQueman, poderDeEncantamiento, chanceSoltarEquipo, nivelesPorTiradaExtra,
-				tiradasExtraMaximas, chanceTiradaExtra, botinRaro, botinEpico, botinLegendario, experienciaPorNivel);
+				tiradasExtraMaximas, chanceTiradaExtra, botinRaro, botinEpico, botinLegendario, experienciaPorNivel,
+				afijos, estampida, lunaDeSangre, jefeDeZona);
 	}
 
 	public Configuracion conExtras(int diasPorNivelExtra, int nivelesPorTiempoMaximos, double chanceDeCampeon, int nivelesDeCampeon) {
 		return new Configuracion(bloquesPorNivel, nivelMaximo, extraNether, extraEnd, variacion, diasPorNivelExtra,
-				nivelesPorTiempoMaximos, chanceDeCampeon, nivelesDeCampeon, escalarSpawners, nombreSiempreVisible,
+				nivelesPorTiempoMaximos, chanceDeCampeon, nivelesDeCampeon, escalarSpawners, nombreSiempreVisible, vidaEnElNombre,
 				vida, danio, armadura, velocidad, rangoDeSeguimiento, resistenciaAlEmpuje,
 				nivelRadioCreeper, radioCreeperExtra, chanceArmaduraExtra, nivelesPorMaterialDeArmadura,
 				cascoParaLosQueSeQueman, poderDeEncantamiento, chanceSoltarEquipo, nivelesPorTiradaExtra,
-				tiradasExtraMaximas, chanceTiradaExtra, botinRaro, botinEpico, botinLegendario, experienciaPorNivel);
+				tiradasExtraMaximas, chanceTiradaExtra, botinRaro, botinEpico, botinLegendario, experienciaPorNivel,
+				afijos, estampida, lunaDeSangre, jefeDeZona);
 	}
 
 	/** Los valores que harían dividir por cero o dejarían un mob sin nivel: mejor rechazar el archivo que arrancar así. */
@@ -117,6 +133,19 @@ public record Configuracion(
 			exigir(rareza != null, "falta uno de los botines");
 			exigir(rareza.nivelMinimo() >= 1, "el nivelMinimo de un botín tiene que ser 1 o más");
 		}
+		exigir(afijos != null && estampida != null && lunaDeSangre != null && jefeDeZona != null, "falta uno de los eventos");
+		exigir(afijos.chance() >= 0 && afijos.chance() <= 1, "afijos.chance va de 0 a 1");
+		exigir(estampida.chancePorMinuto() >= 0 && estampida.chancePorMinuto() <= 1, "estampida.chancePorMinuto va de 0 a 1");
+		exigir(estampida.nivelesPorMobExtra() >= 1, "estampida.nivelesPorMobExtra tiene que ser 1 o más");
+		exigir(estampida.mobsBase() >= 1, "estampida.mobsBase tiene que ser 1 o más");
+		exigir(estampida.distanciaMinima() >= 1 && estampida.distanciaMaxima() >= estampida.distanciaMinima(),
+				"estampida.distanciaMaxima tiene que ser mayor o igual que distanciaMinima, y las dos 1 o más");
+		exigir(estampida.segundosMaximos() >= 1, "estampida.segundosMaximos tiene que ser 1 o más");
+		exigir(lunaDeSangre.chance() >= 0 && lunaDeSangre.chance() <= 1, "lunaDeSangre.chance va de 0 a 1");
+		exigir(lunaDeSangre.chanceDeCompania() >= 0 && lunaDeSangre.chanceDeCompania() <= 1, "lunaDeSangre.chanceDeCompania va de 0 a 1");
+		exigir(jefeDeZona.chancePorMinuto() >= 0 && jefeDeZona.chancePorMinuto() <= 1, "jefeDeZona.chancePorMinuto va de 0 a 1");
+		exigir(jefeDeZona.multiplicadorDeVida() >= 1, "jefeDeZona.multiplicadorDeVida tiene que ser 1 o más");
+		exigir(jefeDeZona.radioDeBarra() >= 1 && jefeDeZona.segundosAbandonado() >= 1, "jefeDeZona.radioDeBarra y segundosAbandonado tienen que ser 1 o más");
 	}
 
 	private static void exigir(boolean condicion, String mensaje) {
@@ -138,5 +167,26 @@ public record Configuracion(
 
 	/** Un botín de los ítems raros: desde qué nivel se tira la tabla y con qué probabilidad. */
 	public record Rareza(int nivelMinimo, double chance) {
+	}
+
+	/**
+	 * Rasgos de los campeones. chance: probabilidad de que un campeón tenga uno. velocidadVeloz y curacionVampiro son
+	 * fracciones (0.3 = +30 % de velocidad, 0.5 = se cura la mitad del daño que hace).
+	 */
+	public record Afijos(double chance, double velocidadVeloz, double curacionVampiro, float potenciaExplosivo, int ticksDeMecha,
+			int refuerzosInvocador, int invocacionesMaximas, int segundosEntreInvocaciones) {
+	}
+
+	/** Los días son de juego (20 minutos reales), contados con el gameTime: dormir no los adelanta. */
+	public record Estampida(boolean activa, double chancePorMinuto, int diasEntreEstampidas, int nivelMinimo, int mobsBase,
+			int nivelesPorMobExtra, int mobsMaximos, int distanciaMinima, int distanciaMaxima, double velocidadExtra, int segundosMaximos) {
+	}
+
+	/** chance: probabilidad de que una noche de luna llena sea de sangre. */
+	public record LunaDeSangre(boolean activa, double chance, int nivelesExtra, double chanceDeCompania) {
+	}
+
+	public record JefeDeZona(boolean activo, double chancePorMinuto, int diasEntreJefes, int nivelMinimo, int nivelesExtra,
+			double multiplicadorDeVida, int escoltas, int radioDeBarra, int segundosAbandonado) {
 	}
 }

@@ -77,6 +77,24 @@ public final class BotinPorNivel {
 		}
 	}
 
+	/** La tabla más alta que le corresponde a ese nivel, y como mínimo la dada: el premio de los eventos. */
+	public static Botin mejorBotin(int nivel, Botin minimo) {
+		Botin mejor = minimo;
+		for (Botin botin : botinesRaros(nivel)) {
+			if (botin.ordinal() > mejor.ordinal()) {
+				mejor = botin;
+			}
+		}
+		return mejor;
+	}
+
+	/** Un jefe de zona siempre suelta la mejor tabla que le toca, como mínimo la épica. Además de su botín raro común. */
+	public static void soltarBotinDeJefe(Mob mob, ServerLevel level, DamageSource source) {
+		if (JefeDeZona.esJefe(mob)) {
+			mob.dropFromLootTable(level, source, true, mejorBotin(NivelDeMob.nivel(mob), Botin.EPICO).tabla());
+		}
+	}
+
 	public static int experiencia(int base, int nivel) {
 		if (nivel == 0) {
 			return base;

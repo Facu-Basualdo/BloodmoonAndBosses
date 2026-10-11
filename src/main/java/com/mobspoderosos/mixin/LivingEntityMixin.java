@@ -7,6 +7,8 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.mobspoderosos.BotinPorNivel;
 import com.mobspoderosos.NivelDeMob;
@@ -24,6 +26,14 @@ abstract class LivingEntityMixin {
 		return !((Object) this instanceof Mob mob && NivelDeMob.esNombreDelMod(mob));
 	}
 
+	// Daño, curación, regeneración y vida máxima que baja pasan todos por acá. En el cliente no hace nada: NIVEL no se sincroniza
+	@Inject(method = "setHealth", at = @At("TAIL"))
+	private void mobspoderosos$vidaEnElNombre(float vida, CallbackInfo ci) {
+		if ((Object) this instanceof Mob mob) {
+			NivelDeMob.actualizarVida(mob);
+		}
+	}
+
 	// Tiradas extra y botín raro. Acá y no en AFTER_DEATH: esta llamada ya pasó por shouldDropLoot (gamerule mobDrops, crías), y
 	// matoUnJugador es el mismo criterio que usa vanilla para el loot de "killed_by_player"
 	@WrapOperation(method = "dropAllDeathLoot", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;dropFromLootTable(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;Z)V"))
@@ -32,6 +42,7 @@ abstract class LivingEntityMixin {
 		if (matoUnJugador && entidad instanceof Mob mob) {
 			BotinPorNivel.soltarTiradasExtra(mob, level, source);
 			BotinPorNivel.soltarBotinRaro(mob, level, source);
+			BotinPorNivel.soltarBotinDeJefe(mob, level, source);
 		}
 		original.call(entidad, level, source, matoUnJugador);
 	}
