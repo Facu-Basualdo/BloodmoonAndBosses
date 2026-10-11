@@ -1,4 +1,6 @@
-# Mobs Poderosos — mod de Minecraft
+# Bloodmoon & Bosses (antes Mobs Poderosos) — mod de Minecraft
+
+**El nombre visible es "Bloodmoon & Bosses", pero el id sigue siendo `mobspoderosos`** (paquete, comando, config, tags, attachments y prefijo de los mixins). No lo renombres: los attachments se guardan con ese id en el NBT de los mobs y los mundos, y un id nuevo les borraría el nivel.
 
 Mod de Fabric para **Minecraft Java 26.3** que hace aparecer a los mobs hostiles con **niveles**: cuanto más lejos del spawn del mundo, más vida, daño y armadura tienen, y mejor loot dan. El nivel se ve en el nombre ("Zombi [Nv 7]"). Java 25, Gradle 9.7 + Fabric Loom 1.18, Fabric Loader 0.19.5, Fabric API 0.162.0+26.3. Toda la lógica corre en el servidor: los jugadores no necesitan instalar nada.
 

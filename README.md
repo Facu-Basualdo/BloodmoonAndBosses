@@ -1,10 +1,12 @@
-# Mobs Poderosos
+# Bloodmoon & Bosses
+
+> Antes se llamaba **Mobs Poderosos**. El id del mod sigue siendo `mobspoderosos`: el comando es `/mobspoderosos`, la config `config/mobspoderosos.json` y los tags `mobspoderosos:…`, así que los mundos y las configuraciones que ya existen siguen andando.
 
 Mod de Fabric para **Minecraft Java 26.3** en el que los mobs hostiles aparecen con **niveles**. Cuanto más lejos del spawn del mundo y cuanto más viejo es el mundo, más nivel tienen: más vida, más daño, más armadura y más velocidad, y aparecen con mejor equipo encantado. El nivel y la vida se ven en el nombre del mob: **"Zombi [Nv 7] ❤ 34/40"**. Los mobs de más nivel también sueltan más loot, ítems raros y más experiencia.
 
 Cerca de la base el juego se siente casi como vanilla; a varios miles de bloques, salir a explorar es otra cosa.
 
-> **Estado:** versión 0.9.0. Están todas las fases de [docs/plan.md](docs/plan.md) (niveles, loot y experiencia, equipo encantado, ítems raros y archivo de configuración) y los eventos de [docs/eventos.md](docs/eventos.md): afijos de campeón, estampidas, luna de sangre y jefes de zona.
+> **Estado:** versión 0.9.1. Están todas las fases de [docs/plan.md](docs/plan.md) (niveles, loot y experiencia, equipo encantado, ítems raros y archivo de configuración) y los eventos de [docs/eventos.md](docs/eventos.md): afijos de campeón, estampidas, luna de sangre y jefes de zona.
 
 ## Cómo funciona en el juego
 
