@@ -109,6 +109,8 @@ Sólo para mobs que ya usan equipo en vanilla (zombis, esqueletos, piglins, pill
   - Piezas de **diamante o netherita que puso el mod**: se quedan en `0,085` (como vanilla). Si no, en nivel 40+ la netherita encantada sale gratis.
   - Vanilla sólo suelta el equipo si lo golpeó un jugador, y cuando la chance es ≤ 1 lo suelta muy dañado. Las dos cosas ya juegan a favor del balance.
 
+> **Implementado distinto en la fase 3:** los encantamientos van a todo el equipo de cualquier mob con nivel (también illagers y vex), no sólo a los de `usan_equipo`: si no, las flechas de los pillagers no escalarían. La armadura nueva sí es sólo para `usan_equipo`, que quedó en los mobs que la dibujan. Lo que queda en la chance de vanilla no son "las piezas de diamante o netherita que puso el mod" sino todo lo del tag de ítems `equipo_valioso` (diamante, netherita y tridente), venga de donde venga. Además, una chance de soltar en 0 no se toca: vanilla la pone así en la espada del vex. Lo ya encantado no se vuelve a encantar. Ver [claude/mod/equipo.md](../claude/mod/equipo.md).
+
 ### 5. Loot y experiencia (`BotinPorNivel` + mixin)
 
 En `ServerLivingEntityEvents.AFTER_DEATH`, **sólo si lo mató un jugador** (`getLastHurtByPlayer() != null`), para que las granjas automáticas no lo aprovechen:
@@ -119,6 +121,8 @@ En `ServerLivingEntityEvents.AFTER_DEATH`, **sólo si lo mató un jugador** (`ge
   - Tag `sin_tiradas_extra`: los mobs cuya tabla tiene ítems que no deberían multiplicarse. Por defecto `evoker` (uno de nivel 30 o más soltaría 4 tótems), `wither_skeleton` (en el Nether casi siempre tienen nivel alto: las calaveras serían triviales) y `shulker` (caparazones). Se puede editar con un datapack.
 - **Ítems raros:** según el rango se tira la tabla propia `botin_por_nivel/raro` (nivel ≥ 10, 15 %), `epico` (≥ 25, 10 %) y `legendario` (≥ 40, 5 %): manzanas doradas, diamantes, libros encantados, plantillas de herrería, etc. Son JSON de datapack, así que se pueden editar o pisar con un datapack sin recompilar. Estas sí aplican también a los mobs de `sin_tiradas_extra`.
 - **Experiencia:** mixin en `LivingEntity.getExperienceReward(ServerLevel, Entity)` (es `final`, así que cubre todas las subclases) en RETURN: `× (1 + nivel × 0,1)` si es un `Mob` con nivel.
+
+> **Fase 4:** las tablas raras se tiran en el mismo `@WrapOperation` que las tiradas extra, cada una sorteada por separado. En 26.3 el formato de las tablas usa `"modifier"` y `"condition"` (no `"functions"`/`"conditions"`). Ver [claude/mod/botin.md](../claude/mod/botin.md).
 
 ### 6. Balance de referencia
 
@@ -135,6 +139,8 @@ Números con los valores por defecto, dificultad **Normal**, sin contar encantam
 En el Nether el +10 y la escala ×8 hacen que los niveles altos lleguen rápido: a 600 bloques del Nether (4800 en el overworld) ya es nivel ~43. Es a propósito, pero conviene confirmarlo jugando.
 
 ### 7. Config y comando
+
+> **Fase 5:** `config/mobspoderosos.json` se mezcla sobre los valores por defecto antes de leerlo (con records, Gson deja en 0 lo que falta), se valida y recién ahí se reescribe; un archivo con error queda intacto. Ver [claude/mod/configuracion.md](../claude/mod/configuracion.md).
 
 `Configuracion` es un record con valores por defecto desde la fase 1, así ningún número queda escrito a mano en el código. En la fase 5, `config/mobspoderosos.json` se crea con esos valores en el primer arranque: `bloquesPorNivel`, `nivelMaximo`, extras por dimensión, porcentaje y tope por atributo, radio del creeper, chances de armadura y de soltar equipo, `cascoParaLosQueSeQueman`, `tiradasExtraMaximas`, `escalarSpawners`, `nombreSiempreVisible`, chances de loot. `/mobspoderosos recargar` la vuelve a leer sin reiniciar el servidor (sólo afecta a los mobs que aparezcan después).
 

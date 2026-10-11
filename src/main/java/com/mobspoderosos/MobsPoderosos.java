@@ -1,5 +1,8 @@
 package com.mobspoderosos;
 
+import java.io.IOException;
+
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +21,7 @@ public class MobsPoderosos implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		cargarConfiguracion();
 		NivelDeMob.inicializar();
 
 		ServerEntityEvents.ENTITY_LOAD.register(NivelDeMob::alCargar);
@@ -27,6 +31,17 @@ public class MobsPoderosos implements ModInitializer {
 
 	public static Configuracion config() {
 		return config;
+	}
+
+	/** Si el archivo tiene un error se queda la configuración que había (al arrancar, la por defecto) y se devuelve el motivo. */
+	public static @Nullable String cargarConfiguracion() {
+		try {
+			config = ArchivoDeConfiguracion.leer(ArchivoDeConfiguracion.ruta());
+			return null;
+		} catch (IOException | RuntimeException e) {
+			LOGGER.error("No se pudo leer {}: {}", ArchivoDeConfiguracion.ruta(), e.getMessage());
+			return e.getMessage();
+		}
 	}
 
 	public static Identifier id(String path) {

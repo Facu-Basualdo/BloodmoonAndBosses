@@ -36,7 +36,9 @@ El mismo tema en distintas áreas usa el mismo nombre de archivo (`claude/mod/ni
 | Feature | Mod | Tests |
 |---|---|---|
 | Niveles (cuándo se asignan, fórmula, estadísticas, nombre, conversiones) | [niveles](claude/mod/niveles.md) | [niveles](claude/tests/niveles.md) |
-| Botín y experiencia (tiradas extra, tags `sin_tiradas_extra` y `tiradas_extra_por_chance`, experiencia por nivel) | [botin](claude/mod/botin.md) | [botin](claude/tests/botin.md) |
+| Botín y experiencia (tiradas extra, tags `sin_tiradas_extra` y `tiradas_extra_por_chance`, botín raro, experiencia por nivel) | [botin](claude/mod/botin.md) | [botin](claude/tests/botin.md) |
+| Equipo (armadura por rango, encantamientos, chance de soltar, tags `usan_equipo` y `equipo_valioso`) | [equipo](claude/mod/equipo.md) | [equipo](claude/tests/equipo.md) |
+| Configuración (`config/mobspoderosos.json`, `/mobspoderosos recargar`) | [configuracion](claude/mod/configuracion.md) | [configuracion](claude/tests/configuracion.md) |
 
 ## Reglas de workflow
 

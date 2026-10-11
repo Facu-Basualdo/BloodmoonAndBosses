@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import org.jspecify.annotations.Nullable;
 
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -31,7 +32,10 @@ public final class ComandoMobsPoderosos {
 						.then(Commands.argument("entidad", ResourceArgument.resource(contexto, Registries.ENTITY_TYPE))
 								.suggests(SuggestionProviders.cast(SuggestionProviders.SUMMONABLE_ENTITIES))
 								.then(Commands.argument("nivel", IntegerArgumentType.integer(1))
-										.executes(ComandoMobsPoderosos::invocar)))));
+										.executes(ComandoMobsPoderosos::invocar))))
+				.then(Commands.literal("recargar")
+						.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+						.executes(ComandoMobsPoderosos::recargar)));
 	}
 
 	private static int zona(CommandContext<CommandSourceStack> ctx) {
@@ -59,12 +63,23 @@ public final class ComandoMobsPoderosos {
 			fuente.sendFailure(Component.literal("Esa entidad no puede tener nivel"));
 			return 0;
 		}
-		NivelDeMob.aplicar(mob, nivel);
+		NivelDeMob.aparecer(mob, nivel);
 		fuente.sendSuccess(() -> Component.literal("Apareció ").append(mob.getDisplayName()), true);
 		return 1;
 	}
 
-	private static BlockPos delante(CommandSourceStack fuente) {
+	private static int recargar(CommandContext<CommandSourceStack> ctx) {
+		@Nullable String error = MobsPoderosos.cargarConfiguracion();
+		if (error != null) {
+			ctx.getSource().sendFailure(Component.literal("No se pudo leer la configuración, sigue la anterior: " + error));
+			return 0;
+		}
+		// Las estadísticas y el equipo se ponen al aparecer: los mobs que ya están no cambian
+		ctx.getSource().sendSuccess(() -> Component.literal("Configuración recargada. Los mobs que ya estaban conservan sus estadísticas y su equipo"), true);
+		return 1;
+	}
+
+		private static BlockPos delante(CommandSourceStack fuente) {
 		Entity quien = fuente.getEntity();
 		if (quien == null) {
 			return BlockPos.containing(fuente.getPosition());

@@ -21,7 +21,8 @@ Los gametests ([tests: niveles](../tests/niveles.md)) cubren la lógica, pero no
 | Comando | Para qué |
 |---|---|
 | `/mobspoderosos zona` | Nivel de la zona donde estás (sin la variación de ±1) |
-| `/mobspoderosos invocar <entidad> <nivel>` | Aparece el mob delante tuyo con ese nivel: evita caminar miles de bloques. Requiere op |
+| `/mobspoderosos invocar <entidad> <nivel>` | Aparece el mob delante tuyo con ese nivel y su equipo: evita caminar miles de bloques. Requiere op |
+| `/mobspoderosos recargar` | Vuelve a leer `run/config/mobspoderosos.json`. Requiere op. Los mobs que ya están no cambian de estadísticas ni de equipo |
 | `/tp @s 4500 ~ 0` | Ir a una zona de nivel ~31 para ver los spawns naturales |
 
 ## Qué mirar
@@ -31,9 +32,13 @@ Los gametests ([tests: niveles](../tests/niveles.md)) cubren la lógica, pero no
 - Que un creeper de nivel 30+ rompa un radio más grande.
 - Ahogar un zombi con nivel: el ahogado tiene que decir "Ahogado [Nv N]", no "Zombi".
 - Curar un aldeano zombi con nivel: el aldeano queda sin nombre.
+- `/mobspoderosos invocar skeleton 45`: armadura de netherita encantada **sin casco**, y el arco encantado.
+- Matar mobs de nivel 40+ y ver que a veces sueltan ítems raros; matarlos con `/kill` y ver que no.
+- Editar `run/config/mobspoderosos.json` con un error (por ejemplo `"bloquesPorNivel": 0`), `/mobspoderosos recargar`: tiene que fallar con el motivo en el chat y el archivo tiene que quedar como estaba.
 - **Con un cliente vanilla sin el mod:** todo lo anterior tiene que verse igual. El mod no tiene que hacer falta del lado del cliente.
 
 ## Ver también
 
 - [Entorno Java y Gradle](entorno-java-gradle.md)
 - [Niveles](../mod/niveles.md)
+- [Configuración](../mod/configuracion.md)

@@ -1,11 +1,17 @@
 package com.mobspoderosos;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.storage.loot.LootTable;
 
 public final class BotinPorNivel {
 	// Mobs cuya tabla tiene ítems que no deberían multiplicarse: calaveras de wither, caparazones de shulker
@@ -48,10 +54,56 @@ public final class BotinPorNivel {
 		});
 	}
 
+	/** Las tablas raras que le tocan a un mob de ese nivel: cada una se sortea por separado. */
+	public static List<Botin> botinesRaros(int nivel) {
+		List<Botin> botines = new ArrayList<>();
+		if (nivel == 0) {
+			return botines;
+		}
+		for (Botin botin : Botin.values()) {
+			if (nivel >= botin.rareza().nivelMinimo()) {
+				botines.add(botin);
+			}
+		}
+		return botines;
+	}
+
+	/** Aplica también a los mobs de sin_tiradas_extra: estas tablas son del mod, no multiplican la del mob. */
+	public static void soltarBotinRaro(Mob mob, ServerLevel level, DamageSource source) {
+		for (Botin botin : botinesRaros(NivelDeMob.nivel(mob))) {
+			if (mob.getRandom().nextDouble() < botin.rareza().chance()) {
+				mob.dropFromLootTable(level, source, true, botin.tabla());
+			}
+		}
+	}
+
 	public static int experiencia(int base, int nivel) {
 		if (nivel == 0) {
 			return base;
 		}
 		return (int) Math.round(base * (1 + nivel * MobsPoderosos.config().experienciaPorNivel()));
+	}
+
+	/** Las tablas de data/mobspoderosos/loot_table/botin_por_nivel: se pueden pisar con un datapack. */
+	public enum Botin {
+		RARO("raro", Configuracion::botinRaro),
+		EPICO("epico", Configuracion::botinEpico),
+		LEGENDARIO("legendario", Configuracion::botinLegendario);
+
+		private final ResourceKey<LootTable> tabla;
+		private final Function<Configuracion, Configuracion.Rareza> rareza;
+
+		Botin(String nombre, Function<Configuracion, Configuracion.Rareza> rareza) {
+			this.tabla = ResourceKey.create(Registries.LOOT_TABLE, MobsPoderosos.id("botin_por_nivel/" + nombre));
+			this.rareza = rareza;
+		}
+
+		public ResourceKey<LootTable> tabla() {
+			return tabla;
+		}
+
+		public Configuracion.Rareza rareza() {
+			return rareza.apply(MobsPoderosos.config());
+		}
 	}
 }

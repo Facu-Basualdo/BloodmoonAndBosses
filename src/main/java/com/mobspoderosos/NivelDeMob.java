@@ -67,7 +67,13 @@ public final class NivelDeMob {
 		if (mob.hasAttached(NIVEL) || !puedeTenerNivel(mob)) {
 			return;
 		}
-		aplicar(mob, NivelDeZona.calcular(level, mob.blockPosition(), mob.getRandom()));
+		aparecer(mob, NivelDeZona.calcular(level, mob.blockPosition(), mob.getRandom()));
+	}
+
+	/** Un mob nuevo: nivel y equipo. Las conversiones usan sólo aplicarEstadisticas, porque el equipo viene del mob viejo. */
+	public static void aparecer(Mob mob, int nivel) {
+		aplicar(mob, nivel);
+		EquipoPorNivel.equipar(mob, nivel);
 	}
 
 	/** MOB_CONVERSION corre antes de addFreshEntity, así que le gana a alCargar. */

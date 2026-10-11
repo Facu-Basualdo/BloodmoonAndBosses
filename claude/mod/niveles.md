@@ -11,10 +11,10 @@ Síntomas que esto evita: **un zombi aparece con nivel pero sin la armadura que 
 | Momento | Clase | Qué hace |
 |---|---|---|
 | `Mob.finalizeSpawn` **HEAD** | `MobMixin` | Si el `EntitySpawnReason` escala (`NivelDeMob.escala`), le pone al mob el attachment `PENDIENTE` |
-| `ServerEntityEvents.ENTITY_LOAD` | `NivelDeMob.alCargar` | Saca `PENDIENTE`. Si no tiene `NIVEL` y `puedeTenerNivel`, calcula el nivel por posición y llama a `aplicar` |
+| `ServerEntityEvents.ENTITY_LOAD` | `NivelDeMob.alCargar` | Saca `PENDIENTE`. Si no tiene `NIVEL` y `puedeTenerNivel`, calcula el nivel por posición y llama a `aparecer` (`aplicar` + `EquipoPorNivel.equipar`) |
 
 - **`finalizeSpawn` es el único lugar que conoce el motivo del spawn.** Fabric no tiene un evento con el motivo, y `ENTITY_LOAD` no lo recibe.
-- **El nivel no se puede aplicar en `finalizeSpawn`:** cada subclase pone su equipo en su propio `finalizeSpawn`, y `Zombie` lo hace **después** de llamar a `super` (verificado con `javap`). Un HEAD o un TAIL en `Mob.finalizeSpawn` correría antes de que el zombi tenga espada. Cuando llega `ENTITY_LOAD`, el equipo ya está puesto, y esto importa para la fase de equipo (ver [docs/plan.md](../../docs/plan.md)).
+- **El nivel no se puede aplicar en `finalizeSpawn`:** cada subclase pone su equipo en su propio `finalizeSpawn`, y `Zombie` lo hace **después** de llamar a `super` (verificado con `javap`). Un HEAD o un TAIL en `Mob.finalizeSpawn` correría antes de que el zombi tenga espada. Cuando llega `ENTITY_LOAD`, el equipo ya está puesto, y el mod lo completa y lo encanta ahí (ver [equipo](equipo.md)).
 - **`PENDIENTE` es un attachment persistente, no un campo `@Unique`.** Los mobs de `STRUCTURE` y `CHUNK_GENERATION` se crean en un `WorldGenRegion`: `ProtoChunk.addEntity(Entity)` los guarda como NBT y, cuando el chunk está completo, el mob se recrea desde ese NBT. Un campo transitorio se perdería ahí (evocadores y vindicadores de las mansiones, la bruja de la cabaña, los shulkers del End). El attachment viaja en el NBT y `ENTITY_LOAD` lo encuentra al cargar el chunk.
 - **`alCargar` saca `PENDIENTE` aunque el mob no escale** (un aldeano con `NATURAL`): si no, quedaría para siempre en su NBT.
 
@@ -65,7 +65,7 @@ nivel = 1 + floor(distanciaHorizontal / bloquesPorNivel) + extraDimensión ± va
 - `getAttribute` devuelve `null` para atributos que el mob no tiene (el creeper no tiene `ATTACK_DAMAGE`): `modificar` lo saltea.
 - **`setHealth(getMaxHealth())` al final.** Sin eso, el mob aparece con la vida base aunque el máximo haya subido.
 - **Creeper:** su explosión no usa `ATTACK_DAMAGE`. Desde `nivelRadioCreeper` (30), `CreeperAccessor` pone `explosionRadius` en 3 + `radioCreeperExtra` (4). Vanilla lo duplica si está cargado y lo guarda en el NBT como `ExplosionRadius`.
-- El daño de las flechas tampoco usa `ATTACK_DAMAGE`: los esqueletos escalan por el encantamiento del arco (fase de equipo).
+- El daño de las flechas tampoco usa `ATTACK_DAMAGE`: los esqueletos escalan por el encantamiento del arco (ver [equipo](equipo.md)).
 
 ## Nombre
 
@@ -98,5 +98,7 @@ Los slimes se dividen con `convertTo(…, TRIGGERED, …)` desde `AbstractCubeMo
 
 - [Tests: niveles](../tests/niveles.md)
 - [Botín y experiencia](botin.md)
+- [Equipo](equipo.md)
+- [Configuración](configuracion.md)
 - [Minecraft 26.x sin ofuscar](../general/minecraft-26-sin-ofuscar.md)
 - [Probar en el juego](../general/probar-en-el-juego.md)

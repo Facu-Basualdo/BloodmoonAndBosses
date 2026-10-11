@@ -1,13 +1,19 @@
 package com.mobspoderosos.test;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
 import com.mojang.authlib.GameProfile;
 import io.netty.channel.embedded.EmbeddedChannel;
 
+import com.mobspoderosos.ArchivoDeConfiguracion;
 import com.mobspoderosos.BotinPorNivel;
 import com.mobspoderosos.Configuracion;
+import com.mobspoderosos.EquipoPorNivel;
 import com.mobspoderosos.MobsPoderosos;
 import com.mobspoderosos.NivelDeMob;
 import com.mobspoderosos.NivelDeZona;
@@ -16,6 +22,8 @@ import com.mobspoderosos.mixin.CreeperAccessor;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
@@ -32,6 +40,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -41,11 +50,15 @@ import net.minecraft.world.entity.monster.cubemob.Slime;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.loot.LootTable;
 
 public class MobsPoderososGameTest {
 	private static final BlockPos DENTRO = new BlockPos(2, 1, 2);
@@ -245,12 +258,233 @@ public class MobsPoderososGameTest {
 		helper.succeed();
 	}
 
+	@GameTest
+	public void materialDeArmadura(GameTestHelper helper) {
+		RandomSource random = RandomSource.create(42);
+		helper.assertValueEqual(Items.LEATHER_CHESTPLATE, EquipoPorNivel.material(9, random).pechera(), "Material en nivel 9");
+		for (int i = 0; i < 20; i++) {
+			Item pechera = EquipoPorNivel.material(15, random).pechera();
+			helper.assertTrue(pechera == Items.CHAINMAIL_CHESTPLATE || pechera == Items.GOLDEN_CHESTPLATE, Component.literal("En nivel 15 es cadena u oro (dio " + pechera + ")"));
+		}
+		helper.assertValueEqual(Items.IRON_CHESTPLATE, EquipoPorNivel.material(20, random).pechera(), "Material en nivel 20");
+		helper.assertValueEqual(Items.DIAMOND_CHESTPLATE, EquipoPorNivel.material(39, random).pechera(), "Material en nivel 39");
+		helper.assertValueEqual(Items.NETHERITE_CHESTPLATE, EquipoPorNivel.material(40, random).pechera(), "Material en nivel 40");
+		helper.assertValueEqual(Items.NETHERITE_CHESTPLATE, EquipoPorNivel.material(200, random).pechera(), "El material topea en netherita");
+		helper.succeed();
+	}
+
+	@GameTest
+	public void armaduraPorNivel(GameTestHelper helper) {
+		// 20 mobs × 3 o 4 ranuras al 50 %: que no salga ninguna pieza tiene probabilidad 2^-60
+		int piezasZombi = 0;
+		int cascosPiglin = 0;
+		for (int i = 0; i < 20; i++) {
+			Zombie zombie = sinArmadura(spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND));
+			EquipoPorNivel.equipar(zombie, 50);
+			helper.assertTrue(zombie.getItemBySlot(EquipmentSlot.HEAD).isEmpty(), Component.literal("Los que se queman al sol no reciben casco"));
+			for (EquipmentSlot slot : new EquipmentSlot[] {EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+				ItemStack pieza = zombie.getItemBySlot(slot);
+				if (!pieza.isEmpty()) {
+					piezasZombi++;
+					helper.assertTrue(pieza.is(EquipoPorNivel.EQUIPO_VALIOSO), Component.literal("En nivel 50 la armadura es de netherita: " + pieza));
+					assertCerca(helper, 0.085, zombie.getDropChances().byEquipment(slot), "La netherita se suelta con la chance de vanilla");
+				}
+			}
+			zombie.discard();
+
+			Mob piglin = sinArmadura(spawn(helper, EntityTypes.PIGLIN, EntitySpawnReason.COMMAND));
+			EquipoPorNivel.equipar(piglin, 50);
+			if (!piglin.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
+				cascosPiglin++;
+			}
+			piglin.discard();
+		}
+		helper.assertTrue(piezasZombi > 0, Component.literal("Los zombis de nivel 50 reciben armadura"));
+		helper.assertTrue(cascosPiglin > 0, Component.literal("Los que no se queman sí pueden recibir casco"));
+
+		Mob vindicador = sinArmadura(spawn(helper, EntityTypes.VINDICATOR, EntitySpawnReason.COMMAND));
+		for (int i = 0; i < 10; i++) {
+			EquipoPorNivel.equipar(vindicador, 50);
+		}
+		helper.assertTrue(vindicador.getItemBySlot(EquipmentSlot.CHEST).isEmpty(), Component.literal("Fuera del tag usan_equipo no hay armadura (no se dibujaría)"));
+		helper.succeed();
+	}
+
+	@GameTest
+	public void encantamientosYChanceDeSoltar(GameTestHelper helper) {
+		Zombie bajo = conArma(helper, Items.IRON_SWORD);
+		EquipoPorNivel.equipar(bajo, 1);
+		helper.assertFalse(bajo.getMainHandItem().isEnchanted(), Component.literal("En nivel 1 el poder es 0: no se encanta"));
+
+		Zombie alto = conArma(helper, Items.IRON_SWORD);
+		EquipoPorNivel.equipar(alto, 40);
+		helper.assertTrue(alto.getMainHandItem().isEnchanted(), Component.literal("En nivel 40 el arma sale encantada"));
+		assertCerca(helper, 0.085 + 0.16, alto.getDropChances().byEquipment(EquipmentSlot.MAINHAND), "Chance de soltar el arma en nivel 40");
+
+		Zombie tope = conArma(helper, Items.IRON_SWORD);
+		EquipoPorNivel.equipar(tope, 50);
+		assertCerca(helper, 0.25, tope.getDropChances().byEquipment(EquipmentSlot.MAINHAND), "La chance de soltar topea en 0,25");
+
+		Zombie diamante = conArma(helper, Items.DIAMOND_SWORD);
+		EquipoPorNivel.equipar(diamante, 50);
+		assertCerca(helper, 0.085, diamante.getDropChances().byEquipment(EquipmentSlot.MAINHAND), "El equipo valioso se suelta con la chance de vanilla");
+
+		Zombie garantizado = conArma(helper, Items.IRON_SWORD);
+		garantizado.setGuaranteedDrop(EquipmentSlot.MAINHAND);
+		float antes = garantizado.getDropChances().byEquipment(EquipmentSlot.MAINHAND);
+		EquipoPorNivel.equipar(garantizado, 50);
+		assertCerca(helper, antes, garantizado.getDropChances().byEquipment(EquipmentSlot.MAINHAND), "Lo que vanilla suelta siempre no baja");
+
+		Zombie yaEncantado = conArma(helper, Items.IRON_SWORD);
+		Holder<Enchantment> filo = helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.SHARPNESS);
+		yaEncantado.getMainHandItem().enchant(filo, 1);
+		EquipoPorNivel.equipar(yaEncantado, 50);
+		helper.assertValueEqual(1, yaEncantado.getMainHandItem().getEnchantments().size(), "Lo que encantó vanilla no se vuelve a encantar");
+
+		Mob vex = spawn(helper, EntityTypes.VEX, EntitySpawnReason.COMMAND);
+		EquipoPorNivel.equipar(vex, 50);
+		helper.assertValueEqual(0.0f, vex.getDropChances().byEquipment(EquipmentSlot.MAINHAND), "Lo que vanilla no suelta nunca (la espada del vex) sigue sin soltarse");
+
+		// Por el camino real (ENTITY_LOAD): el esqueleto siempre lleva arco. Los tests corren al lado del spawn, así que el nivel es bajo
+		Mob esqueleto = spawn(helper, EntityTypes.SKELETON, EntitySpawnReason.NATURAL);
+		int nivel = NivelDeMob.nivel(esqueleto);
+		helper.assertTrue(nivel >= 1, Component.literal("El esqueleto aparece con nivel"));
+		assertCerca(helper, Math.min(0.085 + 0.004 * nivel, 0.25), esqueleto.getDropChances().byEquipment(EquipmentSlot.MAINHAND), "Al aparecer también se le ajusta el equipo");
+		helper.succeed();
+	}
+
+	@GameTest
+	public void botinRaro(GameTestHelper helper) {
+		helper.assertValueEqual(List.of(), BotinPorNivel.botinesRaros(0), "Sin nivel no hay botín raro");
+		helper.assertValueEqual(List.of(), BotinPorNivel.botinesRaros(9), "Botín raro en nivel 9");
+		helper.assertValueEqual(List.of(BotinPorNivel.Botin.RARO), BotinPorNivel.botinesRaros(10), "Botín raro en nivel 10");
+		helper.assertValueEqual(List.of(BotinPorNivel.Botin.RARO, BotinPorNivel.Botin.EPICO), BotinPorNivel.botinesRaros(25), "Botín raro en nivel 25");
+		helper.assertValueEqual(List.of(BotinPorNivel.Botin.values()), BotinPorNivel.botinesRaros(40), "Botín raro en nivel 40");
+
+		ServerLevel level = helper.getLevel();
+		ServerPlayer jugador = joinSurvivalPlayer(helper, "saqueador");
+		DamageSource golpe = level.damageSources().playerAttack(jugador);
+
+		// Una tabla con un error de formato no carga y queda vacía sin que nada falle: hay que tirarla para saberlo
+		for (BotinPorNivel.Botin botin : BotinPorNivel.Botin.values()) {
+			helper.assertTrue(level.getServer().reloadableRegistries().getLootTable(botin.tabla()) != LootTable.EMPTY, Component.literal("La tabla " + botin.tabla().identifier() + " cargó"));
+			for (int i = 0; i < 10; i++) {
+				Mob mob = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
+				mob.dropFromLootTable(level, golpe, true, botin.tabla());
+				helper.assertTrue(contarSoltadosMenos(helper, mob, Items.SADDLE) > 0, Component.literal("La tabla " + botin.tabla().identifier() + " siempre da algo"));
+				mob.discard();
+			}
+		}
+
+		// El devastador sólo suelta monturas: cualquier otra cosa es botín raro
+		for (int i = 0; i < 40; i++) {
+			Mob bajo = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
+			NivelDeMob.aplicar(bajo, 9);
+			bajo.hurtServer(level, golpe, 100_000);
+			helper.assertValueEqual(0, contarSoltadosMenos(helper, bajo, Items.SADDLE), "Antes del nivel 10 no hay botín raro");
+		}
+		// 40 devastadores de nivel 50 con 15 %, 10 % y 5 %: que no salga nada tiene probabilidad ~3 en un millón
+		int raros = 0;
+		for (int i = 0; i < 40; i++) {
+			Mob alto = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
+			NivelDeMob.aplicar(alto, 50);
+			alto.hurtServer(level, golpe, 100_000);
+			raros += contarSoltadosMenos(helper, alto, Items.SADDLE);
+		}
+		helper.assertTrue(raros > 0, Component.literal("Los mobs de nivel alto sueltan botín raro"));
+
+		// Sin jugador no hay botín raro, igual que no hay tiradas extra
+		for (int i = 0; i < 40; i++) {
+			Mob sinJugador = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
+			NivelDeMob.aplicar(sinJugador, 50);
+			sinJugador.hurtServer(level, level.damageSources().genericKill(), 100_000);
+			helper.assertValueEqual(0, contarSoltadosMenos(helper, sinJugador, Items.SADDLE), "Muerto sin jugador no suelta botín raro");
+		}
+
+		level.getServer().getPlayerList().remove(jugador);
+		helper.succeed();
+	}
+
+	@GameTest
+	public void archivoDeConfiguracion(GameTestHelper helper) {
+		try {
+			Path carpeta = Files.createTempDirectory("mobspoderosos");
+
+			Path nuevo = carpeta.resolve("nuevo.json");
+			helper.assertValueEqual(Configuracion.POR_DEFECTO, ArchivoDeConfiguracion.leer(nuevo), "Sin archivo se usan los valores por defecto");
+			helper.assertTrue(Files.readString(nuevo).contains("\"bloquesPorNivel\": 150"), Component.literal("Y se crea el archivo con ellos"));
+
+			Path parcial = carpeta.resolve("parcial.json");
+			Files.writeString(parcial, "{\"bloquesPorNivel\": 100, \"vida\": {\"tope\": 2.0}, \"inventada\": 1}");
+			Configuracion leida = ArchivoDeConfiguracion.leer(parcial);
+			helper.assertValueEqual(100, leida.bloquesPorNivel(), "Se lee lo que está en el archivo");
+			assertCerca(helper, 2.0, leida.vida().tope(), "También dentro de un objeto");
+			assertCerca(helper, 0.1, leida.vida().porNivel(), "Lo que falta dentro de un objeto queda por defecto");
+			helper.assertValueEqual(50, leida.nivelMaximo(), "Lo que falta queda por defecto");
+			String reescrito = Files.readString(parcial);
+			helper.assertTrue(reescrito.contains("nivelMaximo") && !reescrito.contains("inventada"), Component.literal("Se reescribe completo y sin las claves que no existen"));
+
+			Path invalido = carpeta.resolve("invalido.json");
+			String contenido = "{\"bloquesPorNivel\": 0}";
+			Files.writeString(invalido, contenido);
+			helper.assertTrue(lanza(() -> ArchivoDeConfiguracion.leer(invalido)), Component.literal("bloquesPorNivel 0 se rechaza"));
+			helper.assertValueEqual(contenido, Files.readString(invalido), "Un archivo rechazado no se pisa");
+
+			Path roto = carpeta.resolve("roto.json");
+			Files.writeString(roto, "{\"bloquesPorNivel\": ");
+			helper.assertTrue(lanza(() -> ArchivoDeConfiguracion.leer(roto)), Component.literal("Un JSON roto se rechaza"));
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+		helper.succeed();
+	}
+
 	private static double chanceConNivel(GameTestHelper helper, EntityType<? extends Mob> tipo, int nivel) {
 		Mob mob = spawn(helper, tipo, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(mob, nivel);
 		double chance = BotinPorNivel.chanceTiradaExtra(mob);
 		mob.discard();
 		return chance;
+	}
+
+	private static <T extends Mob> T sinArmadura(T mob) {
+		for (EquipmentSlot slot : new EquipmentSlot[] {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+			mob.setItemSlot(slot, ItemStack.EMPTY);
+		}
+		return mob;
+	}
+
+	/** Un zombi sin armadura y con el arma dada, con la chance de soltarla de vanilla. */
+	private static Zombie conArma(GameTestHelper helper, Item arma) {
+		Zombie zombie = sinArmadura(spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND));
+		zombie.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(arma));
+		zombie.setDropChance(EquipmentSlot.MAINHAND, 0.085f);
+		return zombie;
+	}
+
+	/** Cuenta lo que soltó el mob salvo el ítem dado, y borra todo para que no lo cuente el próximo. */
+	private static int contarSoltadosMenos(GameTestHelper helper, Mob mob, Item ignorado) {
+		int cantidad = 0;
+		for (ItemEntity soltado : helper.getLevel().getEntitiesOfClass(ItemEntity.class, mob.getBoundingBox().inflate(3), e -> true)) {
+			if (!soltado.getItem().is(ignorado)) {
+				cantidad += soltado.getItem().getCount();
+			}
+			soltado.discard();
+		}
+		return cantidad;
+	}
+
+	private static boolean lanza(Lectura lectura) {
+		try {
+			lectura.leer();
+			return false;
+		} catch (IOException | RuntimeException e) {
+			return true;
+		}
+	}
+
+	private interface Lectura {
+		void leer() throws IOException;
 	}
 
 	private static int matarYContar(GameTestHelper helper, Mob mob, DamageSource fuente, Item item) {

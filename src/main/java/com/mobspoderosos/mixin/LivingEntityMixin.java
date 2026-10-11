@@ -24,13 +24,14 @@ abstract class LivingEntityMixin {
 		return !((Object) this instanceof Mob mob && NivelDeMob.esNombreDelMod(mob));
 	}
 
-	// Acá y no en AFTER_DEATH: esta llamada ya pasó por shouldDropLoot (gamerule mobDrops, crías), y
+	// Tiradas extra y botín raro. Acá y no en AFTER_DEATH: esta llamada ya pasó por shouldDropLoot (gamerule mobDrops, crías), y
 	// matoUnJugador es el mismo criterio que usa vanilla para el loot de "killed_by_player"
 	@WrapOperation(method = "dropAllDeathLoot", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;dropFromLootTable(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;Z)V"))
 	private void mobspoderosos$tiradasExtra(LivingEntity entidad, ServerLevel level, DamageSource source, boolean matoUnJugador, Operation<Void> original) {
 		// Antes que la de vanilla: Mob.dropFromLootTable borra la tabla propia (DeathLootTable) después de usarla
 		if (matoUnJugador && entidad instanceof Mob mob) {
 			BotinPorNivel.soltarTiradasExtra(mob, level, source);
+			BotinPorNivel.soltarBotinRaro(mob, level, source);
 		}
 		original.call(entidad, level, source, matoUnJugador);
 	}

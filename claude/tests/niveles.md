@@ -4,7 +4,7 @@
 
 `MobsPoderososGameTest` tiene **varios tests independientes**, cada uno con `helper.succeed()` al final. A diferencia de Inventario Compartido, acá no hay estado global del servidor: cada test usa sus propios mobs y pueden correr en paralelo.
 
-`gradlew runGameTest` cuenta un test más que los de `MobsPoderososGameTest`: el que sobra es de Fabric. Los tests de loot y experiencia están en [tests: botín](botin.md).
+`gradlew runGameTest` cuenta un test más que los de `MobsPoderososGameTest`: el que sobra es de Fabric. Los tests de loot y experiencia están en [tests: botín](botin.md), los de equipo en [tests: equipo](equipo.md) y los del archivo de configuración en [tests: configuración](configuracion.md).
 
 ## Qué cubre
 
@@ -21,7 +21,7 @@
 
 ## Cosas que no son obvias
 
-- **Los tests corren a ~11 millones de bloques del spawn** (el log dice "tests are now running at position 11503894, …"). Un mob con `NATURAL` ahí sale con el nivel máximo. Por eso los tests de estadísticas usan `COMMAND` (que no escala) y después `NivelDeMob.aplicar` con un nivel fijo.
+- **Los tests corren a millones de bloques de `(0, 0)`, pero el spawn del mundo de tests (`getRespawnData().pos()`) queda al lado:** un mob con `NATURAL` sale con nivel 1 o 2, no con el máximo. No asumas ningún nivel para un spawn real: leelo con `NivelDeMob.nivel` y calculá lo esperado a partir de él. Por eso los tests de estadísticas usan `COMMAND` (que no escala) y después `NivelDeMob.aplicar` con un nivel fijo.
 - **Spawneá con `tipo.spawn(level, pos, motivo)`**, no con `helper.spawn`: el de `EntityType` pasa por `finalizeSpawn` con el motivo que le des, que es lo que se está probando.
 - **Las constantes son `EntityTypes.ZOMBIE`, no `EntityType.ZOMBIE`** (ver [minecraft-26-sin-ofuscar](../general/minecraft-26-sin-ofuscar.md)).
 - **Para simular el `ProtoChunk`** (`recrear`): `saveWithoutId` a un `TagValueOutput`, **sacar `"UUID"`** (con el mismo UUID el mundo rechaza la copia), `EntityType.create(level, LOAD)`, `load`, `snapTo` y `addFreshEntity`. Ese último dispara `ENTITY_LOAD` en el momento.
@@ -32,3 +32,4 @@
 
 - [Niveles](../mod/niveles.md)
 - [Tests: botín](botin.md)
+- [Tests: equipo](equipo.md)
