@@ -44,8 +44,19 @@ public final class ComandoMobsPoderosos {
 		Configuracion config = MobsPoderosos.config().conVariacion(0);
 		ServerLevel level = fuente.getLevel();
 		BlockPos spawn = level.getServer().getRespawnData().pos();
-		int nivel = NivelDeZona.calcular(level.dimension(), spawn, BlockPos.containing(fuente.getPosition()), config, level.getRandom());
-		fuente.sendSuccess(() -> Component.literal("Los mobs de esta zona aparecen con nivel " + nivel), false);
+		int porDistancia = NivelDeZona.calcular(level.dimension(), spawn, BlockPos.containing(fuente.getPosition()), config, level.getRandom());
+		long dias = NivelDeZona.dias(level);
+		int porTiempo = NivelDeZona.porTiempo(dias, config);
+		int nivel = Math.min(porDistancia + porTiempo, config.nivelMaximo());
+		String texto = "Los mobs de esta zona aparecen con nivel " + nivel;
+		if (porTiempo > 0) {
+			texto += " (" + porDistancia + " por la distancia y +" + porTiempo + " por los " + dias + " días del mundo)";
+		}
+		if (config.chanceDeCampeon() > 0 && config.nivelesDeCampeon() > 0) {
+			texto += ". Uno de cada " + Math.round(1 / config.chanceDeCampeon()) + " es un campeón con +" + config.nivelesDeCampeon();
+		}
+		String mensaje = texto;
+		fuente.sendSuccess(() -> Component.literal(mensaje), false);
 		return nivel;
 	}
 

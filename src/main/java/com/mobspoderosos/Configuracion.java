@@ -6,6 +6,10 @@ public record Configuracion(
 		int extraNether,
 		int extraEnd,
 		int variacion,
+		int diasPorNivelExtra,
+		int nivelesPorTiempoMaximos,
+		double chanceDeCampeon,
+		int nivelesDeCampeon,
 		boolean escalarSpawners,
 		boolean nombreSiempreVisible,
 		Escala vida,
@@ -40,6 +44,13 @@ public record Configuracion(
 			20,
 			40,
 			1,
+			// Con el mundo más viejo, el spawn también se pone peligroso: a los 100 días los mobs de al lado
+			// de la base son de nivel 21, lo que pide diamante y algunos puntos de Estadísticas RPG
+			5,
+			20,
+			// Uno de cada veinte mobs aparece 10 niveles por encima de su zona: la sorpresa que obliga a mirar el nombre
+			0.05,
+			10,
 			false,
 			// Un nombre siempre visible se dibuja a través de las paredes: sería un rayos X de mobs en las cuevas
 			false,
@@ -70,8 +81,17 @@ public record Configuracion(
 			0.05);
 
 	public Configuracion conVariacion(int variacion) {
-		return new Configuracion(bloquesPorNivel, nivelMaximo, extraNether, extraEnd, variacion, escalarSpawners,
-				nombreSiempreVisible, vida, danio, armadura, velocidad, rangoDeSeguimiento, resistenciaAlEmpuje,
+		return new Configuracion(bloquesPorNivel, nivelMaximo, extraNether, extraEnd, variacion, diasPorNivelExtra,
+				nivelesPorTiempoMaximos, chanceDeCampeon, nivelesDeCampeon, escalarSpawners, nombreSiempreVisible, vida, danio, armadura, velocidad, rangoDeSeguimiento, resistenciaAlEmpuje,
+				nivelRadioCreeper, radioCreeperExtra, chanceArmaduraExtra, nivelesPorMaterialDeArmadura,
+				cascoParaLosQueSeQueman, poderDeEncantamiento, chanceSoltarEquipo, nivelesPorTiradaExtra,
+				tiradasExtraMaximas, chanceTiradaExtra, botinRaro, botinEpico, botinLegendario, experienciaPorNivel);
+	}
+
+	public Configuracion conExtras(int diasPorNivelExtra, int nivelesPorTiempoMaximos, double chanceDeCampeon, int nivelesDeCampeon) {
+		return new Configuracion(bloquesPorNivel, nivelMaximo, extraNether, extraEnd, variacion, diasPorNivelExtra,
+				nivelesPorTiempoMaximos, chanceDeCampeon, nivelesDeCampeon, escalarSpawners, nombreSiempreVisible,
+				vida, danio, armadura, velocidad, rangoDeSeguimiento, resistenciaAlEmpuje,
 				nivelRadioCreeper, radioCreeperExtra, chanceArmaduraExtra, nivelesPorMaterialDeArmadura,
 				cascoParaLosQueSeQueman, poderDeEncantamiento, chanceSoltarEquipo, nivelesPorTiradaExtra,
 				tiradasExtraMaximas, chanceTiradaExtra, botinRaro, botinEpico, botinLegendario, experienciaPorNivel);
@@ -82,6 +102,10 @@ public record Configuracion(
 		exigir(bloquesPorNivel >= 1, "bloquesPorNivel tiene que ser 1 o más");
 		exigir(nivelMaximo >= 1, "nivelMaximo tiene que ser 1 o más");
 		exigir(variacion >= 0, "variacion no puede ser negativa");
+		exigir(diasPorNivelExtra >= 0, "diasPorNivelExtra no puede ser negativo (0 lo desactiva)");
+		exigir(nivelesPorTiempoMaximos >= 0, "nivelesPorTiempoMaximos no puede ser negativo");
+		exigir(chanceDeCampeon >= 0 && chanceDeCampeon <= 1, "chanceDeCampeon va de 0 a 1");
+		exigir(nivelesDeCampeon >= 0, "nivelesDeCampeon no puede ser negativo");
 		exigir(nivelesPorMaterialDeArmadura >= 1, "nivelesPorMaterialDeArmadura tiene que ser 1 o más");
 		exigir(nivelesPorTiradaExtra >= 1, "nivelesPorTiradaExtra tiene que ser 1 o más");
 		exigir(tiradasExtraMaximas >= 0, "tiradasExtraMaximas no puede ser negativo");

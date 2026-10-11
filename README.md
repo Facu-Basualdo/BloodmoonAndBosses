@@ -1,10 +1,10 @@
 # Mobs Poderosos
 
-Mod de Fabric para **Minecraft Java 26.3** en el que los mobs hostiles aparecen con **niveles**. Cuanto más lejos del spawn del mundo, más nivel tienen: más vida, más daño, más armadura y más velocidad, y aparecen con mejor equipo encantado. El nivel se ve en el nombre del mob: **"Zombi [Nv 7]"**. Los mobs de más nivel también sueltan más loot, ítems raros y más experiencia.
+Mod de Fabric para **Minecraft Java 26.3** en el que los mobs hostiles aparecen con **niveles**. Cuanto más lejos del spawn del mundo y cuanto más viejo es el mundo, más nivel tienen: más vida, más daño, más armadura y más velocidad, y aparecen con mejor equipo encantado. El nivel se ve en el nombre del mob: **"Zombi [Nv 7]"**. Los mobs de más nivel también sueltan más loot, ítems raros y más experiencia.
 
 Cerca de la base el juego se siente casi como vanilla; a varios miles de bloques, salir a explorar es otra cosa.
 
-> **Estado:** versión 0.6.0. Están todas las fases de [docs/plan.md](docs/plan.md): niveles, loot y experiencia, equipo encantado, ítems raros y archivo de configuración.
+> **Estado:** versión 0.7.0. Están todas las fases de [docs/plan.md](docs/plan.md): niveles, loot y experiencia, equipo encantado, ítems raros y archivo de configuración.
 
 ## Cómo funciona en el juego
 
@@ -17,6 +17,9 @@ Cerca de la base el juego se siente casi como vanilla; a varios miles de bloques
 | 100 (máximo, ~9900 bloques) | 180 | 15 | +12 | ×7 | ×6 |
 
 - **El nivel sube 1 cada 100 bloques** desde el spawn del mundo, con una variación de ±1 para que no sean todos iguales.
+- **Con el tiempo:** cada 5 días del mundo, los mobs que aparecen suman 1 nivel, hasta +20 a los 100 días, en cualquier zona. Cuentan los días del reloj del mundo (los que muestra F3): dormir los adelanta, y `/time set` los puede atrasar. Los mobs que ya estaban no cambian.
+- **Campeones:** uno de cada 20 mobs (5 %) aparece con 10 niveles más que su zona. No tiene otra marca: se nota en el nivel y el color del nombre, así que conviene mirarlo antes de pelear.
+- La distancia, el tiempo y los campeones se suman, y todo se corta en el nivel 100. La tabla de arriba es sin el tiempo ni los campeones.
 - **Todo sigue subiendo hasta el nivel 100:** ninguna estadística llega a su tope antes, así que alejarse siempre se nota.
 - **Pensado para jugarse con Estadísticas RPG:** con el equipo y los puntos que se esperan en cada zona, un zombi se mata en 5 o 6 golpes en todo el mundo, y lo que aguantás va bajando hacia el nivel 100. Sin ese mod, la zona de nivel 100 es para pocos: un zombi aguanta 19 golpes de una espada de netherita con Filo V.
 - **Nether:** cada bloque cuenta como 8 (como los portales) y suma 20 niveles. **End:** se mide desde el centro de la isla principal y suma 40.
@@ -60,7 +63,7 @@ Cerca de la base el juego se siente casi como vanilla; a varios miles de bloques
 
 | Comando | Qué hace |
 |---|---|
-| `/mobspoderosos zona` | Muestra el nivel de los mobs en la zona donde estás |
+| `/mobspoderosos zona` | Muestra el nivel de los mobs en la zona donde estás: lo que pone la distancia, lo que suman los días del mundo y la chance de campeón |
 | `/mobspoderosos invocar <entidad> <nivel>` | Aparece un mob con ese nivel (y su equipo) delante tuyo (requiere ser operador) |
 | `/mobspoderosos recargar` | Vuelve a leer `config/mobspoderosos.json` sin reiniciar el servidor (requiere ser operador) |
 
@@ -79,6 +82,8 @@ En el primer arranque se crea **`config/mobspoderosos.json`** con todos los valo
 | `nivelMaximo` | 100 | Nivel máximo |
 | `extraNether` / `extraEnd` | 20 / 40 | Niveles que se suman en el Nether y el End |
 | `variacion` | 1 | Variación al azar del nivel (±) |
+| `diasPorNivelExtra` / `nivelesPorTiempoMaximos` | 5 / 20 | Cada cuántos días del mundo los mobs suman un nivel, y el máximo que suma el tiempo (`diasPorNivelExtra` en 0 lo apaga) |
+| `chanceDeCampeon` / `nivelesDeCampeon` | 0.05 / 10 | Probabilidad de que un mob aparezca como campeón (de 0 a 1), y cuántos niveles extra tiene |
 | `escalarSpawners` | `false` | Si los mobs de spawners también tienen nivel |
 | `nombreSiempreVisible` | `false` | Si el nombre se ve a través de las paredes |
 | `vida`, `danio`, `velocidad`, `rangoDeSeguimiento` | +8 %, +4 %, +0,2 %, +0,5 % por nivel | Porcentaje sobre la base, por nivel y tope (`0.08` = +8 %) |
@@ -129,7 +134,7 @@ El proyecto pide Java 25 (`gradle/gradle-daemon-jvm.properties`). Si Gradle no e
 
 Las pruebas verifican:
 
-- la fórmula del nivel en las tres dimensiones;
+- la fórmula del nivel en las tres dimensiones, el nivel extra por los días del mundo y la chance de campeón;
 - las estadísticas y sus topes;
 - el radio de los creepers;
 - qué motivos de spawn dan nivel y cuáles no;

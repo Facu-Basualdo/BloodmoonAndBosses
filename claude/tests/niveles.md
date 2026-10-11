@@ -11,6 +11,7 @@
 | Test | Qué verifica |
 |---|---|
 | `nivelPorDistancia` | `NivelDeZona.calcular` como función pura: spawn → 1, 1500 bloques → 16, 10000 → 100 (tope), la distancia se mide desde el spawn y no desde `(0, 0)`, Nether ×8 + 20, End desde `(0, 0)` + 40, y con variación 1 queda en ±1 |
+| `nivelPorTiempoYCampeon` | `porTiempo`: 0 a los 4 días, +1 a los 5, +19 a los 99, +20 a los 100 y tope +20 a los 10.000 · con `diasPorNivelExtra` 0 no suma · `esCampeon` con seed fijo: entre 50 y 150 de 2000 al 5 %, y ninguno con chance 0. No prueba el overload con `ServerLevel`: el reloj del mundo de prueba no se controla |
 | `aplicarNivel` | Vida ×2,6 en nivel 20 y vida llena, aplicar dos veces deja **un** modificador, nombre "[Nv 20]" no visible siempre, `isPersistenceRequired()` sigue en `false`, topes en nivel 100 (vida ×9, daño +400 %, armadura +12), un name tag hace que `esNombreDelMod` dé `false` |
 | `creeper` | Radio 3 en nivel 59 y 4 en nivel 60 |
 | `motivosDeSpawn` | `NATURAL` y `JOCKEY` escalan · `SPAWNER`, `SPAWN_ITEM_USE` y el guardián anciano con `STRUCTURE` (tag `sin_nivel`) no · un aldeano con `NATURAL` queda sin nivel **y sin `PENDIENTE`** |

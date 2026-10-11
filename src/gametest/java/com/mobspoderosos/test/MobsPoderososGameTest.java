@@ -86,6 +86,32 @@ public class MobsPoderososGameTest {
 	}
 
 	@GameTest
+	public void nivelPorTiempoYCampeon(GameTestHelper helper) {
+		Configuracion config = MobsPoderosos.config().conExtras(5, 20, 0.05, 10);
+		helper.assertValueEqual(0, NivelDeZona.porTiempo(4, config), "Antes de los 5 días no suma");
+		helper.assertValueEqual(1, NivelDeZona.porTiempo(5, config), "A los 5 días, +1");
+		helper.assertValueEqual(19, NivelDeZona.porTiempo(99, config), "A los 99 días, +19");
+		helper.assertValueEqual(20, NivelDeZona.porTiempo(100, config), "A los 100 días, +20");
+		helper.assertValueEqual(20, NivelDeZona.porTiempo(10_000, config), "Topea en nivelesPorTiempoMaximos");
+		helper.assertValueEqual(0, NivelDeZona.porTiempo(10_000, config.conExtras(0, 20, 0.05, 10)), "Con diasPorNivelExtra en 0 no suma nunca");
+
+		// 2000 tiradas al 5 %: en promedio 100, y salir de 50–150 está a más de 5 desvíos
+		RandomSource random = RandomSource.create(42);
+		int campeones = 0;
+		for (int i = 0; i < 2000; i++) {
+			if (NivelDeZona.esCampeon(config, random)) {
+				campeones++;
+			}
+		}
+		helper.assertTrue(campeones > 50 && campeones < 150, Component.literal("Uno de cada veinte es campeón (salieron " + campeones + " de 2000)"));
+		Configuracion sinCampeones = config.conExtras(5, 20, 0, 10);
+		for (int i = 0; i < 200; i++) {
+			helper.assertFalse(NivelDeZona.esCampeon(sinCampeones, random), Component.literal("Con chanceDeCampeon en 0 no hay campeones"));
+		}
+		helper.succeed();
+	}
+
+	@GameTest
 	public void aplicarNivel(GameTestHelper helper) {
 		Zombie zombie = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
 		helper.assertFalse(zombie.hasAttached(NivelDeMob.NIVEL), Component.literal("COMMAND no escala solo"));

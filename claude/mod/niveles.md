@@ -48,7 +48,26 @@ nivel = 1 + floor(distanciaHorizontal / bloquesPorNivel) + extraDimensión ± va
 
 Con `bloquesPorNivel` 100 y `nivelMaximo` 100, el tope se alcanza a ~9900 bloques del spawn.
 
-`/mobspoderosos zona` usa `config.conVariacion(0)`: muestra el nivel de la zona, no una tirada.
+`/mobspoderosos zona` usa `config.conVariacion(0)`: muestra el nivel de la zona, no una tirada. Suma el del tiempo (es el mismo para todos) y sólo menciona la chance de campeón.
+
+### Tiempo y campeones
+
+**El overload con `ServerLevel` suma dos cosas a la zona, y vuelve a cortar en `nivelMaximo`:**
+
+```
+nivel = clamp(zona + porTiempo(días) + (campeón ? nivelesDeCampeon : 0), 1, nivelMaximo)
+```
+
+| Qué | Cómo | Por defecto |
+|---|---|---|
+| `NivelDeZona.porTiempo(dias, config)` | `min(dias / diasPorNivelExtra, nivelesPorTiempoMaximos)`; con `diasPorNivelExtra` 0, nada | +1 cada 5 días, tope +20 |
+| `NivelDeZona.esCampeon(config, random)` | Una tirada con el random del mob | 5 %, +10 niveles |
+
+- **Los días salen de `level.getOverworldClockTime() / SharedConstants.TICKS_PER_GAME_DAY`**, el mismo reloj que usa vanilla en `ServerLevel.getCurrentDifficultyAt` (verificado con `javap`). En 26.3 `Level` ya no tiene `getDayTime`: los relojes son `WorldClocks`. Es global, así que el Nether y el End usan los días del overworld. Dormir lo adelanta y `/time set` lo puede atrasar; `getGameTime` no se usa porque no cuenta las noches dormidas.
+- **Las dos funciones son puras y aparte de `calcular(dimension, …)`**, que sigue siendo sólo la zona: así los tests de distancia no dependen del reloj del mundo de prueba ni de la tirada de campeón.
+- **El nivel se fija al aparecer:** que pasen días no cambia a los mobs que ya están, igual que la config.
+- **El campeón no tiene marca ni attachment propio:** es un mob de más nivel. Si tuviera un nombre distinto, `esNombreDelMod` (que compara con `nombre(tipo, nivel)`) dejaría de reconocerlo y las conversiones lo perderían.
+- El tiempo también cuenta para el balance con Estadísticas RPG: a los 100 días, al lado del spawn aparecen mobs de nivel 21.
 
 ## Estadísticas
 

@@ -1,6 +1,6 @@
 # Mobs Poderosos — mod de Minecraft
 
-Mod de Fabric para **Minecraft Java 26.3** que hace aparecer a los mobs hostiles con **niveles**: cuanto más lejos del spawn del mundo, más vida, daño y armadura tienen, y mejor loot dan. El nivel se ve en el nombre ("Zombi [Nv 7]"). Java 25, Gradle 9.7 + Fabric Loom 1.18, Fabric Loader 0.19.5, Fabric API 0.162.0+26.3. Toda la lógica corre en el servidor: los jugadores no necesitan instalar nada.
+Mod de Fabric para **Minecraft Java 26.3** que hace aparecer a los mobs hostiles con **niveles**: cuanto más lejos del spawn del mundo y más días tiene el mundo, más vida, daño y armadura tienen, y mejor loot dan; además, algunos aparecen como campeones con niveles de más. El nivel se ve en el nombre ("Zombi [Nv 7]"). Java 25, Gradle 9.7 + Fabric Loom 1.18, Fabric Loader 0.19.5, Fabric API 0.162.0+26.3. Toda la lógica corre en el servidor: los jugadores no necesitan instalar nada.
 
 ## Cómo obtener contexto
 
@@ -35,7 +35,7 @@ El mismo tema en distintas áreas usa el mismo nombre de archivo (`claude/mod/ni
 
 | Feature | Mod | Tests |
 |---|---|---|
-| Niveles (cuándo se asignan, fórmula, estadísticas, nombre, conversiones) | [niveles](claude/mod/niveles.md) | [niveles](claude/tests/niveles.md) |
+| Niveles (cuándo se asignan, fórmula, tiempo y campeones, estadísticas, nombre, conversiones) | [niveles](claude/mod/niveles.md) | [niveles](claude/tests/niveles.md) |
 | Botín y experiencia (tiradas extra, tags `sin_tiradas_extra` y `tiradas_extra_por_chance`, botín raro, experiencia por nivel) | [botin](claude/mod/botin.md) | [botin](claude/tests/botin.md) |
 | Equipo (armadura por rango, encantamientos, chance de soltar, tags `usan_equipo` y `equipo_valioso`) | [equipo](claude/mod/equipo.md) | [equipo](claude/tests/equipo.md) |
 | Configuración (`config/mobspoderosos.json`, `/mobspoderosos recargar`) | [configuracion](claude/mod/configuracion.md) | [configuracion](claude/tests/configuracion.md) |

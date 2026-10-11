@@ -20,10 +20,10 @@ Los gametests ([tests: niveles](../tests/niveles.md)) cubren la lógica, pero no
 
 | Comando | Para qué |
 |---|---|
-| `/mobspoderosos zona` | Nivel de la zona donde estás (sin la variación de ±1) |
+| `/mobspoderosos zona` | Nivel de la zona donde estás (sin la variación de ±1), con lo que suman los días del mundo |
 | `/mobspoderosos invocar <entidad> <nivel>` | Aparece el mob delante tuyo con ese nivel y su equipo: evita caminar miles de bloques. Requiere op |
 | `/mobspoderosos recargar` | Vuelve a leer `run/config/mobspoderosos.json`. Requiere op. Los mobs que ya están no cambian de estadísticas ni de equipo |
-| `/tp @s 4500 ~ 0` | Ir a una zona de nivel ~31 para ver los spawns naturales |
+| `/tp @s 4500 ~ 0` | Ir a una zona de nivel ~46 (más lo que sume el tiempo) para ver los spawns naturales |
 
 ## Qué mirar
 
