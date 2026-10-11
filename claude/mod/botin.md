@@ -2,7 +2,7 @@
 
 [← Índice Mod](INDICE.md)
 
-Síntomas que esto evita: **una granja automática de mobs con nivel suelta el triple de loot sin que nadie los toque**, **una tabla de ítems raros con un error de formato no suelta nada y no hay ningún error visible**, **`/gamerule mobDrops false` sigue soltando ítems**, **un evocador de nivel 30 suelta cuatro tótems seguros**, o **un mob con `DeathLootTable` propia suelta una vez su tabla y las tiradas extra salen de la tabla de su tipo**.
+Síntomas que esto evita: **una granja automática de mobs con nivel suelta el triple de loot sin que nadie los toque**, **una tabla de ítems raros con un error de formato no suelta nada y no hay ningún error visible**, **`/gamerule mobDrops false` sigue soltando ítems**, **un evocador de nivel 60 suelta cuatro tótems seguros**, o **un mob con `DeathLootTable` propia suelta una vez su tabla y las tiradas extra salen de la tabla de su tipo**.
 
 ## Tiradas extra: dentro de dropAllDeathLoot, no en AFTER_DEATH
 
@@ -35,19 +35,19 @@ dropExperience(level, source.getEntity());
 
 ### Cuántas tiradas
 
-`tiradasExtra(nivel) = min(nivel / nivelesPorTiradaExtra, tiradasExtraMaximas)`, con `8` y `6` en `Configuracion.POR_DEFECTO`.
+`tiradasExtra(nivel) = min(nivel / nivelesPorTiradaExtra, tiradasExtraMaximas)`, con `16` y `6` en `Configuracion.POR_DEFECTO`.
 
 | Nivel | Tiradas extra | Total de la tabla |
 |---|---|---|
-| 1–7 | 0 | ×1 |
-| 8–15 | 1 | ×2 |
-| 16–23 | 2 | ×3 |
-| 24–31 | 3 | ×4 |
-| 32–39 | 4 | ×5 |
-| 40–47 | 5 | ×6 |
-| 48–50 | 6 (tope) | ×7 |
+| 1–15 | 0 | ×1 |
+| 16–31 | 1 | ×2 |
+| 32–47 | 2 | ×3 |
+| 48–63 | 3 | ×4 |
+| 64–79 | 4 | ×5 |
+| 80–95 | 5 | ×6 |
+| 96–100 | 6 (tope) | ×7 |
 
-**Los dos números van juntos con `nivelMaximo` (50):** con un paso de 10, el tope de 6 nunca se alcanzaría. Con el máximo por defecto el tope no corta nada; está para cuando se sube `nivelMaximo` en la config.
+**Los dos números van juntos con `nivelMaximo` (100):** con un paso de 20, el tope de 6 nunca se alcanzaría. Con el máximo por defecto el tope no corta nada; está para cuando se sube `nivelMaximo` en la config.
 
 ### Chance de cada tirada: los tags
 
@@ -56,22 +56,22 @@ dropExperience(level, source.getEntity());
 | Tag (`data/mobspoderosos/tags/entity_type/`) | Mobs | Chance de cada tirada | Por qué |
 |---|---|---|---|
 | — | Todos los demás | 1 (segura) | |
-| `tiradas_extra_por_chance` (`TIRADAS_EXTRA_POR_CHANCE`) | `evoker` | `chanceTiradaExtra.en(nivel)`: +1 % por nivel, tope 50 % | Su tabla siempre da un tótem: con tiradas seguras, uno de nivel 30 soltaría 4. Así es ~0,9 tótems extra en promedio |
+| `tiradas_extra_por_chance` (`TIRADAS_EXTRA_POR_CHANCE`) | `evoker` | `chanceTiradaExtra.en(nivel)`: +0,5 % por nivel, tope 50 % | Su tabla siempre da un tótem: con tiradas seguras, uno de nivel 60 soltaría 4. Así es ~0,9 tótems extra en promedio |
 | `sin_tiradas_extra` (`SIN_TIRADAS_EXTRA`) | `wither_skeleton`, `shulker` | 0 | En el Nether los esqueletos del Wither casi siempre tienen nivel alto: las calaveras serían triviales. Los caparazones son la única fuente de shulker boxes |
 
 - **Si un mob está en los dos tags, gana `sin_tiradas_extra`** (se chequea primero).
 - Los dos se pueden cambiar con un datapack (`"replace": false`). **No afectan al botín raro**, que sale de tablas del mod y no multiplica la del mob.
-- **La chance es por tirada, no una sola para todas:** un evocador de nivel 50 tiene 6 tiradas al 50 %, entre 0 y 6 tótems extra (3 en promedio).
+- **La chance es por tirada, no una sola para todas:** un evocador de nivel 100 tiene 6 tiradas al 50 %, entre 0 y 6 tótems extra (3 en promedio).
 
 ## Botín raro
 
-**Después de las tiradas extra, `BotinPorNivel.soltarBotinRaro` sortea tres tablas propias, cada una por separado**: un mob de nivel 40 puede soltar las tres a la vez.
+**Después de las tiradas extra, `BotinPorNivel.soltarBotinRaro` sortea tres tablas propias, cada una por separado**: un mob de nivel 80 puede soltar las tres a la vez.
 
 | `BotinPorNivel.Botin` | Tabla (`data/mobspoderosos/loot_table/`) | Desde (`nivelMinimo`) | Chance |
 |---|---|---|---|
-| `RARO` | `botin_por_nivel/raro.json` | 10 | 15 % |
-| `EPICO` | `botin_por_nivel/epico.json` | 25 | 10 % |
-| `LEGENDARIO` | `botin_por_nivel/legendario.json` | 40 | 5 % |
+| `RARO` | `botin_por_nivel/raro.json` | 20 | 15 % |
+| `EPICO` | `botin_por_nivel/epico.json` | 50 | 10 % |
+| `LEGENDARIO` | `botin_por_nivel/legendario.json` | 80 | 5 % |
 
 - Los números van en `Configuracion` (`botinRaro`, `botinEpico`, `botinLegendario`, records `Rareza`). Cada `Botin` los lee de la configuración actual, no al cargar la clase, así que `/mobspoderosos recargar` los cambia enseguida.
 - `botinesRaros(nivel)` es la lista de las que tocan, y es lo que prueban los tests. Con nivel 0 (sin nivel) da vacía aunque un `nivelMinimo` mal configurado fuera 0.

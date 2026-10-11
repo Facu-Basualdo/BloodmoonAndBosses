@@ -2,7 +2,7 @@
 
 [← Índice Mod](INDICE.md)
 
-Síntomas que esto evita: **los vex empiezan a soltar su espada de hierro**, **los zombis con casco sobreviven de día y llenan el límite de mobs**, **un pillager tiene armadura que nadie ve**, **una espada encantada por vanilla sale con dos encantamientos incompatibles**, o **la netherita encantada sale gratis matando mobs de nivel 40**.
+Síntomas que esto evita: **los vex empiezan a soltar su espada de hierro**, **los zombis con casco sobreviven de día y llenan el límite de mobs**, **un pillager tiene armadura que nadie ve**, **una espada encantada por vanilla sale con dos encantamientos incompatibles**, o **la netherita encantada sale gratis matando mobs de nivel 80**.
 
 ## Cuándo se pone
 
@@ -21,16 +21,16 @@ Síntomas que esto evita: **los vex empiezan a soltar su espada de hierro**, **l
 
 **La armadura nueva va sólo a los mobs del tag `mobspoderosos:usan_equipo`** (`EquipoPorNivel.USAN_EQUIPO`): zombis, husks, ahogados, aldeanos zombi, piglins zombificados, esqueletos, strays, bogged, parched, esqueletos del Wither, piglins y piglins brutos. Son los que **dibujan** la armadura: los illagers y el vex no tienen capa de armadura en el modelo, así que se la pondría invisible (y igual protegería).
 
-- Por cada ranura de armadura **vacía**, chance `chanceArmaduraExtra.en(nivel)` (1,5 % por nivel, tope 50 %). Lo que puso vanilla no se toca.
-- El material sale de `EquipoPorNivel.material(nivel, random)`: un rango cada `nivelesPorMaterialDeArmadura` (10) niveles, con tope en el último.
+- Por cada ranura de armadura **vacía**, chance `chanceArmaduraExtra.en(nivel)` (0,75 % por nivel, tope 50 %, desde el nivel 67). Lo que puso vanilla no se toca.
+- El material sale de `EquipoPorNivel.material(nivel, random)`: un rango cada `nivelesPorMaterialDeArmadura` (20) niveles, con tope en el último.
 
 | Rango | Material |
 |---|---|
-| 0 (1–9) | cuero |
-| 1 (10–19) | cadena **u** oro, uno por mob (no piezas mezcladas) |
-| 2 (20–29) | hierro |
-| 3 (30–39) | diamante |
-| 4+ (40+) | netherita |
+| 0 (1–19) | cuero |
+| 1 (20–39) | cadena **u** oro, uno por mob (no piezas mezcladas) |
+| 2 (40–59) | hierro |
+| 3 (60–79) | diamante |
+| 4+ (80+) | netherita |
 
 - **Sin casco para `EntityTypeTags.BURN_IN_DAYLIGHT`** salvo que `cascoParaLosQueSeQueman` sea `true`. Vanilla protege del sol a quien tiene algo en la cabeza: con casco, zombis y esqueletos sobreviven de día, ocupan el límite de mobs y el ciclo día/noche deja de importar. El casco que vanilla puso por su cuenta se queda.
 
@@ -38,20 +38,20 @@ Síntomas que esto evita: **los vex empiezan a soltar su espada de hierro**, **l
 
 **Se encanta todo el equipo que tenga el mob** (manos y armadura, `CON_EQUIPO`), esté o no en `usan_equipo`: la ballesta del pillager, el hacha del vindicador o la espada del vex también escalan. Es la única forma de que escale el daño a distancia: las flechas no usan `ATTACK_DAMAGE`, y con un arco esto da Poder.
 
-- Poder `(int) poderDeEncantamiento.en(nivel)` (0,5 por nivel, tope 30). **Con poder 0 (nivel 1) no se encanta nada.**
+- Poder `(int) poderDeEncantamiento.en(nivel)` (0,3 por nivel, tope 30 en el nivel 100). **Con poder 0 (nivel 1) no se encanta nada.**
 - `EnchantmentHelper.enchantItem(random, item, poder, registryAccess, Optional<HolderSet>)` con **`EnchantmentTags.ON_MOB_SPAWN_EQUIPMENT`**, el mismo tag que usa vanilla: sin Reparación, sin maldiciones ni otros de tesoro.
 - **Lo ya encantado (por vanilla) se saltea.** `enchantItem` llama a `selectEnchantment`, que no mira lo que el ítem ya tiene: sobre una espada con Filo podría sumar Golpeo, que son incompatibles.
 - `enchantItem` encanta el `ItemStack` en el lugar. Después se llama a `setItemSlot` con el mismo stack, como hace vanilla en `enchantSpawnedEquipment`. `onEquipItem` no suena porque el stack viejo y el nuevo son el mismo.
 
 ## Chance de soltar el equipo
 
-**`subirChancesDeSoltar` suma `chanceSoltarEquipo.porNivel × nivel` a la chance que ya tenía la ranura, con tope `chanceSoltarEquipo.tope`** (`Escala.sobre`). Con los valores por defecto: 0,085 de vanilla + 0,4 % por nivel, tope 0,25.
+**`subirChancesDeSoltar` suma `chanceSoltarEquipo.porNivel × nivel` a la chance que ya tenía la ranura, con tope `chanceSoltarEquipo.tope`** (`Escala.sobre`). Con los valores por defecto: 0,085 de vanilla + 0,2 % por nivel, tope 0,25 (desde el nivel 83).
 
 | Caso | Qué pasa | Por qué |
 |---|---|---|
 | Chance actual **0** | No se toca | Vanilla la pone en 0 a propósito: el vex nunca suelta su espada. Subirla regalaba espadas de hierro (lo encontró un gametest) |
 | Chance actual ≥ tope (2.0 de `setGuaranteedDrop`, lo que el mob levantó) | No se toca | `nueva > actual` es falso: la chance nunca baja |
-| Ítem en el tag `mobspoderosos:equipo_valioso` | No se toca (queda en 0,085) | Diamante, netherita y el tridente. Si no, en nivel 40+ la armadura de netherita encantada sale en uno de cada cuatro mobs |
+| Ítem en el tag `mobspoderosos:equipo_valioso` | No se toca (queda en 0,085) | Diamante, netherita y el tridente. Si no, en nivel 80+ la armadura de netherita encantada sale en uno de cada cuatro mobs |
 | El resto | Sube | |
 
 - Las chances se leen con `mob.getDropChances().byEquipment(slot)` y se escriben con `setDropChance`. En 26.3 viven en el record `DropChances`, que vanilla guarda en el NBT: sobreviven al recargar el chunk.

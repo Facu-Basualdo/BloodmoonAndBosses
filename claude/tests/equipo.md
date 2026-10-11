@@ -9,10 +9,10 @@ Tres tests de `MobsPoderososGameTest` cubren `EquipoPorNivel`. **La armadura es 
 | Test | Qué verifica |
 |---|---|
 | `materialDeArmadura` | `EquipoPorNivel.material` como función: cuero en 9, cadena u oro en 15 (20 tiradas, nunca otra cosa), hierro en 20, diamante en 39, netherita en 40 y en 200 (tope) |
-| `armaduraPorNivel` | 20 zombis de nivel 50: **ninguno** con casco (se queman al sol), y alguna pieza en las otras ranuras, de netherita y con chance de soltar 0,085 · 20 piglins de nivel 50: alguno con casco · un vindicador equipado 10 veces sigue sin armadura (no está en `usan_equipo`) |
-| `encantamientosYChanceDeSoltar` | Nivel 1 no encanta (poder 0) · nivel 40 sí · chance de soltar el arma: 0,245 en 40, 0,25 (tope) en 50 · espada de diamante (`equipo_valioso`) queda en 0,085 · `setGuaranteedDrop` no baja · un arma con Filo 1 sigue con un solo encantamiento · la espada del vex sigue en 0 · un esqueleto con `NATURAL` sale con la chance de su nivel (camino real por `ENTITY_LOAD`) |
+| `armaduraPorNivel` | 20 zombis de nivel 100: **ninguno** con casco (se queman al sol), y alguna pieza en las otras ranuras, de netherita y con chance de soltar 0,085 · 20 piglins de nivel 100: alguno con casco · un vindicador equipado 10 veces sigue sin armadura (no está en `usan_equipo`) |
+| `encantamientosYChanceDeSoltar` | Nivel 1 no encanta (poder 0) · nivel 40 sí · chance de soltar el arma: 0,165 en 40, 0,25 (tope) en 100 · espada de diamante (`equipo_valioso`) queda en 0,085 · `setGuaranteedDrop` no baja · un arma con Filo 1 sigue con un solo encantamiento · la espada del vex sigue en 0 · un esqueleto con `NATURAL` sale con la chance de su nivel (camino real por `ENTITY_LOAD`) |
 
-**No cubre** que se vea la armadura en el cliente ni el balance de pelear contra un mob de nivel 40 con netherita: eso es a mano (ver [probar en el juego](../general/probar-en-el-juego.md)).
+**No cubre** que se vea la armadura en el cliente ni el balance de pelear contra un mob de nivel 80 con netherita: eso es a mano (ver [probar en el juego](../general/probar-en-el-juego.md)).
 
 ## Cosas que no son obvias
 

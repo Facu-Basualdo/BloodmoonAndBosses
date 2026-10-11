@@ -2,7 +2,7 @@
 
 [← Hub](../../CLAUDE.md)
 
-Los gametests ([tests: niveles](../tests/niveles.md)) cubren la lógica, pero no muestran cómo se ve el nombre en el cliente, ni si un mob de nivel 40 es divertido o injusto. Para eso hace falta un servidor y un cliente.
+Los gametests ([tests: niveles](../tests/niveles.md)) cubren la lógica, pero no muestran cómo se ve el nombre en el cliente, ni si un mob de nivel 80 es divertido o injusto. Para eso hace falta un servidor y un cliente.
 
 ## Pasos
 
@@ -29,11 +29,11 @@ Los gametests ([tests: niveles](../tests/niveles.md)) cubren la lógica, pero no
 
 - Que el nombre aparezca **al mirar** al mob (por defecto no se ve a través de las paredes) y con el color del rango.
 - La vida con F3 + daño o con `/data get entity @e[limit=1,sort=nearest] Health`.
-- Que un creeper de nivel 30+ rompa un radio más grande.
+- Que un creeper de nivel 60+ rompa un radio más grande.
 - Ahogar un zombi con nivel: el ahogado tiene que decir "Ahogado [Nv N]", no "Zombi".
 - Curar un aldeano zombi con nivel: el aldeano queda sin nombre.
 - `/mobspoderosos invocar skeleton 45`: armadura de netherita encantada **sin casco**, y el arco encantado.
-- Matar mobs de nivel 40+ y ver que a veces sueltan ítems raros; matarlos con `/kill` y ver que no.
+- Matar mobs de nivel 80+ y ver que a veces sueltan ítems raros; matarlos con `/kill` y ver que no.
 - Editar `run/config/mobspoderosos.json` con un error (por ejemplo `"bloquesPorNivel": 0`), `/mobspoderosos recargar`: tiene que fallar con el motivo en el chat y el archivo tiene que quedar como estaba.
 - **Con un cliente vanilla sin el mod:** todo lo anterior tiene que verse igual. El mod no tiene que hacer falta del lado del cliente.
 

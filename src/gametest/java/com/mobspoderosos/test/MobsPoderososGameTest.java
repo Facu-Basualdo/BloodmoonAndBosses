@@ -69,18 +69,18 @@ public class MobsPoderososGameTest {
 		RandomSource random = RandomSource.create(42);
 
 		helper.assertValueEqual(1, NivelDeZona.calcular(Level.OVERWORLD, BlockPos.ZERO, BlockPos.ZERO, fija, random), "Nivel en el spawn");
-		helper.assertValueEqual(11, NivelDeZona.calcular(Level.OVERWORLD, BlockPos.ZERO, new BlockPos(1500, 70, 0), fija, random), "Nivel a 1500 bloques");
-		helper.assertValueEqual(50, NivelDeZona.calcular(Level.OVERWORLD, BlockPos.ZERO, new BlockPos(0, 70, 7500), fija, random), "Nivel a 7500 bloques (tope)");
-		helper.assertValueEqual(11, NivelDeZona.calcular(Level.OVERWORLD, new BlockPos(1000, 64, 0), new BlockPos(2500, 64, 0), fija, random), "La distancia se mide desde el spawn, no desde (0, 0)");
-		// 100 bloques del Nether son 800 del overworld: 1 + 5 + 10
-		helper.assertValueEqual(16, NivelDeZona.calcular(Level.NETHER, BlockPos.ZERO, new BlockPos(100, 64, 0), fija, random), "El Nether escala ×8 y suma su extra");
-		// En el End el spawn del overworld no cuenta: 1 + 6 + 20
-		helper.assertValueEqual(27, NivelDeZona.calcular(Level.END, new BlockPos(5000, 64, 0), new BlockPos(1000, 64, 0), fija, random), "El End mide desde (0, 0)");
+		helper.assertValueEqual(16, NivelDeZona.calcular(Level.OVERWORLD, BlockPos.ZERO, new BlockPos(1500, 70, 0), fija, random), "Nivel a 1500 bloques");
+		helper.assertValueEqual(100, NivelDeZona.calcular(Level.OVERWORLD, BlockPos.ZERO, new BlockPos(0, 70, 10000), fija, random), "Nivel a 10000 bloques (tope)");
+		helper.assertValueEqual(16, NivelDeZona.calcular(Level.OVERWORLD, new BlockPos(1000, 64, 0), new BlockPos(2500, 64, 0), fija, random), "La distancia se mide desde el spawn, no desde (0, 0)");
+		// 100 bloques del Nether son 800 del overworld: 1 + 8 + 20
+		helper.assertValueEqual(29, NivelDeZona.calcular(Level.NETHER, BlockPos.ZERO, new BlockPos(100, 64, 0), fija, random), "El Nether escala ×8 y suma su extra");
+		// En el End el spawn del overworld no cuenta: 1 + 10 + 40
+		helper.assertValueEqual(51, NivelDeZona.calcular(Level.END, new BlockPos(5000, 64, 0), new BlockPos(1000, 64, 0), fija, random), "El End mide desde (0, 0)");
 
 		Configuracion variable = MobsPoderosos.config().conVariacion(1);
 		for (int i = 0; i < 50; i++) {
 			int nivel = NivelDeZona.calcular(Level.OVERWORLD, BlockPos.ZERO, new BlockPos(1500, 70, 0), variable, random);
-			helper.assertTrue(nivel >= 10 && nivel <= 12, Component.literal("Con variación el nivel queda en 11 ± 1 (dio " + nivel + ")"));
+			helper.assertTrue(nivel >= 15 && nivel <= 17, Component.literal("Con variación el nivel queda en 16 ± 1 (dio " + nivel + ")"));
 		}
 		helper.succeed();
 	}
@@ -92,8 +92,8 @@ public class MobsPoderososGameTest {
 
 		NivelDeMob.aplicar(zombie, 20);
 		NivelDeMob.aplicar(zombie, 20);
-		assertCerca(helper, 60, zombie.getMaxHealth(), "Vida máxima de un zombi de nivel 20 (20 × 3)");
-		assertCerca(helper, 60, zombie.getHealth(), "Aparece con la vida llena");
+		assertCerca(helper, 52, zombie.getMaxHealth(), "Vida máxima de un zombi de nivel 20 (20 × 2,6)");
+		assertCerca(helper, 52, zombie.getHealth(), "Aparece con la vida llena");
 		helper.assertValueEqual(1, zombie.getAttribute(Attributes.MAX_HEALTH).getModifiers().size(), "Aplicar dos veces no apila modificadores");
 		helper.assertValueEqual(20, NivelDeMob.nivel(zombie), "Nivel guardado en el attachment");
 		helper.assertTrue(zombie.getCustomName().getString().endsWith("[Nv 20]"), Component.literal("El nombre lleva el nivel: " + zombie.getCustomName().getString()));
@@ -101,12 +101,12 @@ public class MobsPoderososGameTest {
 		helper.assertTrue(NivelDeMob.esNombreDelMod(zombie), Component.literal("El nombre es el del mod"));
 		helper.assertFalse(zombie.isPersistenceRequired(), Component.literal("El nombre puesto por el mod no evita el despawn"));
 
-		NivelDeMob.aplicar(zombie, 50);
-		assertCerca(helper, 100, zombie.getMaxHealth(), "La vida topea en ×5");
+		NivelDeMob.aplicar(zombie, 100);
+		assertCerca(helper, 180, zombie.getMaxHealth(), "La vida topea en ×9");
 		AttributeModifier danio = zombie.getAttribute(Attributes.ATTACK_DAMAGE).getModifier(MobsPoderosos.id("nivel"));
-		assertCerca(helper, 1.0, danio.amount(), "El daño topea en +100 %");
+		assertCerca(helper, 4.0, danio.amount(), "El daño topea en +400 %");
 		AttributeModifier armadura = zombie.getAttribute(Attributes.ARMOR).getModifier(MobsPoderosos.id("nivel"));
-		assertCerca(helper, 8, armadura.amount(), "La armadura topea en +8");
+		assertCerca(helper, 12, armadura.amount(), "La armadura topea en +12");
 
 		zombie.setCustomName(Component.literal("Pepe"));
 		helper.assertFalse(NivelDeMob.esNombreDelMod(zombie), Component.literal("Con un name tag el nombre deja de ser del mod"));
@@ -117,10 +117,10 @@ public class MobsPoderososGameTest {
 	public void creeper(GameTestHelper helper) {
 		Creeper debil = spawn(helper, EntityTypes.CREEPER, EntitySpawnReason.COMMAND);
 		Creeper fuerte = spawn(helper, EntityTypes.CREEPER, EntitySpawnReason.COMMAND);
-		NivelDeMob.aplicar(debil, 29);
-		NivelDeMob.aplicar(fuerte, 30);
-		helper.assertValueEqual(3, ((CreeperAccessor) debil).mobspoderosos$getExplosionRadius(), "Radio de un creeper de nivel 29");
-		helper.assertValueEqual(4, ((CreeperAccessor) fuerte).mobspoderosos$getExplosionRadius(), "Radio de un creeper de nivel 30");
+		NivelDeMob.aplicar(debil, 59);
+		NivelDeMob.aplicar(fuerte, 60);
+		helper.assertValueEqual(3, ((CreeperAccessor) debil).mobspoderosos$getExplosionRadius(), "Radio de un creeper de nivel 59");
+		helper.assertValueEqual(4, ((CreeperAccessor) fuerte).mobspoderosos$getExplosionRadius(), "Radio de un creeper de nivel 60");
 		helper.succeed();
 	}
 
@@ -158,7 +158,7 @@ public class MobsPoderososGameTest {
 		Zombie recargado = recrear(level, cargado, pos);
 		helper.assertValueEqual(33, NivelDeMob.nivel(recargado), "El nivel sobrevive a guardar y cargar");
 		helper.assertValueEqual(1, recargado.getAttribute(Attributes.MAX_HEALTH).getModifiers().size(), "Los modificadores no se duplican al recargar");
-		assertCerca(helper, 20 * 4.3, recargado.getMaxHealth(), "La vida máxima de nivel 33 se conserva");
+		assertCerca(helper, 20 * 3.64, recargado.getMaxHealth(), "La vida máxima de nivel 33 se conserva");
 		helper.succeed();
 	}
 
@@ -170,7 +170,7 @@ public class MobsPoderososGameTest {
 		});
 		helper.assertValueEqual(7, NivelDeMob.nivel(ahogado), "El ahogado conserva el nivel del zombi");
 		helper.assertTrue(NivelDeMob.esNombreDelMod(ahogado), Component.literal("Y su nombre es el de ahogado: " + ahogado.getCustomName().getString()));
-		assertCerca(helper, 34, ahogado.getMaxHealth(), "Con las estadísticas de nivel 7");
+		assertCerca(helper, 31.2, ahogado.getMaxHealth(), "Con las estadísticas de nivel 7");
 
 		Zombie bautizado = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(bautizado, 9);
@@ -202,16 +202,16 @@ public class MobsPoderososGameTest {
 
 	@GameTest
 	public void tiradasExtra(GameTestHelper helper) {
-		helper.assertValueEqual(0, BotinPorNivel.tiradasExtra(7), "Tiradas extra en nivel 7");
-		helper.assertValueEqual(1, BotinPorNivel.tiradasExtra(8), "Tiradas extra en nivel 8");
-		helper.assertValueEqual(5, BotinPorNivel.tiradasExtra(47), "Tiradas extra en nivel 47");
-		helper.assertValueEqual(6, BotinPorNivel.tiradasExtra(48), "Tiradas extra en nivel 48");
+		helper.assertValueEqual(0, BotinPorNivel.tiradasExtra(15), "Tiradas extra en nivel 15");
+		helper.assertValueEqual(1, BotinPorNivel.tiradasExtra(16), "Tiradas extra en nivel 16");
+		helper.assertValueEqual(5, BotinPorNivel.tiradasExtra(95), "Tiradas extra en nivel 95");
+		helper.assertValueEqual(6, BotinPorNivel.tiradasExtra(96), "Tiradas extra en nivel 96");
 		helper.assertValueEqual(6, BotinPorNivel.tiradasExtra(200), "Las tiradas extra topean en 6");
 
 		helper.assertValueEqual(1.0, chanceConNivel(helper, EntityTypes.ZOMBIE, 25), "Las tiradas extra de un zombi son seguras");
 		helper.assertValueEqual(0.0, chanceConNivel(helper, EntityTypes.WITHER_SKELETON, 25), "El esqueleto del Wither (sin_tiradas_extra) no tiene");
-		assertCerca(helper, 0.1, chanceConNivel(helper, EntityTypes.EVOKER, 10), "Chance de cada tirada extra de un evocador de nivel 10");
-		assertCerca(helper, 0.5, chanceConNivel(helper, EntityTypes.EVOKER, 50), "La chance del evocador topea en 50 %");
+		assertCerca(helper, 0.1, chanceConNivel(helper, EntityTypes.EVOKER, 20), "Chance de cada tirada extra de un evocador de nivel 20");
+		assertCerca(helper, 0.5, chanceConNivel(helper, EntityTypes.EVOKER, 100), "La chance del evocador topea en 50 %");
 		helper.succeed();
 	}
 
@@ -222,22 +222,22 @@ public class MobsPoderososGameTest {
 
 		// El devastador siempre suelta una montura: cada tirada extra es una montura más
 		Mob devastador = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
-		NivelDeMob.aplicar(devastador, 30);
-		helper.assertValueEqual(4, matarYContar(helper, devastador, level.damageSources().playerAttack(jugador), Items.SADDLE), "Un devastador de nivel 30 muerto por un jugador suelta 1 + 3 monturas");
+		NivelDeMob.aplicar(devastador, 48);
+		helper.assertValueEqual(4, matarYContar(helper, devastador, level.damageSources().playerAttack(jugador), Items.SADDLE), "Un devastador de nivel 48 muerto por un jugador suelta 1 + 3 monturas");
 
 		Mob lejano = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
-		NivelDeMob.aplicar(lejano, 50);
-		helper.assertValueEqual(7, matarYContar(helper, lejano, level.damageSources().playerAttack(jugador), Items.SADDLE), "Un devastador de nivel 50 suelta 1 + 6 monturas");
+		NivelDeMob.aplicar(lejano, 100);
+		helper.assertValueEqual(7, matarYContar(helper, lejano, level.damageSources().playerAttack(jugador), Items.SADDLE), "Un devastador de nivel 100 suelta 1 + 6 monturas");
 
 		Mob sinJugador = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(sinJugador, 30);
 		helper.assertValueEqual(1, matarYContar(helper, sinJugador, level.damageSources().genericKill(), Items.SADDLE), "Sin jugador no hay tiradas extra");
 
-		// 20 evocadores de nivel 50: 120 tiradas extra al 50 %. Que salgan todas o ninguna tiene probabilidad 2^-120
+		// 20 evocadores de nivel 100: 120 tiradas extra al 50 %. Que salgan todas o ninguna tiene probabilidad 2^-120
 		int totems = 0;
 		for (int i = 0; i < 20; i++) {
 			Mob evocador = spawn(helper, EntityTypes.EVOKER, EntitySpawnReason.COMMAND);
-			NivelDeMob.aplicar(evocador, 50);
+			NivelDeMob.aplicar(evocador, 100);
 			totems += matarYContar(helper, evocador, level.damageSources().playerAttack(jugador), Items.TOTEM_OF_UNDYING);
 		}
 		helper.assertTrue(totems > 20 && totems < 140, Component.literal("Los tótems extra del evocador salen por chance: 20 evocadores soltaron " + totems));
@@ -254,21 +254,21 @@ public class MobsPoderososGameTest {
 		Creeper conNivel = spawn(helper, EntityTypes.CREEPER, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(conNivel, 20);
 		helper.assertValueEqual(5, comun.getExperienceReward(level, null), "Experiencia de un creeper sin nivel");
-		helper.assertValueEqual(15, conNivel.getExperienceReward(level, null), "Experiencia de un creeper de nivel 20 (5 × 3)");
+		helper.assertValueEqual(10, conNivel.getExperienceReward(level, null), "Experiencia de un creeper de nivel 20 (5 × 2)");
 		helper.succeed();
 	}
 
 	@GameTest
 	public void materialDeArmadura(GameTestHelper helper) {
 		RandomSource random = RandomSource.create(42);
-		helper.assertValueEqual(Items.LEATHER_CHESTPLATE, EquipoPorNivel.material(9, random).pechera(), "Material en nivel 9");
+		helper.assertValueEqual(Items.LEATHER_CHESTPLATE, EquipoPorNivel.material(19, random).pechera(), "Material en nivel 19");
 		for (int i = 0; i < 20; i++) {
-			Item pechera = EquipoPorNivel.material(15, random).pechera();
-			helper.assertTrue(pechera == Items.CHAINMAIL_CHESTPLATE || pechera == Items.GOLDEN_CHESTPLATE, Component.literal("En nivel 15 es cadena u oro (dio " + pechera + ")"));
+			Item pechera = EquipoPorNivel.material(30, random).pechera();
+			helper.assertTrue(pechera == Items.CHAINMAIL_CHESTPLATE || pechera == Items.GOLDEN_CHESTPLATE, Component.literal("En nivel 30 es cadena u oro (dio " + pechera + ")"));
 		}
-		helper.assertValueEqual(Items.IRON_CHESTPLATE, EquipoPorNivel.material(20, random).pechera(), "Material en nivel 20");
-		helper.assertValueEqual(Items.DIAMOND_CHESTPLATE, EquipoPorNivel.material(39, random).pechera(), "Material en nivel 39");
-		helper.assertValueEqual(Items.NETHERITE_CHESTPLATE, EquipoPorNivel.material(40, random).pechera(), "Material en nivel 40");
+		helper.assertValueEqual(Items.IRON_CHESTPLATE, EquipoPorNivel.material(40, random).pechera(), "Material en nivel 40");
+		helper.assertValueEqual(Items.DIAMOND_CHESTPLATE, EquipoPorNivel.material(79, random).pechera(), "Material en nivel 79");
+		helper.assertValueEqual(Items.NETHERITE_CHESTPLATE, EquipoPorNivel.material(80, random).pechera(), "Material en nivel 80");
 		helper.assertValueEqual(Items.NETHERITE_CHESTPLATE, EquipoPorNivel.material(200, random).pechera(), "El material topea en netherita");
 		helper.succeed();
 	}
@@ -280,31 +280,31 @@ public class MobsPoderososGameTest {
 		int cascosPiglin = 0;
 		for (int i = 0; i < 20; i++) {
 			Zombie zombie = sinArmadura(spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND));
-			EquipoPorNivel.equipar(zombie, 50);
+			EquipoPorNivel.equipar(zombie, 100);
 			helper.assertTrue(zombie.getItemBySlot(EquipmentSlot.HEAD).isEmpty(), Component.literal("Los que se queman al sol no reciben casco"));
 			for (EquipmentSlot slot : new EquipmentSlot[] {EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
 				ItemStack pieza = zombie.getItemBySlot(slot);
 				if (!pieza.isEmpty()) {
 					piezasZombi++;
-					helper.assertTrue(pieza.is(EquipoPorNivel.EQUIPO_VALIOSO), Component.literal("En nivel 50 la armadura es de netherita: " + pieza));
+					helper.assertTrue(pieza.is(EquipoPorNivel.EQUIPO_VALIOSO), Component.literal("En nivel 100 la armadura es de netherita: " + pieza));
 					assertCerca(helper, 0.085, zombie.getDropChances().byEquipment(slot), "La netherita se suelta con la chance de vanilla");
 				}
 			}
 			zombie.discard();
 
 			Mob piglin = sinArmadura(spawn(helper, EntityTypes.PIGLIN, EntitySpawnReason.COMMAND));
-			EquipoPorNivel.equipar(piglin, 50);
+			EquipoPorNivel.equipar(piglin, 100);
 			if (!piglin.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
 				cascosPiglin++;
 			}
 			piglin.discard();
 		}
-		helper.assertTrue(piezasZombi > 0, Component.literal("Los zombis de nivel 50 reciben armadura"));
+		helper.assertTrue(piezasZombi > 0, Component.literal("Los zombis de nivel 100 reciben armadura"));
 		helper.assertTrue(cascosPiglin > 0, Component.literal("Los que no se queman sí pueden recibir casco"));
 
 		Mob vindicador = sinArmadura(spawn(helper, EntityTypes.VINDICATOR, EntitySpawnReason.COMMAND));
 		for (int i = 0; i < 10; i++) {
-			EquipoPorNivel.equipar(vindicador, 50);
+			EquipoPorNivel.equipar(vindicador, 100);
 		}
 		helper.assertTrue(vindicador.getItemBySlot(EquipmentSlot.CHEST).isEmpty(), Component.literal("Fuera del tag usan_equipo no hay armadura (no se dibujaría)"));
 		helper.succeed();
@@ -319,10 +319,10 @@ public class MobsPoderososGameTest {
 		Zombie alto = conArma(helper, Items.IRON_SWORD);
 		EquipoPorNivel.equipar(alto, 40);
 		helper.assertTrue(alto.getMainHandItem().isEnchanted(), Component.literal("En nivel 40 el arma sale encantada"));
-		assertCerca(helper, 0.085 + 0.16, alto.getDropChances().byEquipment(EquipmentSlot.MAINHAND), "Chance de soltar el arma en nivel 40");
+		assertCerca(helper, 0.085 + 0.08, alto.getDropChances().byEquipment(EquipmentSlot.MAINHAND), "Chance de soltar el arma en nivel 40");
 
 		Zombie tope = conArma(helper, Items.IRON_SWORD);
-		EquipoPorNivel.equipar(tope, 50);
+		EquipoPorNivel.equipar(tope, 100);
 		assertCerca(helper, 0.25, tope.getDropChances().byEquipment(EquipmentSlot.MAINHAND), "La chance de soltar topea en 0,25");
 
 		Zombie diamante = conArma(helper, Items.DIAMOND_SWORD);
@@ -349,17 +349,17 @@ public class MobsPoderososGameTest {
 		Mob esqueleto = spawn(helper, EntityTypes.SKELETON, EntitySpawnReason.NATURAL);
 		int nivel = NivelDeMob.nivel(esqueleto);
 		helper.assertTrue(nivel >= 1, Component.literal("El esqueleto aparece con nivel"));
-		assertCerca(helper, Math.min(0.085 + 0.004 * nivel, 0.25), esqueleto.getDropChances().byEquipment(EquipmentSlot.MAINHAND), "Al aparecer también se le ajusta el equipo");
+		assertCerca(helper, Math.min(0.085 + 0.002 * nivel, 0.25), esqueleto.getDropChances().byEquipment(EquipmentSlot.MAINHAND), "Al aparecer también se le ajusta el equipo");
 		helper.succeed();
 	}
 
 	@GameTest
 	public void botinRaro(GameTestHelper helper) {
 		helper.assertValueEqual(List.of(), BotinPorNivel.botinesRaros(0), "Sin nivel no hay botín raro");
-		helper.assertValueEqual(List.of(), BotinPorNivel.botinesRaros(9), "Botín raro en nivel 9");
-		helper.assertValueEqual(List.of(BotinPorNivel.Botin.RARO), BotinPorNivel.botinesRaros(10), "Botín raro en nivel 10");
-		helper.assertValueEqual(List.of(BotinPorNivel.Botin.RARO, BotinPorNivel.Botin.EPICO), BotinPorNivel.botinesRaros(25), "Botín raro en nivel 25");
-		helper.assertValueEqual(List.of(BotinPorNivel.Botin.values()), BotinPorNivel.botinesRaros(40), "Botín raro en nivel 40");
+		helper.assertValueEqual(List.of(), BotinPorNivel.botinesRaros(19), "Botín raro en nivel 19");
+		helper.assertValueEqual(List.of(BotinPorNivel.Botin.RARO), BotinPorNivel.botinesRaros(20), "Botín raro en nivel 20");
+		helper.assertValueEqual(List.of(BotinPorNivel.Botin.RARO, BotinPorNivel.Botin.EPICO), BotinPorNivel.botinesRaros(50), "Botín raro en nivel 50");
+		helper.assertValueEqual(List.of(BotinPorNivel.Botin.values()), BotinPorNivel.botinesRaros(80), "Botín raro en nivel 80");
 
 		ServerLevel level = helper.getLevel();
 		ServerPlayer jugador = joinSurvivalPlayer(helper, "saqueador");
@@ -379,15 +379,15 @@ public class MobsPoderososGameTest {
 		// El devastador sólo suelta monturas: cualquier otra cosa es botín raro
 		for (int i = 0; i < 40; i++) {
 			Mob bajo = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
-			NivelDeMob.aplicar(bajo, 9);
+			NivelDeMob.aplicar(bajo, 19);
 			bajo.hurtServer(level, golpe, 100_000);
-			helper.assertValueEqual(0, contarSoltadosMenos(helper, bajo, Items.SADDLE), "Antes del nivel 10 no hay botín raro");
+			helper.assertValueEqual(0, contarSoltadosMenos(helper, bajo, Items.SADDLE), "Antes del nivel 20 no hay botín raro");
 		}
-		// 40 devastadores de nivel 50 con 15 %, 10 % y 5 %: que no salga nada tiene probabilidad ~3 en un millón
+		// 40 devastadores de nivel 100 con 15 %, 10 % y 5 %: que no salga nada tiene probabilidad ~3 en un millón
 		int raros = 0;
 		for (int i = 0; i < 40; i++) {
 			Mob alto = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
-			NivelDeMob.aplicar(alto, 50);
+			NivelDeMob.aplicar(alto, 100);
 			alto.hurtServer(level, golpe, 100_000);
 			raros += contarSoltadosMenos(helper, alto, Items.SADDLE);
 		}
@@ -396,7 +396,7 @@ public class MobsPoderososGameTest {
 		// Sin jugador no hay botín raro, igual que no hay tiradas extra
 		for (int i = 0; i < 40; i++) {
 			Mob sinJugador = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
-			NivelDeMob.aplicar(sinJugador, 50);
+			NivelDeMob.aplicar(sinJugador, 100);
 			sinJugador.hurtServer(level, level.damageSources().genericKill(), 100_000);
 			helper.assertValueEqual(0, contarSoltadosMenos(helper, sinJugador, Items.SADDLE), "Muerto sin jugador no suelta botín raro");
 		}
@@ -412,15 +412,15 @@ public class MobsPoderososGameTest {
 
 			Path nuevo = carpeta.resolve("nuevo.json");
 			helper.assertValueEqual(Configuracion.POR_DEFECTO, ArchivoDeConfiguracion.leer(nuevo), "Sin archivo se usan los valores por defecto");
-			helper.assertTrue(Files.readString(nuevo).contains("\"bloquesPorNivel\": 150"), Component.literal("Y se crea el archivo con ellos"));
+			helper.assertTrue(Files.readString(nuevo).contains("\"bloquesPorNivel\": 100"), Component.literal("Y se crea el archivo con ellos"));
 
 			Path parcial = carpeta.resolve("parcial.json");
-			Files.writeString(parcial, "{\"bloquesPorNivel\": 100, \"vida\": {\"tope\": 2.0}, \"inventada\": 1}");
+			Files.writeString(parcial, "{\"bloquesPorNivel\": 75, \"vida\": {\"tope\": 2.0}, \"inventada\": 1}");
 			Configuracion leida = ArchivoDeConfiguracion.leer(parcial);
-			helper.assertValueEqual(100, leida.bloquesPorNivel(), "Se lee lo que está en el archivo");
+			helper.assertValueEqual(75, leida.bloquesPorNivel(), "Se lee lo que está en el archivo");
 			assertCerca(helper, 2.0, leida.vida().tope(), "También dentro de un objeto");
-			assertCerca(helper, 0.1, leida.vida().porNivel(), "Lo que falta dentro de un objeto queda por defecto");
-			helper.assertValueEqual(50, leida.nivelMaximo(), "Lo que falta queda por defecto");
+			assertCerca(helper, 0.08, leida.vida().porNivel(), "Lo que falta dentro de un objeto queda por defecto");
+			helper.assertValueEqual(100, leida.nivelMaximo(), "Lo que falta queda por defecto");
 			String reescrito = Files.readString(parcial);
 			helper.assertTrue(reescrito.contains("nivelMaximo") && !reescrito.contains("inventada"), Component.literal("Se reescribe completo y sin las claves que no existen"));
 

@@ -70,3 +70,12 @@ fabricApi {
 		eula = true
 	}
 }
+
+// El servidor de prueba guarda su config en build/run/gameTest y no la pisa: si quedara la de una corrida vieja,
+// los tests correrían con los valores por defecto de antes y no con los de Configuracion.POR_DEFECTO
+def configDePrueba = layout.buildDirectory.dir("run/gameTest/config")
+tasks.matching { it.name == "runGameTest" }.configureEach {
+	doFirst {
+		configDePrueba.get().asFile.deleteDir()
+	}
+}

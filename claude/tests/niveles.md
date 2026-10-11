@@ -10,9 +10,9 @@
 
 | Test | Qué verifica |
 |---|---|
-| `nivelPorDistancia` | `NivelDeZona.calcular` como función pura: spawn → 1, 1500 bloques → 11, 7500 → 50 (tope), la distancia se mide desde el spawn y no desde `(0, 0)`, Nether ×8 + 10, End desde `(0, 0)` + 20, y con variación 1 queda en ±1 |
-| `aplicarNivel` | Vida ×3 en nivel 20 y vida llena, aplicar dos veces deja **un** modificador, nombre "[Nv 20]" no visible siempre, `isPersistenceRequired()` sigue en `false`, topes en nivel 50 (vida ×5, daño +100 %, armadura +8), un name tag hace que `esNombreDelMod` dé `false` |
-| `creeper` | Radio 3 en nivel 29 y 4 en nivel 30 |
+| `nivelPorDistancia` | `NivelDeZona.calcular` como función pura: spawn → 1, 1500 bloques → 16, 10000 → 100 (tope), la distancia se mide desde el spawn y no desde `(0, 0)`, Nether ×8 + 20, End desde `(0, 0)` + 40, y con variación 1 queda en ±1 |
+| `aplicarNivel` | Vida ×2,6 en nivel 20 y vida llena, aplicar dos veces deja **un** modificador, nombre "[Nv 20]" no visible siempre, `isPersistenceRequired()` sigue en `false`, topes en nivel 100 (vida ×9, daño +400 %, armadura +12), un name tag hace que `esNombreDelMod` dé `false` |
+| `creeper` | Radio 3 en nivel 59 y 4 en nivel 60 |
 | `motivosDeSpawn` | `NATURAL` y `JOCKEY` escalan · `SPAWNER`, `SPAWN_ITEM_USE` y el guardián anciano con `STRUCTURE` (tag `sin_nivel`) no · un aldeano con `NATURAL` queda sin nivel **y sin `PENDIENTE`** |
 | `mobDeEstructura` | Un zombi con `finalizeSpawn(STRUCTURE)` → NBT → recreado y agregado al mundo recibe nivel. Recargar uno con nivel 33 conserva el nivel y no duplica modificadores |
 | `conversiones` | Zombi → ahogado conserva nivel y su nombre pasa a ser el de ahogado · con name tag conserva "Pepe" y el nivel · aldeano zombi curado queda sin nivel ni nombre · un slime de nivel 5 dividido tiene hijos de nivel 5 |

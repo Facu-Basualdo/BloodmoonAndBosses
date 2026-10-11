@@ -43,8 +43,10 @@ nivel = 1 + floor(distanciaHorizontal / bloquesPorNivel) + extraDimensión ± va
 | Dimensión | Distancia desde | Extra |
 |---|---|---|
 | Overworld (y cualquier dimensión de otro mod) | El spawn del mundo | 0 |
-| Nether | El spawn del mundo, con la posición **×8** (así cruzar un portal no cambia el nivel de golpe) | `extraNether` (10) |
-| End | `(0, 0)`: el spawn del overworld no significa nada ahí | `extraEnd` (20) |
+| Nether | El spawn del mundo, con la posición **×8** (así cruzar un portal no cambia el nivel de golpe) | `extraNether` (20) |
+| End | `(0, 0)`: el spawn del overworld no significa nada ahí | `extraEnd` (40) |
+
+Con `bloquesPorNivel` 100 y `nivelMaximo` 100, el tope se alcanza a ~9900 bloques del spawn.
 
 `/mobspoderosos zona` usa `config.conVariacion(0)`: muestra el nivel de la zona, no una tirada.
 
@@ -54,22 +56,24 @@ nivel = 1 + floor(distanciaHorizontal / bloquesPorNivel) + extraDimensión ± va
 
 | Atributo | Operación | Por nivel / tope (`Configuracion`) |
 |---|---|---|
-| `MAX_HEALTH` | `ADD_MULTIPLIED_BASE` | +10 % / +400 % |
-| `ATTACK_DAMAGE` | `ADD_MULTIPLIED_BASE` | +4 % / +100 % |
-| `ARMOR` | `ADD_VALUE` | +0,2 / +8 |
-| `MOVEMENT_SPEED` | `ADD_MULTIPLIED_BASE` | +0,5 % / +20 % |
-| `FOLLOW_RANGE` | `ADD_MULTIPLIED_BASE` | +1 % / +50 % |
-| `KNOCKBACK_RESISTANCE` | `ADD_VALUE` | +0,01 / 0,5 |
+| `MAX_HEALTH` | `ADD_MULTIPLIED_BASE` | +8 % / +800 % |
+| `ATTACK_DAMAGE` | `ADD_MULTIPLIED_BASE` | +4 % / +400 % |
+| `ARMOR` | `ADD_VALUE` | +0,12 / +12 |
+| `MOVEMENT_SPEED` | `ADD_MULTIPLIED_BASE` | +0,2 % / +20 % |
+| `FOLLOW_RANGE` | `ADD_MULTIPLIED_BASE` | +0,5 % / +50 % |
+| `KNOCKBACK_RESISTANCE` | `ADD_VALUE` | +0,005 / 0,5 |
+
+**Todas las escalas llegan a su tope recién en el nivel 100, y están balanceadas contra Estadísticas RPG** (el mod hermano en el que el jugador compra vida, daño y armadura con niveles, hasta 100 puntos por estadística). Con los topes antes de tiempo (el daño se quedaba quieto desde el nivel 25), alejarse dejaba de ser más peligroso y el jugador con puntos se volvía casi inmortal. El objetivo: con el equipo y los puntos que se esperan en cada zona, un zombi se mata en 5 o 6 golpes en todo el mundo y lo que aguanta el jugador baja de a poco hacia el 100. **Si se cambia una escala, hay que mirar los números del otro mod**, y al revés.
 
 - **`ADD_MULTIPLIED_BASE` multiplica la base más todos los `ADD_VALUE`, incluido el del arma.** Un zombi con espada de hierro de nivel 25 pega `(3 + 5) × 2`, no `3 × 2 + 5`. Por eso el daño topea más bajo que la vida.
 - `getAttribute` devuelve `null` para atributos que el mob no tiene (el creeper no tiene `ATTACK_DAMAGE`): `modificar` lo saltea.
 - **`setHealth(getMaxHealth())` al final.** Sin eso, el mob aparece con la vida base aunque el máximo haya subido.
-- **Creeper:** su explosión no usa `ATTACK_DAMAGE`. Desde `nivelRadioCreeper` (30), `CreeperAccessor` pone `explosionRadius` en 3 + `radioCreeperExtra` (4). Vanilla lo duplica si está cargado y lo guarda en el NBT como `ExplosionRadius`.
+- **Creeper:** su explosión no usa `ATTACK_DAMAGE`. Desde `nivelRadioCreeper` (60), `CreeperAccessor` pone `explosionRadius` en 3 + `radioCreeperExtra` (4). Vanilla lo duplica si está cargado y lo guarda en el NBT como `ExplosionRadius`.
 - El daño de las flechas tampoco usa `ATTACK_DAMAGE`: los esqueletos escalan por el encantamiento del arco (ver [equipo](equipo.md)).
 
 ## Nombre
 
-`NivelDeMob.nombre(tipo, nivel)` = `tipo.getDescription().copy().append(" [Nv N]")`, con color por rango (gris < 10, verde, azul, violeta, dorado ≥ 40). La descripción es *translatable*: cada cliente la ve en su idioma, sin mod.
+`NivelDeMob.nombre(tipo, nivel)` = `tipo.getDescription().copy().append(" [Nv N]")`, con color por **quintos de `nivelMaximo`** (`nivel × 5 / nivelMaximo`: gris, verde, azul, violeta, dorado; con 100, dorado desde el 80). Es relativo para que, si se cambia `nivelMaximo`, los colores sigan repartidos en todo el rango y no queden todos dorados. La descripción es *translatable*: cada cliente la ve en su idioma, sin mod.
 
 - **`nombreSiempreVisible` es `false` por defecto.** Un nombre siempre visible se dibuja a través de las paredes y funciona como un rayos X de mobs en las cuevas. Con `false` aparece al mirar el mob.
 - **Ponerle nombre por código no evita el despawn.** `Mob.checkDespawn` mira `isPersistenceRequired()` (un campo que activa el name tag de vanilla), no `hasCustomName()`.

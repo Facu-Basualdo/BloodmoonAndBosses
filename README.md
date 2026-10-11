@@ -4,50 +4,52 @@ Mod de Fabric para **Minecraft Java 26.3** en el que los mobs hostiles aparecen 
 
 Cerca de la base el juego se siente casi como vanilla; a varios miles de bloques, salir a explorar es otra cosa.
 
-> **Estado:** versión 0.5.0. Están todas las fases de [docs/plan.md](docs/plan.md): niveles, loot y experiencia, equipo encantado, ítems raros y archivo de configuración.
+> **Estado:** versión 0.6.0. Están todas las fases de [docs/plan.md](docs/plan.md): niveles, loot y experiencia, equipo encantado, ítems raros y archivo de configuración.
 
 ## Cómo funciona en el juego
 
 | Nivel (dónde) | Vida de un zombi (base 20) | Daño sin arma (base 3) | Armadura extra | Loot | Experiencia |
 |---|---|---|---|---|---|
-| 1 (en el spawn) | 22 | 3,1 | +0,2 | normal | ×1,1 |
-| 10 (~1350 bloques) | 40 | 4,2 | +2 | ×2 | ×2 |
-| 25 (~3600 bloques) | 70 | 6 | +5 | ×4 | ×3,5 |
-| 40 (~5850 bloques) | 100 | 6 | +8 | ×6 | ×5 |
-| 50 (máximo, ~7350 bloques) | 100 | 6 | +8 | ×7 | ×6 |
+| 1 (en el spawn) | 21,6 | 3,1 | +0,1 | normal | ×1,05 |
+| 20 (~1900 bloques) | 52 | 5,4 | +2,4 | ×2 | ×2 |
+| 50 (~4900 bloques) | 100 | 9 | +6 | ×4 | ×3,5 |
+| 80 (~7900 bloques) | 148 | 12,6 | +9,6 | ×6 | ×5 |
+| 100 (máximo, ~9900 bloques) | 180 | 15 | +12 | ×7 | ×6 |
 
-- **El nivel sube 1 cada 150 bloques** desde el spawn del mundo, con una variación de ±1 para que no sean todos iguales.
-- **Nether:** cada bloque cuenta como 8 (como los portales) y suma 10 niveles. **End:** se mide desde el centro de la isla principal y suma 20.
-- **El color del nombre** indica el rango: gris (1–9), verde (10–19), azul (20–29), violeta (30–39), dorado (40+).
+- **El nivel sube 1 cada 100 bloques** desde el spawn del mundo, con una variación de ±1 para que no sean todos iguales.
+- **Todo sigue subiendo hasta el nivel 100:** ninguna estadística llega a su tope antes, así que alejarse siempre se nota.
+- **Pensado para jugarse con Estadísticas RPG:** con el equipo y los puntos que se esperan en cada zona, un zombi se mata en 5 o 6 golpes en todo el mundo, y lo que aguantás va bajando hacia el nivel 100. Sin ese mod, la zona de nivel 100 es para pocos: un zombi aguanta 19 golpes de una espada de netherita con Filo V.
+- **Nether:** cada bloque cuenta como 8 (como los portales) y suma 20 niveles. **End:** se mide desde el centro de la isla principal y suma 40.
+- **El color del nombre** indica el rango, por quintos del nivel máximo: gris (1–19), verde (20–39), azul (40–59), violeta (60–79), dorado (80+).
 - **El nombre se ve al mirar al mob**, no a través de las paredes.
-- **Creepers de nivel 30 o más** explotan con un radio más grande.
-- **Equipo:** zombis, esqueletos, piglins y sus variantes pueden aparecer con armadura extra. La probabilidad de cada pieza es 1,5 % por nivel (hasta 50 %) y el material depende del nivel:
+- **Creepers de nivel 60 o más** explotan con un radio más grande.
+- **Equipo:** zombis, esqueletos, piglins y sus variantes pueden aparecer con armadura extra. La probabilidad de cada pieza es 0,75 % por nivel (hasta 50 %, desde el nivel 67) y el material depende del nivel:
 
   | Nivel | Material |
   |---|---|
-  | 1–9 | cuero |
-  | 10–19 | cadena u oro |
-  | 20–29 | hierro |
-  | 30–39 | diamante |
-  | 40+ | netherita |
+  | 1–19 | cuero |
+  | 20–39 | cadena u oro |
+  | 40–59 | hierro |
+  | 60–79 | diamante |
+  | 80+ | netherita |
 
   - **Los que se queman al sol no reciben casco** (zombis, esqueletos): si no, sobrevivirían de día. El casco que les pone vanilla no se toca.
-  - **Las armas y la armadura salen encantadas** según el nivel (en nivel 40, como una mesa de encantamiento de nivel 20). Con un arco, eso le da Poder: así escala el daño de los esqueletos.
-  - **Es más fácil que suelten su equipo:** +0,4 % por nivel sobre la chance de vanilla, hasta 25 %. El equipo de diamante o netherita y los tridentes siguen con la chance de vanilla (8,5 %), y lo que vanilla no suelta nunca (la espada de los vex) sigue sin soltarse. Como en vanilla, sólo sueltan el equipo si los mataste vos.
-- **Loot:** cada 8 niveles el mob tira su loot de vanilla una vez más (hasta 6 veces extra, desde el nivel 48). **Sólo si lo matás vos**: a un mob que muere en una granja automática, por lava o por caída sin que lo hayas golpeado, le toca el loot normal. El equipo que lleva puesto no se multiplica.
-- **Evocadores:** también tienen tiradas extra, pero cada una sale **por probabilidad**: 1 % por nivel, hasta 50 %. Un evocador de nivel 30 tiene 3 tiradas extra al 30 % cada una (en promedio, casi un tótem extra); uno de nivel 50 tiene 6 al 50 % (3 tótems extra en promedio). Está en el tag `mobspoderosos:tiradas_extra_por_chance`.
+  - **Las armas y la armadura salen encantadas** según el nivel (en nivel 67, como una mesa de encantamiento de nivel 20). Con un arco, eso le da Poder: así escala el daño de los esqueletos.
+  - **Es más fácil que suelten su equipo:** +0,2 % por nivel sobre la chance de vanilla, hasta 25 %. El equipo de diamante o netherita y los tridentes siguen con la chance de vanilla (8,5 %), y lo que vanilla no suelta nunca (la espada de los vex) sigue sin soltarse. Como en vanilla, sólo sueltan el equipo si los mataste vos.
+- **Loot:** cada 16 niveles el mob tira su loot de vanilla una vez más (hasta 6 veces extra, desde el nivel 96). **Sólo si lo matás vos**: a un mob que muere en una granja automática, por lava o por caída sin que lo hayas golpeado, le toca el loot normal. El equipo que lleva puesto no se multiplica.
+- **Evocadores:** también tienen tiradas extra, pero cada una sale **por probabilidad**: 0,5 % por nivel, hasta 50 %. Un evocador de nivel 60 tiene 3 tiradas extra al 30 % cada una (en promedio, casi un tótem extra); uno de nivel 100 tiene 6 al 50 % (3 tótems extra en promedio). Está en el tag `mobspoderosos:tiradas_extra_por_chance`.
 - **Sin loot extra:** esqueletos del Wither (las calaveras serían triviales) y shulkers. Están en el tag `mobspoderosos:sin_tiradas_extra`.
 - Los dos tags se pueden cambiar con un datapack.
 - **Ítems raros:** además de su loot, un mob con nivel que matás vos puede soltar un ítem de una de estas tablas. Cada una se sortea por separado:
 
   | Tabla | Desde el nivel | Probabilidad | Qué puede dar |
   |---|---|---|---|
-  | Rara | 10 | 15 % | manzana dorada, diamantes, esmeraldas, hierro, libro encantado, botellas de experiencia, perlas de ender, etiqueta |
-  | Épica | 25 | 10 % | diamantes, manzanas doradas, libro encantado de nivel 30, espada o pico de diamante encantados, chatarra de netherita, plantilla de mejora de netherita |
-  | Legendaria | 40 | 5 % | manzana dorada encantada, lingote de netherita, plantilla de mejora de netherita, armadura de diamante con encantamientos altos, diamantes |
+  | Rara | 20 | 15 % | manzana dorada, diamantes, esmeraldas, hierro, libro encantado, botellas de experiencia, perlas de ender, etiqueta |
+  | Épica | 50 | 10 % | diamantes, manzanas doradas, libro encantado de nivel 30, espada o pico de diamante encantados, chatarra de netherita, plantilla de mejora de netherita |
+  | Legendaria | 80 | 5 % | manzana dorada encantada, lingote de netherita, plantilla de mejora de netherita, armadura de diamante con encantamientos altos, diamantes |
 
   Las tablas son `mobspoderosos:botin_por_nivel/raro`, `epico` y `legendario`: se pueden cambiar con un datapack. También aplican a los esqueletos del Wither y los shulkers.
-- **Experiencia:** +10 % por nivel. Como en vanilla, sólo se da si lo mató un jugador.
+- **Experiencia:** +5 % por nivel. Como en vanilla, sólo se da si lo mató un jugador.
 - Con `/gamerule mobDrops false` no hay loot extra, igual que no hay loot normal.
 - **Qué mobs tienen nivel:** los hostiles que aparecen solos en el mundo, en estructuras (mansiones, fortalezas, ciudades del End…), en patrullas y en raids. **No tienen nivel** los de spawners (para que las granjas no cambien), los de huevos o comandos, ni los jefes (dragón, wither, guardián anciano, warden).
 - **Conversiones:** un zombi que se ahoga sigue con su nivel ("Ahogado [Nv 7]"), los slimes chicos heredan el nivel del grande, y un aldeano zombi curado vuelve a ser un aldeano normal.
@@ -69,28 +71,28 @@ En el primer arranque se crea **`config/mobspoderosos.json`** con todos los valo
 - **Al recargar, los mobs que ya están no cambian:** la vida, el daño, la armadura, el nombre y el equipo se ponen cuando el mob aparece. El loot, los ítems raros y la experiencia se calculan al morir, así que esos cambios valen enseguida.
 - **Si el archivo tiene un error** (JSON mal escrito, o un valor imposible como `bloquesPorNivel: 0`), se queda la configuración que había, el archivo no se toca y el error aparece en el chat y en la consola.
 - Si falta una clave se usa su valor por defecto, y al leer el archivo se reescribe completo. Una clave que no existe se ignora con un aviso en la consola.
-- Las escalas tienen la forma `{"porNivel": 0.1, "tope": 4.0}`: lo que suma cada nivel y el máximo.
+- Las escalas tienen la forma `{"porNivel": 0.08, "tope": 8.0}`: lo que suma cada nivel y el máximo.
 
 | Clave | Por defecto | Qué hace |
 |---|---|---|
-| `bloquesPorNivel` | 150 | Cada cuántos bloques del spawn sube un nivel |
-| `nivelMaximo` | 50 | Nivel máximo |
-| `extraNether` / `extraEnd` | 10 / 20 | Niveles que se suman en el Nether y el End |
+| `bloquesPorNivel` | 100 | Cada cuántos bloques del spawn sube un nivel |
+| `nivelMaximo` | 100 | Nivel máximo |
+| `extraNether` / `extraEnd` | 20 / 40 | Niveles que se suman en el Nether y el End |
 | `variacion` | 1 | Variación al azar del nivel (±) |
 | `escalarSpawners` | `false` | Si los mobs de spawners también tienen nivel |
 | `nombreSiempreVisible` | `false` | Si el nombre se ve a través de las paredes |
-| `vida`, `danio`, `velocidad`, `rangoDeSeguimiento` | ver arriba | Porcentaje sobre la base, por nivel y tope (`0.1` = +10 %) |
-| `armadura`, `resistenciaAlEmpuje` | +0,2 / +0,01 por nivel | Puntos que se suman, por nivel y tope |
-| `nivelRadioCreeper` / `radioCreeperExtra` | 30 / 1 | Desde qué nivel y cuánto crece la explosión del creeper |
-| `chanceArmaduraExtra` | 1,5 % por nivel, tope 50 % | Probabilidad de cada pieza de armadura extra |
-| `nivelesPorMaterialDeArmadura` | 10 | Cada cuántos niveles mejora el material |
+| `vida`, `danio`, `velocidad`, `rangoDeSeguimiento` | +8 %, +4 %, +0,2 %, +0,5 % por nivel | Porcentaje sobre la base, por nivel y tope (`0.08` = +8 %) |
+| `armadura`, `resistenciaAlEmpuje` | +0,12 / +0,005 por nivel | Puntos que se suman, por nivel y tope |
+| `nivelRadioCreeper` / `radioCreeperExtra` | 60 / 1 | Desde qué nivel y cuánto crece la explosión del creeper |
+| `chanceArmaduraExtra` | 0,75 % por nivel, tope 50 % | Probabilidad de cada pieza de armadura extra |
+| `nivelesPorMaterialDeArmadura` | 20 | Cada cuántos niveles mejora el material |
 | `cascoParaLosQueSeQueman` | `false` | Si zombis y esqueletos también pueden recibir casco |
-| `poderDeEncantamiento` | 0,5 por nivel, tope 30 | Nivel de encantamiento del equipo (como el de la mesa) |
-| `chanceSoltarEquipo` | +0,4 % por nivel, tope 25 % | Lo que se suma a la chance de vanilla de soltar el equipo |
-| `nivelesPorTiradaExtra` / `tiradasExtraMaximas` | 8 / 6 | Cada cuántos niveles el loot sale una vez más, y el máximo |
-| `chanceTiradaExtra` | 1 % por nivel, tope 50 % | Probabilidad de cada tirada extra de los mobs de `tiradas_extra_por_chance` |
-| `botinRaro`, `botinEpico`, `botinLegendario` | ver arriba | `{"nivelMinimo": 10, "chance": 0.15}`: desde qué nivel y con qué probabilidad se tira cada tabla |
-| `experienciaPorNivel` | 0.1 | Experiencia extra por nivel (`0.1` = +10 %) |
+| `poderDeEncantamiento` | 0,3 por nivel, tope 30 | Nivel de encantamiento del equipo (como el de la mesa) |
+| `chanceSoltarEquipo` | +0,2 % por nivel, tope 25 % | Lo que se suma a la chance de vanilla de soltar el equipo |
+| `nivelesPorTiradaExtra` / `tiradasExtraMaximas` | 16 / 6 | Cada cuántos niveles el loot sale una vez más, y el máximo |
+| `chanceTiradaExtra` | 0,5 % por nivel, tope 50 % | Probabilidad de cada tirada extra de los mobs de `tiradas_extra_por_chance` |
+| `botinRaro`, `botinEpico`, `botinLegendario` | ver arriba | `{"nivelMinimo": 20, "chance": 0.15}`: desde qué nivel y con qué probabilidad se tira cada tabla |
+| `experienciaPorNivel` | 0.05 | Experiencia extra por nivel (`0.05` = +5 %) |
 
 ## Requisitos
 

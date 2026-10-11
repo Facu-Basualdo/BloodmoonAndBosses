@@ -8,7 +8,7 @@ El test `archivoDeConfiguracion` prueba `ArchivoDeConfiguracion.leer` sobre arch
 
 | Caso | Qué verifica |
 |---|---|
-| Sin archivo | Devuelve un record igual a `POR_DEFECTO` y crea el archivo con `"bloquesPorNivel": 150` |
+| Sin archivo | Devuelve un record igual a `POR_DEFECTO` y crea el archivo con `"bloquesPorNivel": 100` |
 | Archivo parcial (`bloquesPorNivel`, `vida.tope` y una clave `inventada`) | Lee lo que hay; dentro de `vida`, `porNivel` queda por defecto; `nivelMaximo` queda por defecto; el archivo se reescribe con todas las claves y sin `inventada` |
 | `bloquesPorNivel: 0` | Tira excepción (`validar`) y **el archivo queda como estaba** |
 | JSON cortado | Tira excepción |
@@ -19,7 +19,7 @@ El test `archivoDeConfiguracion` prueba `ArchivoDeConfiguracion.leer` sobre arch
 
 - **La igualdad con `POR_DEFECTO` es un `equals` de records**, que compara también las escalas y los botines anidados. Si falla, casi siempre es una clave que Gson no supo leer o escribir.
 - **El aviso de la clave `inventada` sale en el log del test** ("no existe la clave \"inventada\""): es esperado, no es un error.
-- **`gradlew runGameTest` también crea `build/run/gameTest/config/mobspoderosos.json`** al arrancar el servidor de tests. Si alguna vez un test falla por la configuración, mirá ese archivo: si quedó con valores viejos, los tests los usan.
+- **`gradlew runGameTest` también crea `build/run/gameTest/config/mobspoderosos.json`** al arrancar el servidor de tests, y el mod no pisa un archivo que ya existe. **Por eso `runGameTest` borra esa carpeta antes de arrancar** (un `doFirst` en `build.gradle`): si no, después de cambiar `POR_DEFECTO` los tests corrían con los valores de la corrida anterior.
 - `lanza(() -> …)` es un helper del test con una interfaz que permite `IOException`: `Runnable` no la deja tirar.
 
 ## Ver también

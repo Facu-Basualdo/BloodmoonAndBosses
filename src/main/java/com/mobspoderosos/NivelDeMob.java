@@ -111,14 +111,16 @@ public final class NivelDeMob {
 		return tipo.getDescription().copy().append(" [Nv " + nivel + "]").withStyle(color(nivel));
 	}
 
+	/** Por quintos del nivel máximo: si se cambia nivelMaximo, los colores se reparten igual. */
 	private static ChatFormatting color(int nivel) {
-		if (nivel >= 40) {
+		int quinto = nivel * 5 / MobsPoderosos.config().nivelMaximo();
+		if (quinto >= 4) {
 			return ChatFormatting.GOLD;
-		} else if (nivel >= 30) {
+		} else if (quinto == 3) {
 			return ChatFormatting.DARK_PURPLE;
-		} else if (nivel >= 20) {
+		} else if (quinto == 2) {
 			return ChatFormatting.BLUE;
-		} else if (nivel >= 10) {
+		} else if (quinto == 1) {
 			return ChatFormatting.GREEN;
 		}
 		return ChatFormatting.GRAY;
