@@ -2,7 +2,7 @@
 
 [← Índice Mod](INDICE.md)
 
-Síntomas que esto evita: **un invocador llama refuerzos que también son campeones invocadores y la cueva se llena**, **la estampida aparece arriba de un techo de barreras o no aparece nunca en un test**, **los zombis de una estampida se queman al amanecer y el jugador se lleva el premio sin pelear**, **una luna de sangre en pleno día durante una tormenta**, **la barra de un jefe queda colgada en la pantalla después de un reinicio**, o **un campeón con afijo pierde el nombre del mod al convertirse**.
+Síntomas que esto evita: **el jefe no se distingue de sus escoltas**, **un jefe muerto queda para siempre en un equipo del scoreboard**, **un invocador llama refuerzos que también son campeones invocadores y la cueva se llena**, **la estampida aparece arriba de un techo de barreras o no aparece nunca en un test**, **los zombis de una estampida se queman al amanecer y el jugador se lleva el premio sin pelear**, **una luna de sangre en pleno día durante una tormenta**, **la barra de un jefe queda colgada en la pantalla después de un reinicio**, o **un campeón con afijo pierde el nombre del mod al convertirse**.
 
 Todo es del lado del servidor: barra de jefe (`ServerBossEvent`), títulos (`ClientboundSetTitleTextPacket` y compañía), sonidos y nombres. Un cliente vanilla lo ve todo.
 
@@ -103,6 +103,17 @@ Todo es del lado del servidor: barra de jefe (`ServerBossEvent`), títulos (`Cli
 - **No aparece si ya hay un jefe seguido a menos de 128 bloques** del jugador.
 - **El botín asegurado va en el mismo `@WrapOperation` que el botín raro** (`BotinPorNivel.soltarBotinDeJefe`), así que respeta `mobDrops` y exige que lo haya matado un jugador. Ver [botín](botin.md).
 - **La barra y los mensajes usan `NivelDeMob.nombreSinVida`:** la barra ya muestra la vida, y "❤ 120/180" ahí estaría repetido.
+
+### Contorno
+
+**El jefe brilla con el contorno de la flecha espectral** (`setGlowingTag`), que un cliente vanilla dibuja a través de las paredes. **El color sale del equipo del scoreboard** en el que está el mob: `JefeDeZona.resaltar` lo pone en `bloodmoon.jefe` (`TeamColor.DARK_PURPLE`) o, con furia, en `bloodmoon.furia` (`RED`), los mismos colores que la barra. Los equipos se crean la primera vez y quedan en el `scoreboard.dat` del mundo.
+
+- **En 26.3 el color de un equipo es `Optional<TeamColor>`**, no `ChatFormatting`.
+- **`resaltar` corre al seguirlo y en cada `actualizarTodos`:** así sigue a la furia y a un `/bloodmoon recargar` que cambie `contorno`. Sólo hace `addPlayerToTeam` si cambia de equipo: cada alta se les manda a todos los jugadores.
+- **No hace falta sacarlo del equipo al morir:** cuando un mob se va del mundo, vanilla llama a `Scoreboard.entityRemoved`, que lo saca de su equipo (lo prueba `contornoDelJefe`). Con `contorno` en `false` sí se lo saca, pero sólo de los dos equipos del mod: si un datapack lo puso en otro, no se toca.
+- **Estar en el mismo equipo los hace aliados** (`isAlliedTo`): dos jefes no se pelean entre sí. Las escoltas no entran al equipo.
+- El nombre del jefe también toma el color del equipo donde no tiene uno propio.
+- Ver a través de las paredes no delata nada: el jefe ya se anuncia al aparecer y tiene barra.
 
 ### Furia y habilidades
 

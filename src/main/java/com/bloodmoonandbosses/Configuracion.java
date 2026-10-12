@@ -93,8 +93,9 @@ public record Configuracion(
 			// La luna llena es una noche de cada ocho: con 50 %, una luna de sangre cada 16 días en promedio
 			new LunaDeSangre(true, 0.5, 10, 0.5),
 			// Con 1 % por minuto, alrededor de un jefe cada hora y media de juego por jugador. A media vida se enfurece; cada
-			// 10 segundos usa una habilidad, que avisa un segundo antes para que se pueda esquivar
-			new JefeDeZona(true, 0.01, 2, 15, 20, 3.0, 3, 48, 60, 0.5, 0.25, 0.3, 2, 10, 6, 1.0, 1.5, 24));
+			// 10 segundos usa una habilidad, que avisa un segundo antes para que se pueda esquivar. El contorno se ve a
+			// través de las paredes, pero el jefe ya se anuncia y tiene barra: no delata nada que no se sepa
+			new JefeDeZona(true, 0.01, 2, 15, 20, 3.0, 3, 48, 60, 0.5, 0.25, 0.3, 2, 10, 6, 1.0, 1.5, 24, true));
 
 	public Configuracion conVariacion(int variacion) {
 		return new Configuracion(bloquesPorNivel, nivelMaximo, extraNether, extraEnd, variacion, diasPorNivelExtra,
@@ -206,6 +207,6 @@ public record Configuracion(
 	public record JefeDeZona(boolean activo, double chancePorMinuto, int diasEntreJefes, int nivelMinimo, int nivelesExtra,
 			double multiplicadorDeVida, int escoltas, int radioDeBarra, int segundosAbandonado, double vidaFuria, double velocidadFuria,
 			double danioFuria, int escoltasFuria, int segundosEntreHabilidades, int radioOnda, double danioOnda, double fuerzaOnda,
-			int radioTiron) {
+			int radioTiron, boolean contorno) {
 	}
 }

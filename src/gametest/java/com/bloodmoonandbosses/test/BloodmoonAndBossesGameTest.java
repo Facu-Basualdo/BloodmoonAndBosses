@@ -5,6 +5,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.mojang.authlib.GameProfile;
@@ -58,6 +59,9 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.cubemob.Slime;
 import net.minecraft.world.entity.monster.zombie.Zombie;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.TeamColor;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -719,6 +723,39 @@ public class BloodmoonAndBossesGameTest {
 		jefe.discard();
 		JefeDeZona.actualizarTodos();
 		level.getServer().getPlayerList().remove(jugador);
+		helper.succeed();
+	}
+
+	@GameTest
+	public void contornoDelJefe(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		Scoreboard scoreboard = level.getScoreboard();
+		Configuracion.JefeDeZona config = BloodmoonAndBosses.config().jefeDeZona();
+		Zombie jefe = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		NivelDeMob.aplicar(jefe, 30);
+		String nombre = jefe.getScoreboardName();
+		helper.assertFalse(jefe.hasGlowingTag(), Component.literal("Un mob común no brilla"));
+
+		JefeDeZona.convertir(jefe, config);
+		helper.assertTrue(jefe.hasGlowingTag(), Component.literal("El jefe tiene contorno"));
+		PlayerTeam equipo = scoreboard.getPlayersTeam(nombre);
+		helper.assertTrue(equipo != null && equipo.getName().equals(JefeDeZona.EQUIPO), Component.literal("Está en el equipo del jefe"));
+		helper.assertValueEqual(Optional.of(TeamColor.DARK_PURPLE), equipo.getColor(), "Violeta, como la barra");
+
+		JefeDeZona.enfurecer(jefe, config);
+		JefeDeZona.actualizarTodos();
+		PlayerTeam furia = scoreboard.getPlayersTeam(nombre);
+		helper.assertTrue(furia != null && furia.getName().equals(JefeDeZona.EQUIPO_FURIA), Component.literal("Con furia cambia de equipo"));
+		helper.assertValueEqual(Optional.of(TeamColor.RED), furia.getColor(), "Rojo, como la barra");
+
+		JefeDeZona.resaltar(jefe, false);
+		helper.assertFalse(jefe.hasGlowingTag(), Component.literal("Con contorno en false no brilla"));
+		helper.assertTrue(scoreboard.getPlayersTeam(nombre) == null, Component.literal("Y sale del equipo"));
+
+		JefeDeZona.resaltar(jefe, true);
+		jefe.discard();
+		JefeDeZona.actualizarTodos();
+		helper.assertTrue(scoreboard.getPlayersTeam(nombre) == null, Component.literal("Al irse, vanilla lo saca del equipo"));
 		helper.succeed();
 	}
 

@@ -44,6 +44,9 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.TeamColor;
 
 /**
  * Un mob mucho más fuerte que aparece cerca de un jugador, con escoltas y barra de jefe. No depende de memoria: el
@@ -74,6 +77,9 @@ public final class JefeDeZona {
 	private static final int DISTANCIA_ENTRE_JEFES = 128;
 	private static final int DISTANCIA_MINIMA = 16;
 	private static final int DISTANCIA_MAXIMA = 24;
+	// El color del contorno sale del equipo del scoreboard: uno por color, el mismo que la barra
+	public static final String EQUIPO = "bloodmoon.jefe";
+	public static final String EQUIPO_FURIA = "bloodmoon.furia";
 
 	private static final Map<Mob, Seguido> SEGUIDOS = new IdentityHashMap<>();
 
@@ -196,6 +202,39 @@ public final class JefeDeZona {
 		ServerBossEvent barra = new ServerBossEvent(UUID.randomUUID(), nombreDeLaBarra(jefe), colorDeLaBarra(jefe), BossEvent.BossBarOverlay.NOTCHED_10);
 		long ahora = level.getGameTime();
 		SEGUIDOS.put(jefe, new Seguido(barra, ahora, ahora + BloodmoonAndBosses.config().jefeDeZona().segundosEntreHabilidades() * 20L));
+		resaltar(jefe, BloodmoonAndBosses.config().jefeDeZona().contorno());
+	}
+
+	/**
+	 * El contorno brillante de la flecha espectral, que el cliente vanilla dibuja con el color del equipo del mob:
+	 * violeta, y rojo con furia, como la barra. Se ve a través de las paredes, igual que la barra avisa que está cerca.
+	 * Al morir o desaparecer, vanilla lo saca del equipo solo ({@code Scoreboard.entityRemoved}).
+	 */
+	public static void resaltar(Mob jefe, boolean contorno) {
+		Scoreboard scoreboard = jefe.level().getScoreboard();
+		String nombre = jefe.getScoreboardName();
+		PlayerTeam actual = scoreboard.getPlayersTeam(nombre);
+		jefe.setGlowingTag(contorno);
+		if (!contorno) {
+			if (actual != null && (actual.getName().equals(EQUIPO) || actual.getName().equals(EQUIPO_FURIA))) {
+				scoreboard.removePlayerFromTeam(nombre, actual);
+			}
+			return;
+		}
+		PlayerTeam equipo = estaFurioso(jefe) ? equipo(scoreboard, EQUIPO_FURIA, TeamColor.RED) : equipo(scoreboard, EQUIPO, TeamColor.DARK_PURPLE);
+		// Sólo si cambia: cada alta en un equipo se les manda a todos los jugadores
+		if (actual != equipo) {
+			scoreboard.addPlayerToTeam(nombre, equipo);
+		}
+	}
+
+	private static PlayerTeam equipo(Scoreboard scoreboard, String nombre, TeamColor color) {
+		PlayerTeam equipo = scoreboard.getPlayerTeam(nombre);
+		if (equipo == null) {
+			equipo = scoreboard.addPlayerTeam(nombre);
+			equipo.setColor(Optional.of(color));
+		}
+		return equipo;
 	}
 
 	/** ENTITY_LOAD: un jefe que vuelve con su chunk o después de un reinicio. */
@@ -258,6 +297,8 @@ public final class JefeDeZona {
 			}
 			seguido.barra.setName(nombreDeLaBarra(jefe));
 			seguido.barra.setColor(colorDeLaBarra(jefe));
+			// Cada segundo: así sigue a la furia y a un /bloodmoon recargar que lo apague o lo prenda
+			resaltar(jefe, config.contorno());
 			seguido.barra.setProgress(Math.clamp(jefe.getHealth() / jefe.getMaxHealth(), 0f, 1f));
 
 			long ahora = level.getGameTime();
