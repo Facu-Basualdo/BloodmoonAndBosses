@@ -1,5 +1,6 @@
 package com.mobspoderosos;
 
+import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -28,23 +30,33 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Un mob mucho más fuerte que aparece cerca de un jugador, con escoltas y barra de jefe. No depende de memoria: el
  * attachment JEFE lo marca, y al cargarse (reinicio, chunk que vuelve) se lo vuelve a seguir.
+ *
+ * <p>Además de pegar como su especie, pelea como jefe: a media vida se enfurece (más rápido, más fuerte y con otra
+ * tanda de escoltas) y cada tanto usa una habilidad que avisa un segundo antes: una onda de choque contra los que
+ * están cerca o un tirón que trae a los que pelean de lejos.
  */
 public final class JefeDeZona {
 	public static final AttachmentType<Boolean> JEFE = AttachmentRegistry.createPersistent(MobsPoderosos.id("jefe"), Codec.BOOL);
+	// Persistente: un jefe que se enfureció y vuelve con su chunk no se enfurece de nuevo (ni llama otra tanda de escoltas)
+	public static final AttachmentType<Boolean> FURIA = AttachmentRegistry.createPersistent(MobsPoderosos.id("furia"), Codec.BOOL);
 	public static final AttachmentType<Long> ULTIMO = AttachmentRegistry.create(MobsPoderosos.id("ultimo_jefe"),
 			builder -> builder.persistent(Codec.LONG).copyOnDeath());
 	public static final TagKey<EntityType<?>> TIPOS_OVERWORLD = tipos("overworld");
@@ -52,6 +64,12 @@ public final class JefeDeZona {
 	public static final TagKey<EntityType<?>> TIPOS_END = tipos("end");
 
 	private static final Identifier MODIFICADOR = MobsPoderosos.id("jefe");
+	private static final Identifier MODIFICADOR_FURIA = MobsPoderosos.id("furia");
+	// El aviso de una habilidad: lo justo para alejarse dos o tres bloques, o cubrirse
+	private static final int TICKS_DE_AVISO = 20;
+	// Cuánto se queda lejos del jefe el que trae el tirón: si llegara encima, el siguiente golpe sería seguro
+	private static final double DISTANCIA_DEL_TIRON = 3;
+	private static final double VELOCIDAD_MAXIMA_DEL_TIRON = 2.5;
 	// Si ya hay un jefe a esta distancia, no aparece otro: dos barras a la vez son una pelea imposible
 	private static final int DISTANCIA_ENTRE_JEFES = 128;
 	private static final int DISTANCIA_MINIMA = 16;
@@ -68,6 +86,10 @@ public final class JefeDeZona {
 
 	public static boolean esJefe(Entity entity) {
 		return entity.getAttachedOrElse(JEFE, false);
+	}
+
+	public static boolean estaFurioso(Entity entity) {
+		return entity.getAttachedOrElse(FURIA, false);
 	}
 
 	public static @Nullable ServerBossEvent barra(Mob jefe) {
@@ -171,8 +193,9 @@ public final class JefeDeZona {
 		if (SEGUIDOS.containsKey(jefe) || !(jefe.level() instanceof ServerLevel level)) {
 			return;
 		}
-		ServerBossEvent barra = new ServerBossEvent(UUID.randomUUID(), NivelDeMob.nombreSinVida(jefe), BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.NOTCHED_10);
-		SEGUIDOS.put(jefe, new Seguido(barra, level.getGameTime()));
+		ServerBossEvent barra = new ServerBossEvent(UUID.randomUUID(), nombreDeLaBarra(jefe), colorDeLaBarra(jefe), BossEvent.BossBarOverlay.NOTCHED_10);
+		long ahora = level.getGameTime();
+		SEGUIDOS.put(jefe, new Seguido(barra, ahora, ahora + MobsPoderosos.config().jefeDeZona().segundosEntreHabilidades() * 20L));
 	}
 
 	/** ENTITY_LOAD: un jefe que vuelve con su chunk o después de un reinicio. */
@@ -230,14 +253,180 @@ public final class JefeDeZona {
 					seguido.barra.removePlayer(jugador);
 				}
 			}
-			seguido.barra.setName(NivelDeMob.nombreSinVida(jefe));
+			if (!estaFurioso(jefe) && jefe.isAlive() && jefe.getHealth() <= jefe.getMaxHealth() * config.vidaFuria()) {
+				enfurecer(jefe, config);
+			}
+			seguido.barra.setName(nombreDeLaBarra(jefe));
+			seguido.barra.setColor(colorDeLaBarra(jefe));
 			seguido.barra.setProgress(Math.clamp(jefe.getHealth() / jefe.getMaxHealth(), 0f, 1f));
 
+			long ahora = level.getGameTime();
 			if (alguienCerca) {
-				seguido.ultimoJugadorCerca = level.getGameTime();
-			} else if (level.getGameTime() - seguido.ultimoJugadorCerca > config.segundosAbandonado() * 20L) {
+				seguido.ultimoJugadorCerca = ahora;
+				if (ahora >= seguido.proximaHabilidad && jefe.isAlive()) {
+					seguido.proximaHabilidad = ahora + config.segundosEntreHabilidades() * 20L;
+					usarHabilidad(jefe, level, config);
+				}
+			} else if (ahora - seguido.ultimoJugadorCerca > config.segundosAbandonado() * 20L) {
 				jefe.discard();
 			}
+		}
+	}
+
+	private static Component nombreDeLaBarra(Mob jefe) {
+		Component nombre = NivelDeMob.nombreSinVida(jefe);
+		return estaFurioso(jefe) ? nombre.copy().append(Component.literal(" · Furia").withStyle(ChatFormatting.RED)) : nombre;
+	}
+
+	private static BossEvent.BossBarColor colorDeLaBarra(Mob jefe) {
+		return estaFurioso(jefe) ? BossEvent.BossBarColor.RED : BossEvent.BossBarColor.PURPLE;
+	}
+
+	/**
+	 * Una sola vez por jefe (FURIA viaja en el NBT). Los modificadores son permanentes con id fijo, como los del nivel:
+	 * se guardan con el mob y aplicar dos veces no apila.
+	 */
+	public static void enfurecer(Mob jefe, Configuracion.JefeDeZona config) {
+		if (!(jefe.level() instanceof ServerLevel level) || estaFurioso(jefe)) {
+			return;
+		}
+		jefe.setAttached(FURIA, true);
+		modificar(jefe, Attributes.MOVEMENT_SPEED, config.velocidadFuria());
+		// MULTIPLIED_TOTAL: sobre todo lo que ya suma el nivel y el arma
+		modificar(jefe, Attributes.ATTACK_DAMAGE, config.danioFuria());
+
+		RandomSource random = jefe.getRandom();
+		LivingEntity objetivo = jefe.getTarget();
+		for (int i = 0; i < config.escoltasFuria(); i++) {
+			BlockPos lugar = Eventos.lugarCerca(level, jefe.blockPosition(), 1, 4, null, jefe.getType(), false, random);
+			if (lugar != null) {
+				Mob escolta = NivelDeMob.invocarConNivel(jefe.getType(), level, lugar, EntitySpawnReason.EVENT, NivelDeZona.calcular(level, lugar, random), false);
+				if (escolta != null && objetivo != null) {
+					escolta.setTarget(objetivo);
+				}
+			}
+		}
+		level.playSound(null, jefe.blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 3.0f, 0.8f);
+		level.sendParticles(ParticleTypes.ANGRY_VILLAGER, jefe.getX(), jefe.getY(1) + 0.3, jefe.getZ(), 10, 0.6, 0.4, 0.6, 0);
+		avisar(jefe, level, config, Component.literal("¡El jefe se enfurece!").withStyle(ChatFormatting.RED));
+	}
+
+	private static void modificar(Mob jefe, Holder<Attribute> atributo, double valor) {
+		AttributeInstance instancia = jefe.getAttribute(atributo);
+		if (instancia != null && valor != 0) {
+			instancia.addOrReplacePermanentModifier(new AttributeModifier(MODIFICADOR_FURIA, valor, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+		}
+	}
+
+	/** Lo que hace el jefe cada segundosEntreHabilidades. */
+	public enum Habilidad {
+		/** Empuja y lastima a los que están a menos de radioOnda: castiga quedarse pegado al jefe. */
+		ONDA,
+		/** Trae a los que están entre radioOnda y radioTiron: castiga pelear de lejos sin acercarse nunca. */
+		TIRON
+	}
+
+	/** La que corresponde según dónde están los jugadores, o null si no hay nadie a tiro. */
+	public static @Nullable Habilidad elegirHabilidad(Mob jefe, Configuracion.JefeDeZona config, RandomSource random) {
+		boolean alguienCerca = !jugadoresEntre(jefe, 0, config.radioOnda()).isEmpty();
+		boolean alguienLejos = !jugadoresEntre(jefe, config.radioOnda(), Math.min(config.radioTiron(), config.radioDeBarra())).isEmpty();
+		if (alguienCerca && alguienLejos) {
+			return random.nextBoolean() ? Habilidad.ONDA : Habilidad.TIRON;
+		}
+		return alguienCerca ? Habilidad.ONDA : alguienLejos ? Habilidad.TIRON : null;
+	}
+
+	/** Avisa ahora y la hace un segundo después, con los jugadores que estén a tiro en ese momento. */
+	private static void usarHabilidad(Mob jefe, ServerLevel level, Configuracion.JefeDeZona config) {
+		Habilidad habilidad = elegirHabilidad(jefe, config, jefe.getRandom());
+		if (habilidad == null) {
+			return;
+		}
+		if (habilidad == Habilidad.ONDA) {
+			level.playSound(null, jefe.blockPosition(), SoundEvents.WARDEN_SONIC_CHARGE, SoundSource.HOSTILE, 2.0f, 1.2f);
+			level.sendParticles(ParticleTypes.CLOUD, jefe.getX(), jefe.getY() + 0.2, jefe.getZ(), 30, config.radioOnda() / 3.0, 0.1, config.radioOnda() / 3.0, 0.02);
+			avisar(jefe, level, config, Component.literal("El jefe prepara una onda de choque: ¡alejate!").withStyle(ChatFormatting.GOLD));
+		} else {
+			level.playSound(null, jefe.blockPosition(), SoundEvents.BREEZE_INHALE, SoundSource.HOSTILE, 3.0f, 0.6f);
+			level.sendParticles(ParticleTypes.REVERSE_PORTAL, jefe.getX(), jefe.getY(0.5), jefe.getZ(), 40, 1.0, 1.0, 1.0, 0.1);
+			avisar(jefe, level, config, Component.literal("El jefe te va a atraer: ¡agarrate!").withStyle(ChatFormatting.GOLD));
+		}
+		Eventos.programar(level, TICKS_DE_AVISO, () -> {
+			if (jefe.isAlive() && !jefe.isRemoved() && jefe.level() == level) {
+				ejecutar(habilidad, jefe, level, config);
+			}
+		});
+	}
+
+	/** Público para los tests: sin el segundo de aviso. */
+	public static void ejecutar(Habilidad habilidad, Mob jefe, ServerLevel level, Configuracion.JefeDeZona config) {
+		if (habilidad == Habilidad.ONDA) {
+			ondaDeChoque(jefe, level, config);
+		} else {
+			tiron(jefe, level, config);
+		}
+	}
+
+	private static void ondaDeChoque(Mob jefe, ServerLevel level, Configuracion.JefeDeZona config) {
+		AttributeInstance ataque = jefe.getAttribute(Attributes.ATTACK_DAMAGE);
+		float danio = (float) ((ataque == null ? 0 : ataque.getValue()) * config.danioOnda());
+		for (ServerPlayer jugador : jugadoresEntre(jefe, 0, config.radioOnda())) {
+			if (danio > 0) {
+				jugador.hurtServer(level, jefe.damageSources().mobAttack(jefe), danio);
+			}
+			Vec3 afuera = horizontal(jugador.position().subtract(jefe.position()));
+			jugador.push(afuera.x * config.fuerzaOnda(), 0.5, afuera.z * config.fuerzaOnda());
+			// El cliente es dueño de su movimiento: sin esto el empujón sólo pasa en el servidor y el jugador "rebota" atrás
+			jugador.needsSync = true;
+		}
+		level.playSound(null, jefe.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 2.0f, 0.7f);
+		for (int i = 0; i < 16; i++) {
+			double angulo = Math.PI * 2 * i / 16;
+			level.sendParticles(ParticleTypes.EXPLOSION, jefe.getX() + Math.cos(angulo) * config.radioOnda() * 0.6, jefe.getY() + 0.3,
+					jefe.getZ() + Math.sin(angulo) * config.radioOnda() * 0.6, 1, 0, 0, 0, 0);
+		}
+	}
+
+	private static void tiron(Mob jefe, ServerLevel level, Configuracion.JefeDeZona config) {
+		for (ServerPlayer jugador : jugadoresEntre(jefe, config.radioOnda(), Math.min(config.radioTiron(), config.radioDeBarra()))) {
+			Vec3 hacia = jefe.position().subtract(jugador.position());
+			double distancia = Math.sqrt(hacia.x * hacia.x + hacia.z * hacia.z);
+			// En el aire el roce frena un 9 % por tick: una velocidad v recorre unas 11 v. Así llega a unos bloques del jefe
+			double velocidad = Math.min(Math.max(distancia - DISTANCIA_DEL_TIRON, 0) / 11, VELOCIDAD_MAXIMA_DEL_TIRON);
+			Vec3 direccion = horizontal(hacia);
+			jugador.push(direccion.x * velocidad, 0.6, direccion.z * velocidad);
+			jugador.needsSync = true;
+			jugador.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 40, 1), jefe);
+			level.sendParticles(ParticleTypes.REVERSE_PORTAL, jugador.getX(), jugador.getY(0.5), jugador.getZ(), 20, 0.3, 0.5, 0.3, 0.05);
+		}
+		level.playSound(null, jefe.blockPosition(), SoundEvents.BREEZE_WIND_CHARGE_BURST.value(), SoundSource.HOSTILE, 3.0f, 0.5f);
+	}
+
+	private static Vec3 horizontal(Vec3 vector) {
+		Vec3 plano = new Vec3(vector.x, 0, vector.z);
+		return plano.lengthSqr() < 1.0E-6 ? new Vec3(1, 0, 0) : plano.normalize();
+	}
+
+	/** Los que pelean: vivos, en supervivencia o aventura, en la misma dimensión, a una distancia en (desde, hasta]. */
+	private static List<ServerPlayer> jugadoresEntre(Mob jefe, double desde, double hasta) {
+		if (!(jefe.level() instanceof ServerLevel level)) {
+			return List.of();
+		}
+		List<ServerPlayer> jugadores = new ArrayList<>();
+		for (ServerPlayer jugador : level.players()) {
+			double distancia = jugador.distanceToSqr(jefe);
+			if (jugador.isAlive() && !jugador.isSpectator() && !jugador.isCreative() && distancia <= hasta * hasta
+					&& (desde == 0 || distancia > desde * desde)) {
+				jugadores.add(jugador);
+			}
+		}
+		return jugadores;
+	}
+
+	/** En la barra de acción de los que ven la barra del jefe: el título taparía la pelea. */
+	private static void avisar(Mob jefe, ServerLevel level, Configuracion.JefeDeZona config, Component mensaje) {
+		for (ServerPlayer jugador : jugadoresEntre(jefe, 0, config.radioDeBarra())) {
+			jugador.sendSystemMessage(mensaje, true);
 		}
 	}
 
@@ -248,10 +437,13 @@ public final class JefeDeZona {
 	private static final class Seguido {
 		private final ServerBossEvent barra;
 		private long ultimoJugadorCerca;
+		// En memoria: después de un reinicio el jefe espera una vuelta entera antes de la primera habilidad
+		private long proximaHabilidad;
 
-		private Seguido(ServerBossEvent barra, long ultimoJugadorCerca) {
+		private Seguido(ServerBossEvent barra, long ultimoJugadorCerca, long proximaHabilidad) {
 			this.barra = barra;
 			this.ultimoJugadorCerca = ultimoJugadorCerca;
+			this.proximaHabilidad = proximaHabilidad;
 		}
 	}
 }

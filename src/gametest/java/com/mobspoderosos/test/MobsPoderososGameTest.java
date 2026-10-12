@@ -33,13 +33,17 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -66,6 +70,7 @@ import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public class MobsPoderososGameTest {
 	private static final BlockPos DENTRO = new BlockPos(2, 1, 2);
@@ -510,6 +515,172 @@ public class MobsPoderososGameTest {
 		Mob otraVictima = spawn(helper, EntityTypes.VILLAGER, EntitySpawnReason.COMMAND);
 		otraVictima.hurtServer(level, level.damageSources().mobAttack(comun), 8);
 		assertCerca(helper, 10, comun.getHealth(), "Sin el afijo no se cura");
+		helper.succeed();
+	}
+
+	@GameTest
+	public void afijosNuevos(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		Configuracion.Afijos config = MobsPoderosos.config().afijos();
+
+		Zombie blindado = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		NivelDeMob.aparecer(blindado, 20, Afijo.BLINDADO);
+		AttributeModifier armadura = blindado.getAttribute(Attributes.ARMOR).getModifier(MobsPoderosos.id("afijo"));
+		helper.assertTrue(armadura != null, Component.literal("El blindado tiene armadura extra"));
+		assertCerca(helper, config.armaduraBlindado(), armadura.amount(), "Armadura del blindado");
+		assertCerca(helper, config.empujeBlindado(), blindado.getAttribute(Attributes.KNOCKBACK_RESISTANCE).getModifier(MobsPoderosos.id("afijo")).amount(),
+				"Resistencia al empuje del blindado");
+		helper.assertTrue(blindado.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(MobsPoderosos.id("afijo")) == null,
+				Component.literal("El blindado no corre más: el modificador de velocidad es sólo del veloz"));
+
+		Zombie venenoso = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		NivelDeMob.aparecer(venenoso, 20, Afijo.VENENOSO);
+		Mob envenenado = spawn(helper, EntityTypes.VILLAGER, EntitySpawnReason.COMMAND);
+		envenenado.hurtServer(level, level.damageSources().mobAttack(venenoso), 2);
+		MobEffectInstance veneno = envenenado.getEffect(MobEffects.POISON);
+		helper.assertTrue(veneno != null, Component.literal("El golpe del venenoso envenena"));
+		helper.assertValueEqual(config.nivelVeneno() - 1, veneno.getAmplifier(), "Veneno del nivel de la config");
+
+		Zombie congelante = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		NivelDeMob.aparecer(congelante, 20, Afijo.CONGELANTE);
+		Mob congelado = spawn(helper, EntityTypes.VILLAGER, EntitySpawnReason.COMMAND);
+		congelado.hurtServer(level, level.damageSources().mobAttack(congelante), 2);
+		helper.assertTrue(congelado.hasEffect(MobEffects.SLOWNESS), Component.literal("El golpe del congelante da lentitud"));
+		helper.assertTrue(congelado.getTicksFrozen() > 0, Component.literal("Y escarcha, para que se vea"));
+		helper.assertTrue(congelado.getTicksFrozen() < congelado.getTicksRequiredToFreeze(), Component.literal("Pero no tanta como para lastimar por frío"));
+
+		Mob sano = spawn(helper, EntityTypes.VILLAGER, EntitySpawnReason.COMMAND);
+		Zombie comun = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		NivelDeMob.aplicar(comun, 20);
+		sano.hurtServer(level, level.damageSources().mobAttack(comun), 2);
+		helper.assertFalse(sano.hasEffect(MobEffects.POISON) || sano.hasEffect(MobEffects.SLOWNESS), Component.literal("Sin afijo, el golpe no da efectos"));
+
+		for (Afijo afijo : Afijo.values()) {
+			helper.assertValueEqual(afijo, Afijo.porId(afijo.getSerializedName()), "El id de " + afijo + " se lee de vuelta");
+		}
+		helper.succeed();
+	}
+
+	@GameTest
+	public void afijoTeletransportador(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		ponerPiso(helper);
+		Zombie teletransportador = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		NivelDeMob.aparecer(teletransportador, 20, Afijo.TELETRANSPORTADOR);
+		Mob atacante = spawn(helper, EntityTypes.VILLAGER, EntitySpawnReason.COMMAND);
+		atacante.snapTo(helper.absolutePos(CENTRO), 0, 0);
+
+		// La chance es 0,5 por golpe: se le borra la espera entre intentos. Que no salte en 20 golpes es 1 en un millón
+		for (int i = 0; i < 20 && !teletransportador.hasAttached(Afijo.ULTIMO_TELETRANSPORTE); i++) {
+			teletransportador.removeAttached(Afijo.ULTIMO_TELETRANSPORTE);
+			teletransportador.setHealth(teletransportador.getMaxHealth());
+			teletransportador.hurtServer(level, level.damageSources().mobAttack(atacante), 1);
+		}
+		helper.assertTrue(teletransportador.hasAttached(Afijo.ULTIMO_TELETRANSPORTE), Component.literal("Al lastimarlo se teletransporta"));
+		double distancia = Math.sqrt(teletransportador.distanceToSqr(atacante));
+		helper.assertTrue(distancia <= 5.5, Component.literal("Aparece al lado del que le pegó (a " + distancia + " bloques)"));
+
+		BlockPos donde = teletransportador.blockPosition();
+		teletransportador.hurtServer(level, level.damageSources().mobAttack(atacante), 1);
+		helper.assertValueEqual(donde, teletransportador.blockPosition(), "Durante la espera no vuelve a saltar");
+		helper.succeed();
+	}
+
+	/** Vanilla no llama a setHealth cuando la vida máxima sube: lo cubre el mixin en onAttributeUpdated, que corre en el tick del mob. */
+	@GameTest
+	public void vidaMaximaQueSubeEnElNombre(GameTestHelper helper) {
+		Zombie zombie = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		NivelDeMob.aplicar(zombie, 20);
+		helper.runAfterDelay(1, () -> {
+			assertTerminaEn(helper, zombie, "❤ 52/52");
+			zombie.getAttribute(Attributes.MAX_HEALTH).addOrReplacePermanentModifier(
+					new AttributeModifier(MobsPoderosos.id("prueba"), 10, AttributeModifier.Operation.ADD_VALUE));
+			helper.runAfterDelay(2, () -> {
+				// 78 y no 62: el ADD_MULTIPLIED_BASE del nivel (×2,6) multiplica también los 10 que se suman
+				assertTerminaEn(helper, zombie, "❤ 52/78");
+				helper.succeed();
+			});
+		});
+	}
+
+	@GameTest
+	public void furiaDelJefe(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		ponerPiso(helper);
+		ServerPlayer jugador = joinSurvivalPlayer(helper, "provocador");
+		BlockPos centro = helper.absolutePos(CENTRO);
+		jugador.snapTo(centro.getX() + 0.5, centro.getY(), centro.getZ() + 0.5, 0, 0);
+		Configuracion.JefeDeZona config = MobsPoderosos.config().jefeDeZona();
+
+		Zombie jefe = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		NivelDeMob.aplicar(jefe, 30);
+		JefeDeZona.convertir(jefe, config);
+		jefe.setTarget(jugador);
+		double velocidad = jefe.getAttributeValue(Attributes.MOVEMENT_SPEED);
+		double danio = jefe.getAttributeValue(Attributes.ATTACK_DAMAGE);
+		AABB alrededor = jefe.getBoundingBox().inflate(6);
+		int antes = level.getEntitiesOfClass(Zombie.class, alrededor, z -> z != jefe).size();
+
+		JefeDeZona.actualizarTodos();
+		helper.assertFalse(JefeDeZona.estaFurioso(jefe), Component.literal("Con la vida llena no está furioso"));
+		helper.assertValueEqual(BossEvent.BossBarColor.PURPLE, JefeDeZona.barra(jefe).getColor(), "La barra arranca violeta");
+
+		jefe.setHealth(jefe.getMaxHealth() * (float) config.vidaFuria() - 1);
+		JefeDeZona.actualizarTodos();
+		helper.assertTrue(JefeDeZona.estaFurioso(jefe), Component.literal("Por debajo de vidaFuria se enfurece"));
+		assertCerca(helper, velocidad * (1 + config.velocidadFuria()), jefe.getAttributeValue(Attributes.MOVEMENT_SPEED), "Corre más");
+		assertCerca(helper, danio * (1 + config.danioFuria()), jefe.getAttributeValue(Attributes.ATTACK_DAMAGE), "Pega más");
+		int escoltas = level.getEntitiesOfClass(Zombie.class, alrededor, z -> z != jefe).size() - antes;
+		helper.assertValueEqual(config.escoltasFuria(), escoltas, "Llama otra tanda de escoltas");
+		ServerBossEvent barra = JefeDeZona.barra(jefe);
+		helper.assertValueEqual(BossEvent.BossBarColor.RED, barra.getColor(), "La barra se pone roja");
+		helper.assertTrue(barra.getName().getString().contains("Furia"), Component.literal("Y lo dice: " + barra.getName().getString()));
+
+		JefeDeZona.actualizarTodos();
+		helper.assertValueEqual(escoltas, level.getEntitiesOfClass(Zombie.class, alrededor, z -> z != jefe).size() - antes, "Se enfurece una sola vez");
+
+		jefe.discard();
+		JefeDeZona.actualizarTodos();
+		level.getServer().getPlayerList().remove(jugador);
+		helper.succeed();
+	}
+
+	@GameTest
+	public void habilidadesDelJefe(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		Configuracion.JefeDeZona config = MobsPoderosos.config().jefeDeZona();
+		Zombie jefe = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		NivelDeMob.aplicar(jefe, 30);
+		JefeDeZona.convertir(jefe, config);
+		helper.assertTrue(JefeDeZona.elegirHabilidad(jefe, config, RandomSource.create(1)) == null, Component.literal("Sin nadie a tiro no hace nada"));
+
+		ServerPlayer cerca = joinSurvivalPlayer(helper, "pegado");
+		// Si no, el jugador de prueba es invulnerable: vanilla espera a que el cliente diga que cargó el mundo
+		cerca.connection.handleAcceptPlayerLoad(new ServerboundPlayerLoadedPacket());
+		cerca.snapTo(jefe.getX() + 2, jefe.getY(), jefe.getZ(), 0, 0);
+		helper.assertValueEqual(JefeDeZona.Habilidad.ONDA, JefeDeZona.elegirHabilidad(jefe, config, RandomSource.create(1)), "Con alguien pegado, la onda");
+		float vida = cerca.getHealth();
+		cerca.setDeltaMovement(Vec3.ZERO);
+		JefeDeZona.ejecutar(JefeDeZona.Habilidad.ONDA, jefe, level, config);
+		helper.assertTrue(cerca.getHealth() < vida, Component.literal("La onda lastima (" + vida + " → " + cerca.getHealth() + ")"));
+		helper.assertTrue(cerca.getDeltaMovement().x > 0.5, Component.literal("Y empuja para afuera: " + cerca.getDeltaMovement()));
+		helper.assertTrue(cerca.needsSync, Component.literal("Y se le avisa al cliente"));
+		level.getServer().getPlayerList().remove(cerca);
+
+		ServerPlayer lejos = joinSurvivalPlayer(helper, "francotirador");
+		lejos.snapTo(jefe.getX() - 15, jefe.getY(), jefe.getZ(), 0, 0);
+		helper.assertValueEqual(JefeDeZona.Habilidad.TIRON, JefeDeZona.elegirHabilidad(jefe, config, RandomSource.create(1)), "Con alguien lejos, el tirón");
+		lejos.setDeltaMovement(Vec3.ZERO);
+		JefeDeZona.ejecutar(JefeDeZona.Habilidad.TIRON, jefe, level, config);
+		helper.assertTrue(lejos.getDeltaMovement().x > 0.5, Component.literal("El tirón lo trae hacia el jefe: " + lejos.getDeltaMovement()));
+		helper.assertTrue(lejos.hasEffect(MobEffects.SLOWNESS), Component.literal("Y lo frena un momento"));
+
+		lejos.snapTo(jefe.getX() - config.radioTiron() - 5, jefe.getY(), jefe.getZ(), 0, 0);
+		helper.assertTrue(JefeDeZona.elegirHabilidad(jefe, config, RandomSource.create(1)) == null, Component.literal("Más allá de radioTiron no lo alcanza"));
+
+		level.getServer().getPlayerList().remove(lejos);
+		jefe.discard();
+		JefeDeZona.actualizarTodos();
 		helper.succeed();
 	}
 

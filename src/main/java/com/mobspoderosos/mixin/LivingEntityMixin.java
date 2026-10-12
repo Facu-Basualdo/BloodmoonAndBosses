@@ -13,10 +13,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.mobspoderosos.BotinPorNivel;
 import com.mobspoderosos.NivelDeMob;
 
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 
 @Mixin(LivingEntity.class)
 abstract class LivingEntityMixin {
@@ -30,6 +33,15 @@ abstract class LivingEntityMixin {
 	@Inject(method = "setHealth", at = @At("TAIL"))
 	private void mobspoderosos$vidaEnElNombre(float vida, CallbackInfo ci) {
 		if ((Object) this instanceof Mob mob) {
+			NivelDeMob.actualizarVida(mob);
+		}
+	}
+
+	// Si la vida máxima sube (un efecto, la furia de un jefe, un comando), vanilla no llama a setHealth: sin esto el nombre
+	// seguiría mostrando el máximo viejo hasta el próximo golpe. Cuando baja, vanilla ya llama a setHealth
+	@Inject(method = "onAttributeUpdated", at = @At("TAIL"))
+	private void mobspoderosos$vidaMaximaEnElNombre(Holder<Attribute> atributo, CallbackInfo ci) {
+		if (atributo.is(Attributes.MAX_HEALTH) && (Object) this instanceof Mob mob) {
 			NivelDeMob.actualizarVida(mob);
 		}
 	}

@@ -38,6 +38,10 @@ Todo es del lado del servidor: barra de jefe (`ServerBossEvent`), títulos (`Cli
 | Vampiro | `ServerLivingEntityEvents.AFTER_DAMAGE` | `source.getEntity()` y no `getDirectEntity()`: en una flecha es el esqueleto. Cura `danioRecibido × curacionVampiro`. No le toca al creeper |
 | Explosivo | `AFTER_DEATH` + `Eventos.programar` | La explosión va `ticksDeMecha` después, con el sonido de la mecha. `ExplosionInteraction.NONE`: no rompe bloques |
 | Invocador | `AFTER_DAMAGE` sobre la víctima | `INVOCACIONES` es persistente (si no, guardar y cargar el chunk le devolvería todas). `ULTIMA_INVOCACION` no lo es: la espera se reinicia, y no importa. Tag `no_invocan` (vex: sin evocador no desaparece nunca) |
+| Blindado | `Afijo.aplicarModificadores` | `mobspoderosos:afijo` en `ARMOR` (`armaduraBlindado`) y `KNOCKBACK_RESISTANCE` (`empujeBlindado`), `ADD_VALUE`. `modificar` con 0 **saca** el modificador: cada afijo pone los suyos y saca los de los otros |
+| Venenoso | `AFTER_DAMAGE` sobre el atacante | `POISON` de `nivelVeneno` (1 = I, el amplificador es `nivel − 1`) por `segundosVeneno`, con el atacante como fuente. Con `getEntity()`, también un esqueleto con flechas o un creeper con su explosión |
+| Congelante | `AFTER_DAMAGE` sobre el atacante | `SLOWNESS` como el veneno, más `setTicksFrozen` para la escarcha de la nieve polvo en pantalla. **Por debajo de `getTicksRequiredToFreeze()`** (140): con el máximo, vanilla lastima por frío. Fuera de la nieve baja 2 por tick, así que `segundosCongelante × 40` dura esos segundos |
+| Teletransportador | `AFTER_DAMAGE` sobre la víctima | Con `chanceTeletransporte` y una espera de `segundosEntreTeletransportes` (`ULTIMO_TELETRANSPORTE`, en memoria), salta a 2–4 bloques **del que le pegó** con `lugarCerca` y lo toma de objetivo: alejarse o tirarle flechas no alcanza. Sin un atacante vivo (lava, caída) no salta |
 
 ## El reloj: Eventos
 
@@ -89,6 +93,23 @@ Todo es del lado del servidor: barra de jefe (`ServerBossEvent`), títulos (`Cli
 - **No aparece si ya hay un jefe seguido a menos de 128 bloques** del jugador.
 - **El botín asegurado va en el mismo `@WrapOperation` que el botín raro** (`BotinPorNivel.soltarBotinDeJefe`), así que respeta `mobDrops` y exige que lo haya matado un jugador. Ver [botín](botin.md).
 - **La barra y los mensajes usan `NivelDeMob.nombreSinVida`:** la barra ya muestra la vida, y "❤ 120/180" ahí estaría repetido.
+
+### Furia y habilidades
+
+Todo corre en `actualizarTodos` (cada segundo), sólo para los jefes seguidos.
+
+| Mecánica | Cuándo | Qué hace |
+|---|---|---|
+| Furia (`enfurecer`) | La vida baja de `vidaFuria` × el máximo (0,5) | Attachment persistente `FURIA`; `mobspoderosos:furia` con `ADD_MULTIPLIED_TOTAL` en `MOVEMENT_SPEED` y `ATTACK_DAMAGE`; `escoltasFuria` escoltas con el nivel de la zona contra su objetivo; rugido de devastador; la barra pasa a **roja** y dice "· Furia" |
+| Onda de choque | Hay alguien a menos de `radioOnda` | Lastima `ATTACK_DAMAGE × danioOnda` (`mobAttack`) y empuja para afuera con `fuerzaOnda` |
+| Tirón | Hay alguien entre `radioOnda` y `radioTiron` (y dentro de `radioDeBarra`) | Lo trae hasta ~3 bloques del jefe y le da lentitud II 2 segundos |
+
+- **Cada `segundosEntreHabilidades` (10) elige una** con `elegirHabilidad`: si hay jugadores en las dos franjas, al azar; si no hay nadie a tiro, nada. **Avisa un segundo antes** (sonido, partículas y un mensaje en la barra de acción) y la hace con `Eventos.programar(20)`, con los jugadores que estén a tiro en ese momento: así se puede esquivar. Si el jefe murió o se fue en ese segundo, no pasa nada.
+- **FURIA es persistente** para que un jefe que se enfureció y vuelve con su chunk no llame otra tanda de escoltas. Los modificadores son permanentes con id fijo, como los del nivel: viajan en el NBT y aplicar dos veces no apila.
+- **`proximaHabilidad` vive en `Seguido`, en memoria:** después de un reinicio el jefe espera una vuelta entera antes de la primera. No vale la pena guardarlo.
+- **Empujar a un jugador pide `needsSync = true`** (el `hurtMarked` de antes): el cliente es dueño de su movimiento, y sin el paquete de velocidad el empujón sólo pasa en el servidor y el jugador "rebota" a donde estaba.
+- **El tirón calcula la velocidad con el roce:** en el aire la velocidad horizontal se multiplica por ~0,91 por tick, así que una velocidad `v` recorre unas `11 v`. Con `(distancia − 3) / 11`, tope 2,5, llega a unos bloques del jefe sin caerle encima.
+- **Sólo cuentan los jugadores vivos, en supervivencia o aventura** (`jugadoresEntre`): un espectador o alguien en creativo no dispara ni recibe habilidades.
 
 ## Ver también
 

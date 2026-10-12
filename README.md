@@ -6,7 +6,7 @@ Mod de Fabric para **Minecraft Java 26.3** en el que los mobs hostiles aparecen 
 
 Cerca de la base el juego se siente casi como vanilla; a varios miles de bloques, salir a explorar es otra cosa.
 
-> **Estado:** versión 0.9.1. Están todas las fases de [docs/plan.md](docs/plan.md) (niveles, loot y experiencia, equipo encantado, ítems raros y archivo de configuración) y los eventos de [docs/eventos.md](docs/eventos.md): afijos de campeón, estampidas, luna de sangre y jefes de zona.
+> **Estado:** versión 0.10.0. Están todas las fases de [docs/plan.md](docs/plan.md) (niveles, loot y experiencia, equipo encantado, ítems raros y archivo de configuración) y los eventos de [docs/eventos.md](docs/eventos.md): 8 afijos de campeón, estampidas, luna de sangre y jefes de zona con furia y habilidades.
 
 ## Cómo funciona en el juego
 
@@ -27,7 +27,7 @@ Cerca de la base el juego se siente casi como vanilla; a varios miles de bloques
 - **Nether:** cada bloque cuenta como 8 (como los portales) y suma 20 niveles. **End:** se mide desde el centro de la isla principal y suma 40.
 - **El color del nombre** indica el rango, por quintos del nivel máximo: gris (1–19), verde (20–39), azul (40–59), violeta (60–79), dorado (80+).
 - **El nombre se ve al mirar al mob**, no a través de las paredes.
-- **La vida del nombre se actualiza sola** cuando el mob recibe daño o se cura (`vidaEnElNombre` la apaga).
+- **La vida del nombre se actualiza sola** cuando el mob recibe daño, se cura o le cambia la vida máxima (`vidaEnElNombre` la apaga).
 - **Creepers de nivel 60 o más** explotan con un radio más grande.
 - **Equipo:** zombis, esqueletos, piglins y sus variantes pueden aparecer con armadura extra. La probabilidad de cada pieza es 0,75 % por nivel (hasta 50 %, desde el nivel 67) y el material depende del nivel:
 
@@ -74,10 +74,16 @@ Ninguno necesita el mod en el cliente: usan la barra de jefe, los títulos y los
   | **Vampiro** | Se cura la mitad del daño que hace (también con flechas). Los creepers no pueden serlo |
   | **Explosivo** | Al morir suena la mecha de un creeper y, un segundo y medio después, explota como uno. No rompe bloques |
   | **Invocador** | Cuando lo lastimás llama dos refuerzos de su especie, con el nivel de la zona. Hasta 3 veces, cada 10 segundos. Los vex no pueden serlo (tag `mobspoderosos:no_invocan`) |
+| **Blindado** | +6 de armadura y la mitad de resistencia al empuje |
+| **Venenoso** | Sus golpes (también las flechas y la explosión de un creeper) envenenan: veneno II por 5 segundos |
+| **Congelante** | Sus golpes dan lentitud II por 3 segundos, con la escarcha de la nieve polvo en la pantalla (no lastima por frío) |
+| **Teletransportador** | Cuando le pegás, la mitad de las veces aparece al lado tuyo, como un enderman. Como mucho cada 3 segundos: alejarse o tirarle flechas no alcanza |
 
 - **Estampida:** de noche, si estás al aire libre en el overworld, en una zona de nivel 10 o más, hay un 3 % por minuto de que suene un cuerno a lo lejos y entre 6 y 16 mobs de la zona (más cuanto más alto el nivel) carguen contra vos, todos desde el mismo lado, más rápido de lo normal. Uno es el líder: un campeón con afijo. Una barra roja muestra cuántos quedan. **Si los jugadores matan al menos la mitad, te llevás una tirada de botín raro** (la épica desde el nivel 50, la legendaria desde el 80) directo al inventario. Si te morís, se dispersan o pasan 3 minutos, termina sin premio; los que se queman al amanecer no cuentan. Después hay 3 días de juego de respiro. Los mobs salen del tag `mobspoderosos:estampida` (zombi, esqueleto, araña).
 - **Luna de sangre:** las noches de luna llena hay un 50 % de que la luna sea de sangre (en promedio una cada 16 días). Aparece un título rojo y una barra que se vacía hasta el amanecer. Esa noche los mobs que aparecen en el overworld tienen **+10 niveles** (y por eso más loot), y la mitad de los que aparecen solos vienen con un compañero igual. `/mobspoderosos zona` lo avisa. Dormir la saltea, como cualquier noche.
-- **Jefe de zona:** en cualquier dimensión, en zonas de nivel 15 o más, hay un 1 % por minuto (con 2 días de juego de espera) de que aparezca un jefe a 16–24 bloques, a tu altura: 20 niveles más que la zona, el triple de vida, un afijo y 3 escoltas. Tiene una barra violeta que ven los jugadores a menos de 48 bloques. **Muerto por un jugador suelta siempre una tirada de botín raro**, como mínimo la épica, además de su loot normal. Si nadie se le acerca durante un minuto, se va. Los jefes salen de los tags `mobspoderosos:jefe_de_zona/overworld` (zombi, esqueleto, vindicador, bruja), `…/nether` (esqueleto del Wither, piglin bruto, blaze) y `…/end` (enderman).
+- **Jefe de zona:** en cualquier dimensión, en zonas de nivel 15 o más, hay un 1 % por minuto (con 2 días de juego de espera) de que aparezca un jefe a 16–24 bloques, a tu altura: 20 niveles más que la zona, el triple de vida, un afijo y 3 escoltas. Tiene una barra violeta que ven los jugadores a menos de 48 bloques. **Muerto por un jugador suelta siempre una tirada de botín raro**, como mínimo la épica, además de su loot normal. Si nadie se le acerca durante un minuto, se va.
+  - **Furia:** cuando le queda la mitad de la vida, ruge, corre un 25 % más, pega un 30 % más y llama 2 escoltas más. La barra se pone roja.
+  - **Habilidades:** cada 10 segundos usa una, y la avisa un segundo antes con un sonido y un mensaje: una **onda de choque** que lastima (como un golpe suyo) y empuja lejos a los que están a menos de 6 bloques, o un **tirón** que trae hacia él a los que pelean desde lejos (de 6 a 24 bloques) y los frena un momento. Pelear pegado o de lejos todo el tiempo no sirve. Los jefes salen de los tags `mobspoderosos:jefe_de_zona/overworld` (zombi, esqueleto, vindicador, bruja), `…/nether` (esqueleto del Wither, piglin bruto, blaze) y `…/end` (enderman).
 - Los eventos no les tocan a los jugadores en creativo o espectador, ni en dificultad pacífica.
 
 ### Comandos
@@ -85,7 +91,7 @@ Ninguno necesita el mod en el cliente: usan la barra de jefe, los títulos y los
 | Comando | Qué hace |
 |---|---|
 | `/mobspoderosos zona` | Muestra el nivel de los mobs en la zona donde estás: lo que pone la distancia, lo que suman los días del mundo y la chance de campeón |
-| `/mobspoderosos invocar <entidad> <nivel> [afijo]` | Aparece un mob con ese nivel (y su equipo) delante tuyo, opcionalmente con un afijo (`veloz`, `vampiro`, `explosivo`, `invocador`). Requiere ser operador |
+| `/mobspoderosos invocar <entidad> <nivel> [afijo]` | Aparece un mob con ese nivel (y su equipo) delante tuyo, opcionalmente con un afijo (`veloz`, `vampiro`, `explosivo`, `invocador`, `blindado`, `venenoso`, `congelante`, `teletransportador`). Requiere ser operador |
 | `/mobspoderosos evento estampida [jugador]` | Larga una estampida contra vos o contra el jugador, sin esperar el sorteo, a cualquier hora (requiere ser operador) |
 | `/mobspoderosos evento jefe [jugador]` | Hace aparecer un jefe de zona cerca (requiere ser operador) |
 | `/mobspoderosos evento luna_de_sangre` | Empieza la luna de sangre; sólo de noche (requiere ser operador) |
@@ -124,10 +130,10 @@ En el primer arranque se crea **`config/mobspoderosos.json`** con todos los valo
 | `chanceTiradaExtra` | 0,5 % por nivel, tope 50 % | Probabilidad de cada tirada extra de los mobs de `tiradas_extra_por_chance` |
 | `botinRaro`, `botinEpico`, `botinLegendario` | ver arriba | `{"nivelMinimo": 20, "chance": 0.15}`: desde qué nivel y con qué probabilidad se tira cada tabla |
 | `experienciaPorNivel` | 0.05 | Experiencia extra por nivel (`0.05` = +5 %) |
-| `afijos` | ver arriba | `chance` (de que un campeón tenga afijo; 0 los apaga), `velocidadVeloz`, `curacionVampiro`, `potenciaExplosivo` y `ticksDeMecha`, `refuerzosInvocador`, `invocacionesMaximas` y `segundosEntreInvocaciones` |
+| `afijos` | ver arriba | `chance` (de que un campeón tenga afijo; 0 los apaga), `velocidadVeloz`, `curacionVampiro`, `potenciaExplosivo` y `ticksDeMecha`, `refuerzosInvocador`, `invocacionesMaximas` y `segundosEntreInvocaciones`, `armaduraBlindado` y `empujeBlindado`, `segundosVeneno` y `nivelVeneno` (2 = II), `segundosCongelante` y `nivelCongelante`, `chanceTeletransporte` y `segundosEntreTeletransportes` |
 | `estampida` | ver arriba | `activa`, `chancePorMinuto`, `diasEntreEstampidas`, `nivelMinimo`, `mobsBase` + uno cada `nivelesPorMobExtra` hasta `mobsMaximos`, `distanciaMinima`/`distanciaMaxima`, `velocidadExtra`, `segundosMaximos` |
 | `lunaDeSangre` | ver arriba | `activa`, `chance` (por noche de luna llena), `nivelesExtra`, `chanceDeCompania` |
-| `jefeDeZona` | ver arriba | `activo`, `chancePorMinuto`, `diasEntreJefes`, `nivelMinimo`, `nivelesExtra`, `multiplicadorDeVida`, `escoltas`, `radioDeBarra`, `segundosAbandonado` |
+| `jefeDeZona` | ver arriba | `activo`, `chancePorMinuto`, `diasEntreJefes`, `nivelMinimo`, `nivelesExtra`, `multiplicadorDeVida`, `escoltas`, `radioDeBarra`, `segundosAbandonado`; la furia: `vidaFuria` (fracción de la vida; 0 la apaga), `velocidadFuria`, `danioFuria`, `escoltasFuria`; las habilidades: `segundosEntreHabilidades`, `radioOnda`, `danioOnda` (en golpes del jefe), `fuerzaOnda`, `radioTiron` |
 
 ## Requisitos
 
@@ -145,6 +151,7 @@ Toda la lógica corre en el servidor.
 - **Servidor dedicado:** copiá `mobspoderosos-<versión>.jar` y Fabric API a la carpeta `mods/` del servidor. Los jugadores no necesitan instalar nada: el nombre con el nivel y la vida lo ve cualquier cliente.
 - **Singleplayer o LAN:** instalalo en el cliente del que abre el mundo, junto con Fabric API.
 - Se puede usar junto con **Soul Link**: no se tocan.
+- Con **Mythic Loot**, los mobs con nivel sueltan armas y armaduras con afijos según su nivel, y los jefes de zona sueltan siempre una épica o mejor.
 
 ## Compilar
 
@@ -175,8 +182,9 @@ Las pruebas verifican:
 - la armadura por nivel (material, sin casco para los que se queman, sólo para los mobs que la dibujan), los encantamientos y la chance de soltar el equipo;
 - que las tablas de ítems raros carguen y se tiren sólo desde su nivel y si mató un jugador;
 - la lectura del archivo de configuración (valores por defecto, claves que faltan, archivos inválidos);
-- los afijos (nombre, velocidad, conversiones, el vampiro que se cura, los refuerzos del invocador, la explosión demorada);
-- la estampida (cuántos mobs, el líder, el premio sólo si los mataron jugadores), el jefe de zona (vida, barra, botín asegurado) y la luna de sangre (niveles extra y compañeros).
+- los afijos (nombre, velocidad, conversiones, el vampiro que se cura, los refuerzos del invocador, la explosión demorada, la armadura del blindado, el veneno, la lentitud y la escarcha, y el salto del teletransportador);
+- que el nombre se actualice cuando la vida máxima sube;
+- la estampida (cuántos mobs, el líder, el premio sólo si los mataron jugadores), el jefe de zona (vida, barra, botín asegurado, la furia a media vida y la onda y el tirón) y la luna de sangre (niveles extra y compañeros).
 
 Para probar a mano, mirá [claude/general/probar-en-el-juego.md](claude/general/probar-en-el-juego.md).
 

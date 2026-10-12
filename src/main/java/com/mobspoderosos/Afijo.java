@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -22,10 +23,13 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -38,13 +42,18 @@ public enum Afijo implements StringRepresentable {
 	VELOZ("veloz", "Veloz", ChatFormatting.AQUA),
 	VAMPIRO("vampiro", "Vampiro", ChatFormatting.DARK_RED),
 	EXPLOSIVO("explosivo", "Explosivo", ChatFormatting.RED),
-	INVOCADOR("invocador", "Invocador", ChatFormatting.LIGHT_PURPLE);
+	INVOCADOR("invocador", "Invocador", ChatFormatting.LIGHT_PURPLE),
+	BLINDADO("blindado", "Blindado", ChatFormatting.GRAY),
+	VENENOSO("venenoso", "Venenoso", ChatFormatting.DARK_GREEN),
+	CONGELANTE("congelante", "Congelante", ChatFormatting.BLUE),
+	TELETRANSPORTADOR("teletransportador", "Teletransportador", ChatFormatting.DARK_AQUA);
 
 	public static final Codec<Afijo> CODEC = StringRepresentable.fromEnum(Afijo::values);
 	public static final AttachmentType<Afijo> AFIJO = AttachmentRegistry.createPersistent(MobsPoderosos.id("afijo"), CODEC);
 	// Persistente: si no, guardar y cargar el chunk le devolvería todas las invocaciones
 	public static final AttachmentType<Integer> INVOCACIONES = AttachmentRegistry.createPersistent(MobsPoderosos.id("invocaciones"), Codec.INT);
 	public static final AttachmentType<Long> ULTIMA_INVOCACION = AttachmentRegistry.create(MobsPoderosos.id("ultima_invocacion"));
+	public static final AttachmentType<Long> ULTIMO_TELETRANSPORTE = AttachmentRegistry.create(MobsPoderosos.id("ultimo_teletransporte"));
 	// Mobs que no pueden llamar copias de sí mismos: un vex sin evocador no desaparece nunca
 	public static final TagKey<EntityType<?>> NO_INVOCAN = TagKey.create(Registries.ENTITY_TYPE, MobsPoderosos.id("no_invocan"));
 
@@ -114,31 +123,85 @@ public enum Afijo implements StringRepresentable {
 
 	/** Dentro de aplicarEstadisticas: así una conversión, que copia el afijo, también rehace el modificador. */
 	public static void aplicarModificadores(Mob mob) {
-		AttributeInstance velocidad = mob.getAttribute(Attributes.MOVEMENT_SPEED);
-		if (velocidad == null) {
+		Configuracion.Afijos config = MobsPoderosos.config().afijos();
+		Afijo afijo = de(mob);
+		modificar(mob, Attributes.MOVEMENT_SPEED, afijo == VELOZ ? config.velocidadVeloz() : 0, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+		modificar(mob, Attributes.ARMOR, afijo == BLINDADO ? config.armaduraBlindado() : 0, AttributeModifier.Operation.ADD_VALUE);
+		modificar(mob, Attributes.KNOCKBACK_RESISTANCE, afijo == BLINDADO ? config.empujeBlindado() : 0, AttributeModifier.Operation.ADD_VALUE);
+	}
+
+	/** Con 0 lo saca: un mob que cambió de afijo (o lo perdió) no se queda con el modificador del anterior. */
+	private static void modificar(Mob mob, Holder<Attribute> atributo, double valor, AttributeModifier.Operation operacion) {
+		AttributeInstance instancia = mob.getAttribute(atributo);
+		if (instancia == null) {
 			return;
 		}
-		if (de(mob) == VELOZ) {
-			velocidad.addOrReplacePermanentModifier(new AttributeModifier(MODIFICADOR, MobsPoderosos.config().afijos().velocidadVeloz(),
-					AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+		if (valor == 0) {
+			instancia.removeModifier(MODIFICADOR);
 		} else {
-			velocidad.removeModifier(MODIFICADOR);
+			instancia.addOrReplacePermanentModifier(new AttributeModifier(MODIFICADOR, valor, operacion));
 		}
 	}
 
-	/** AFTER_DAMAGE: el vampiro se cura con lo que pega y el invocador llama refuerzos cuando lo lastiman. */
+	/**
+	 * AFTER_DAMAGE: lo que hace el que pega (el vampiro se cura, el venenoso envenena, el congelante frena) y lo que hace
+	 * el que recibe (el invocador llama refuerzos, el teletransportador aparece al lado del que le pegó).
+	 */
 	public static void alRecibirDanio(LivingEntity victima, DamageSource source, float danioBase, float danioRecibido, boolean bloqueado) {
 		if (danioRecibido <= 0 || !(victima.level() instanceof ServerLevel level)) {
 			return;
 		}
-		// getEntity y no getDirectEntity: en una flecha es el esqueleto que la tiró
-		if (source.getEntity() instanceof Mob atacante && de(atacante) == VAMPIRO && atacante.isAlive()) {
-			atacante.heal(danioRecibido * (float) MobsPoderosos.config().afijos().curacionVampiro());
-			level.sendParticles(ParticleTypes.HEART, atacante.getX(), atacante.getEyeY() + 0.5, atacante.getZ(), 2, 0.3, 0.2, 0.3, 0);
+		Configuracion.Afijos config = MobsPoderosos.config().afijos();
+		// getEntity y no getDirectEntity: en una flecha es el esqueleto que la tiró, y en una explosión el creeper
+		if (source.getEntity() instanceof Mob atacante && atacante != victima) {
+			Afijo afijo = de(atacante);
+			if (afijo == VAMPIRO && atacante.isAlive()) {
+				atacante.heal(danioRecibido * (float) config.curacionVampiro());
+				level.sendParticles(ParticleTypes.HEART, atacante.getX(), atacante.getEyeY() + 0.5, atacante.getZ(), 2, 0.3, 0.2, 0.3, 0);
+			} else if (afijo == VENENOSO) {
+				victima.addEffect(new MobEffectInstance(MobEffects.POISON, config.segundosVeneno() * 20, config.nivelVeneno() - 1), atacante);
+			} else if (afijo == CONGELANTE) {
+				victima.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, config.segundosCongelante() * 20, config.nivelCongelante() - 1), atacante);
+				// La escarcha de la nieve polvo, sólo para que se vea: fuera de la nieve baja 2 por tick, y por debajo del
+				// máximo de vanilla no lastima
+				int escarcha = Math.min(victima.getTicksRequiredToFreeze() - 1, config.segundosCongelante() * 40);
+				victima.setTicksFrozen(Math.max(victima.getTicksFrozen(), escarcha));
+				level.sendParticles(ParticleTypes.SNOWFLAKE, victima.getX(), victima.getY(1), victima.getZ(), 8, 0.3, 0.4, 0.3, 0.02);
+			}
 		}
-		if (victima instanceof Mob invocador && de(invocador) == INVOCADOR && invocador.isAlive()) {
-			invocar(invocador, level, source.getEntity() instanceof LivingEntity enemigo ? enemigo : null);
+		if (victima instanceof Mob afectado && afectado.isAlive()) {
+			Afijo afijo = de(afectado);
+			LivingEntity enemigo = source.getEntity() instanceof LivingEntity viva && viva != afectado ? viva : null;
+			if (afijo == INVOCADOR) {
+				invocar(afectado, level, enemigo);
+			} else if (afijo == TELETRANSPORTADOR && enemigo != null) {
+				teletransportar(afectado, level, enemigo);
+			}
 		}
+	}
+
+	/** Como un enderman, pero hacia el que le pegó: aparece a su lado, así que alejarse o tirarle flechas no alcanza. */
+	private static void teletransportar(Mob mob, ServerLevel level, LivingEntity enemigo) {
+		Configuracion.Afijos config = MobsPoderosos.config().afijos();
+		long ahora = level.getGameTime();
+		Long ultimo = mob.getAttached(ULTIMO_TELETRANSPORTE);
+		RandomSource random = mob.getRandom();
+		if ((ultimo != null && ahora - ultimo < config.segundosEntreTeletransportes() * 20L) || random.nextDouble() >= config.chanceTeletransporte()) {
+			return;
+		}
+		if (enemigo.level() != level) {
+			return;
+		}
+		BlockPos destino = Eventos.lugarCerca(level, enemigo.blockPosition(), 2, 4, null, mob.getType(), false, random);
+		if (destino == null) {
+			return;
+		}
+		mob.setAttached(ULTIMO_TELETRANSPORTE, ahora);
+		level.sendParticles(ParticleTypes.PORTAL, mob.getX(), mob.getY(0.5), mob.getZ(), 24, 0.3, 0.6, 0.3, 0.3);
+		mob.teleportTo(destino.getX() + 0.5, destino.getY(), destino.getZ() + 0.5);
+		mob.setTarget(enemigo);
+		level.sendParticles(ParticleTypes.PORTAL, mob.getX(), mob.getY(0.5), mob.getZ(), 24, 0.3, 0.6, 0.3, 0.3);
+		level.playSound(null, mob.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.HOSTILE, 1.0f, 1.0f);
 	}
 
 	private static void invocar(Mob invocador, ServerLevel level, @Nullable LivingEntity enemigo) {

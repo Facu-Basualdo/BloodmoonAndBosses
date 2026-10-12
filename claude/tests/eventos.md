@@ -7,6 +7,10 @@
 | Test | Qué verifica |
 |---|---|
 | `afijos` | Nombre "[Nv 20] [Veloz]" que sigue siendo del mod · modificador `mobspoderosos:afijo` de +0,3 · zombi → ahogado conserva el afijo, el nombre y el modificador · un creeper no puede ser vampiro, un vex (`no_invocan`) no puede ser invocador · el vampiro se cura al pegarle a un aldeano y uno sin afijo no |
+| `afijosNuevos` | Blindado: `mobspoderosos:afijo` en `ARMOR` y `KNOCKBACK_RESISTANCE`, y no en `MOVEMENT_SPEED` · el golpe del venenoso envenena con el nivel de la config · el del congelante da lentitud y escarcha por debajo del máximo · sin afijo, ningún efecto · todos los ids se leen de vuelta con `porId` |
+| `afijoTeletransportador` | Al lastimarlo (hasta 20 golpes borrando la espera, por la chance de 0,5) salta a menos de 5,5 bloques del atacante · dentro de la espera no vuelve a saltar |
+| `furiaDelJefe` | Con la vida llena no está furioso y la barra es violeta · por debajo de `vidaFuria`: furioso, velocidad y daño × (1 + furia), `escoltasFuria` zombis nuevos, barra roja con "Furia" · otra vuelta no lo enfurece de nuevo |
+| `habilidadesDelJefe` | Sin nadie a tiro, ninguna · con un jugador a 2 bloques, la onda: lo lastima, lo empuja para afuera y marca `needsSync` · con uno a 15, el tirón: lo trae y le da lentitud · más allá de `radioTiron`, ninguna |
 | `afijoInvocador` | Al lastimarlo aparecen `refuerzosInvocador` zombis con nivel, sin `PENDIENTE` y sin afijo · un segundo golpe dentro de la espera no invoca · `INVOCACIONES` queda en 1 |
 | `afijoExplosivo` | Al morir no explota enseguida · `ticksDeMecha` + 2 después, el aldeano de al lado perdió vida |
 | `invocarConNivel` | Nivel dado (37), sin `PENDIENTE` aunque `EVENT` escale, en el mundo · 500 se corta en 100 · con `conAfijo` tiene afijo · un aldeano da `null` |
@@ -27,7 +31,10 @@
 - **`@GameTest` vence a los 20 ticks por defecto.** La mecha del explosivo dura 30: `maxTicks = 60`.
 - **Para el premio de la estampida, `hurtServer` + `remove(KILLED)`** en vez de esperar la animación de muerte. Si no, el tick del evento (cada segundo) podría dar el premio antes de que el test vacíe el inventario. Todo pasa en el mismo tick, así el jugador no llega a levantar el loot de los mobs.
 - **La luna se activa y se apaga dentro del mismo método:** los tests corren en paralelo y comparten el overworld. Si `NOCHE_ACTIVA` quedara puesta, los mobs `NATURAL` de los otros tests tendrían +10 niveles. Los compañeros se cuentan con `runAfterDelay(3)`, porque se crean un tick después.
-- **El jefe es persistente:** descartalo al final del test, que la estructura no lo borra.
+- **El jefe es persistente:** descartalo al final del test, que la estructura no lo borra. Y llamá a `actualizarTodos` después, para que deje de seguirse.
+- **Un jugador de prueba es invulnerable** hasta que el cliente avisa que cargó el mundo (`ServerPlayer.isInvulnerableTo` mira `connection.hasClientLoaded()`): para que la onda lo lastime, `jugador.connection.handleAcceptPlayerLoad(new ServerboundPlayerLoadedPacket())`, como en los tests de Soul Link.
+- **Las habilidades se prueban con `JefeDeZona.ejecutar`**, sin el segundo de aviso, y los jugadores no tickean: lo que se mira es `getDeltaMovement()`, no la posición.
+- **`actualizarTodos` recorre todos los jefes del servidor**, también los de otros tests que corren en paralelo: los conteos se hacen alrededor del jefe propio, no en todo el mundo.
 
 ## Ver también
 

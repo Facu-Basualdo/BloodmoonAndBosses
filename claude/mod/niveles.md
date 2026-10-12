@@ -103,7 +103,9 @@ El campeón va aparte porque los mobs de los eventos usan `calcular` y no tienen
 
 ### Vida en el nombre
 
-**Con `vidaEnElNombre` (`true` por defecto) el nombre es "Zombi [Nv 7] ❤ 34/40", y se rehace en cada `LivingEntity.setHealth`** (`@Inject` TAIL en `LivingEntityMixin` → `NivelDeMob.actualizarVida`). Por ese método pasan el daño, la curación, la regeneración y la vida máxima que baja (`onAttributeUpdated`). Si la vida máxima **sube** (un efecto), el máximo del nombre queda viejo hasta el próximo cambio de vida.
+**Con `vidaEnElNombre` (`true` por defecto) el nombre es "Zombi [Nv 7] ❤ 34/40", y se rehace en cada `LivingEntity.setHealth`** (`@Inject` TAIL en `LivingEntityMixin` → `NivelDeMob.actualizarVida`). Por ese método pasan el daño, la curación, la regeneración y la vida máxima que baja (`onAttributeUpdated` llama a `setHealth` para recortarla).
+
+**Cuando la vida máxima sube (un efecto, un comando, otro mod), vanilla no llama a `setHealth`:** el máximo del nombre quedaba viejo hasta el próximo golpe. Lo cubre otro `@Inject` TAIL en `LivingEntity.onAttributeUpdated(Holder<Attribute>)` que, si el atributo es `MAX_HEALTH`, también llama a `actualizarVida`. `Mob` sobrescribe `onAttributeUpdated` pero llama a `super` primero (verificado con `javap`), así que alcanza con el de `LivingEntity`. Corre desde `refreshDirtyAttributes`, en el **tick siguiente** al cambio del modificador, no en el momento: el test `vidaMaximaQueSubeEnElNombre` espera dos ticks.
 
 - **`nombre(mob, nivel)` arma un `Component.empty()` con exactamente dos hijos: `nombre(tipo, nivel)` y la vida.** `sinVida` reconoce esa forma (contenido `PlainTextContents.EMPTY` y dos hijos) y devuelve el primero. Si la vida fuera un hijo más del componente del nivel, el nombre dejaría de ser igual a `nombre(tipo, nivel)` en cuanto el mob pierde vida, y `esNombreDelMod` daría `false`: se loguearía su muerte y las conversiones lo perderían.
 - **La forma sobrevive al NBT**: `PlainTextContents.create("")` devuelve `EMPTY`, así que `==` sirve después de cargar (lo cubre el test `vidaEnElNombre`).

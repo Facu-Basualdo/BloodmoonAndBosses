@@ -38,3 +38,10 @@ Cuatro features nuevas. Todo sigue siendo del lado del servidor: barra de jefe, 
 - Barra de jefe con su vida para los jugadores a menos de `radioDeBarra`. Si no hay ningún jugador cerca durante `segundosAbandonado`, desaparece.
 - Al morir por un jugador suelta la mejor tabla de botín raro que le toca, mínimo épica (dentro del `@WrapOperation` del botín, así respeta `mobDrops`).
 - Al cargarse (reinicio, chunk que vuelve) se vuelve a seguir con su barra: no depende de memoria.
+
+## Afijos nuevos y mecánicas de jefe (0.10.0)
+
+- **Afijos:** Blindado (armadura y resistencia al empuje), Venenoso (veneno II al pegar), Congelante (lentitud II y escarcha al pegar) y Teletransportador (al recibir un golpe, chance de aparecer al lado del que le pegó).
+- **Furia:** a media vida (`vidaFuria`) el jefe corre y pega más, llama `escoltasFuria` escoltas y la barra se pone roja. Una sola vez (attachment `FURIA`).
+- **Habilidades:** cada `segundosEntreHabilidades`, con aviso de un segundo: onda de choque (lastima y empuja a los que están a menos de `radioOnda`) o tirón (trae a los que están entre `radioOnda` y `radioTiron`).
+- **Arreglo:** el nombre se actualiza también cuando la vida máxima sube (`onAttributeUpdated`).
