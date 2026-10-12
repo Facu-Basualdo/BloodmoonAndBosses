@@ -1,16 +1,12 @@
 # Bloodmoon & Bosses
 
-<p align="center"><img src="src/main/resources/assets/mobspoderosos/icon.png" alt="Bloodmoon & Bosses" width="256"></p>
-
-> Antes se llamaba **Mobs Poderosos**. El id del mod sigue siendo `mobspoderosos`: el comando es `/mobspoderosos`, la config `config/mobspoderosos.json` y los tags `mobspoderosos:…`, así que los mundos y las configuraciones que ya existen siguen andando.
+<p align="center"><img src="src/main/resources/assets/bloodmoonandbosses/icon.png" alt="Bloodmoon & Bosses" width="256"></p>
 
 Mod de Fabric para **Minecraft Java 26.3** en el que los mobs hostiles aparecen con **niveles**. Cuanto más lejos del spawn del mundo y cuanto más viejo es el mundo, más nivel tienen: más vida, más daño, más armadura y más velocidad, y aparecen con mejor equipo encantado. El nivel y la vida se ven en el nombre del mob: **"Zombi [Nv 7] ❤ 34/40"**. Los mobs de más nivel también sueltan más loot, ítems raros y más experiencia.
 
 Cerca de la base el juego se siente casi como vanilla; a varios miles de bloques, salir a explorar es otra cosa.
 
-> **Estado:** versión 0.10.0. Están todas las fases de [docs/plan.md](docs/plan.md) (niveles, loot y experiencia, equipo encantado, ítems raros y archivo de configuración) y los eventos de [docs/eventos.md](docs/eventos.md): 8 afijos de campeón, estampidas, luna de sangre y jefes de zona con furia y habilidades.
-
-## Cómo funciona en el juego
+## Cómo funciona
 
 | Nivel (dónde) | Vida de un zombi (base 20) | Daño sin arma (base 3) | Armadura extra | Loot | Experiencia |
 |---|---|---|---|---|---|
@@ -45,8 +41,8 @@ Cerca de la base el juego se siente casi como vanilla; a varios miles de bloques
   - **Las armas y la armadura salen encantadas** según el nivel (en nivel 67, como una mesa de encantamiento de nivel 20). Con un arco, eso le da Poder: así escala el daño de los esqueletos.
   - **Es más fácil que suelten su equipo:** +0,2 % por nivel sobre la chance de vanilla, hasta 25 %. El equipo de diamante o netherita y los tridentes siguen con la chance de vanilla (8,5 %), y lo que vanilla no suelta nunca (la espada de los vex) sigue sin soltarse. Como en vanilla, sólo sueltan el equipo si los mataste vos.
 - **Loot:** cada 16 niveles el mob tira su loot de vanilla una vez más (hasta 6 veces extra, desde el nivel 96). **Sólo si lo matás vos**: a un mob que muere en una granja automática, por lava o por caída sin que lo hayas golpeado, le toca el loot normal. El equipo que lleva puesto no se multiplica.
-- **Evocadores:** también tienen tiradas extra, pero cada una sale **por probabilidad**: 0,5 % por nivel, hasta 50 %. Un evocador de nivel 60 tiene 3 tiradas extra al 30 % cada una (en promedio, casi un tótem extra); uno de nivel 100 tiene 6 al 50 % (3 tótems extra en promedio). Está en el tag `mobspoderosos:tiradas_extra_por_chance`.
-- **Sin loot extra:** esqueletos del Wither (las calaveras serían triviales) y shulkers. Están en el tag `mobspoderosos:sin_tiradas_extra`.
+- **Evocadores:** también tienen tiradas extra, pero cada una sale **por probabilidad**: 0,5 % por nivel, hasta 50 %. Un evocador de nivel 60 tiene 3 tiradas extra al 30 % cada una (en promedio, casi un tótem extra); uno de nivel 100 tiene 6 al 50 % (3 tótems extra en promedio). Está en el tag `bloodmoonandbosses:tiradas_extra_por_chance`.
+- **Sin loot extra:** esqueletos del Wither (las calaveras serían triviales) y shulkers. Están en el tag `bloodmoonandbosses:sin_tiradas_extra`.
 - Los dos tags se pueden cambiar con un datapack.
 - **Ítems raros:** además de su loot, un mob con nivel que matás vos puede soltar un ítem de una de estas tablas. Cada una se sortea por separado:
 
@@ -56,7 +52,7 @@ Cerca de la base el juego se siente casi como vanilla; a varios miles de bloques
   | Épica | 50 | 10 % | diamantes, manzanas doradas, libro encantado de nivel 30, espada o pico de diamante encantados, chatarra de netherita, plantilla de mejora de netherita |
   | Legendaria | 80 | 5 % | manzana dorada encantada, lingote de netherita, plantilla de mejora de netherita, armadura de diamante con encantamientos altos, diamantes |
 
-  Las tablas son `mobspoderosos:botin_por_nivel/raro`, `epico` y `legendario`: se pueden cambiar con un datapack. También aplican a los esqueletos del Wither y los shulkers.
+  Las tablas son `bloodmoonandbosses:botin_por_nivel/raro`, `epico` y `legendario`: se pueden cambiar con un datapack. También aplican a los esqueletos del Wither y los shulkers.
 - **Experiencia:** +5 % por nivel. Como en vanilla, sólo se da si lo mató un jugador.
 - Con `/gamerule mobDrops false` no hay loot extra, igual que no hay loot normal.
 - **Qué mobs tienen nivel:** los hostiles que aparecen solos en el mundo, en estructuras (mansiones, fortalezas, ciudades del End…), en patrullas y en raids. **No tienen nivel** los de spawners (para que las granjas no cambien), los de huevos o comandos, ni los jefes (dragón, wither, guardián anciano, warden).
@@ -75,33 +71,33 @@ Ninguno necesita el mod en el cliente: usan la barra de jefe, los títulos y los
   | **Veloz** | Corre un 30 % más rápido |
   | **Vampiro** | Se cura la mitad del daño que hace (también con flechas). Los creepers no pueden serlo |
   | **Explosivo** | Al morir suena la mecha de un creeper y, un segundo y medio después, explota como uno. No rompe bloques |
-  | **Invocador** | Cuando lo lastimás llama dos refuerzos de su especie, con el nivel de la zona. Hasta 3 veces, cada 10 segundos. Los vex no pueden serlo (tag `mobspoderosos:no_invocan`) |
-| **Blindado** | +6 de armadura y la mitad de resistencia al empuje |
-| **Venenoso** | Sus golpes (también las flechas y la explosión de un creeper) envenenan: veneno II por 5 segundos |
-| **Congelante** | Sus golpes dan lentitud II por 3 segundos, con la escarcha de la nieve polvo en la pantalla (no lastima por frío) |
-| **Teletransportador** | Cuando le pegás, la mitad de las veces aparece al lado tuyo, como un enderman. Como mucho cada 3 segundos: alejarse o tirarle flechas no alcanza |
+  | **Invocador** | Cuando lo lastimás llama dos refuerzos de su especie, con el nivel de la zona. Hasta 3 veces, cada 10 segundos. Los vex no pueden serlo (tag `bloodmoonandbosses:no_invocan`) |
+  | **Blindado** | +6 de armadura y la mitad de resistencia al empuje |
+  | **Venenoso** | Sus golpes (también las flechas y la explosión de un creeper) envenenan: veneno II por 5 segundos |
+  | **Congelante** | Sus golpes dan lentitud II por 3 segundos, con la escarcha de la nieve polvo en la pantalla (no lastima por frío) |
+  | **Teletransportador** | Cuando le pegás, la mitad de las veces aparece al lado tuyo, como un enderman. Como mucho cada 3 segundos: alejarse o tirarle flechas no alcanza |
 
-- **Estampida:** de noche, si estás al aire libre en el overworld, en una zona de nivel 10 o más, hay un 3 % por minuto de que suene un cuerno a lo lejos y entre 6 y 16 mobs de la zona (más cuanto más alto el nivel) carguen contra vos, todos desde el mismo lado, más rápido de lo normal. Uno es el líder: un campeón con afijo. Una barra roja muestra cuántos quedan. **Si los jugadores matan al menos la mitad, te llevás una tirada de botín raro** (la épica desde el nivel 50, la legendaria desde el 80) directo al inventario. Si te morís, se dispersan o pasan 3 minutos, termina sin premio; los que se queman al amanecer no cuentan. Después hay 3 días de juego de respiro. Los mobs salen del tag `mobspoderosos:estampida` (zombi, esqueleto, araña).
-- **Luna de sangre:** las noches de luna llena hay un 50 % de que la luna sea de sangre (en promedio una cada 16 días). Aparece un título rojo y una barra que se vacía hasta el amanecer. Esa noche los mobs que aparecen en el overworld tienen **+10 niveles** (y por eso más loot), y la mitad de los que aparecen solos vienen con un compañero igual. `/mobspoderosos zona` lo avisa. Dormir la saltea, como cualquier noche.
+- **Estampida:** de noche, si estás al aire libre en el overworld, en una zona de nivel 10 o más, hay un 3 % por minuto de que suene un cuerno a lo lejos y entre 6 y 16 mobs de la zona (más cuanto más alto el nivel) carguen contra vos, todos desde el mismo lado, más rápido de lo normal. Uno es el líder: un campeón con afijo. Una barra roja muestra cuántos quedan. **Si los jugadores matan al menos la mitad, te llevás una tirada de botín raro** (la épica desde el nivel 50, la legendaria desde el 80) directo al inventario. Si te morís, se dispersan o pasan 3 minutos, termina sin premio; los que se queman al amanecer no cuentan. Después hay 3 días de juego de respiro. Los mobs salen del tag `bloodmoonandbosses:estampida` (zombi, esqueleto, araña).
+- **Luna de sangre:** las noches de luna llena hay un 50 % de que la luna sea de sangre (en promedio una cada 16 días). Aparece un título rojo y una barra que se vacía hasta el amanecer. Esa noche los mobs que aparecen en el overworld tienen **+10 niveles** (y por eso más loot), y la mitad de los que aparecen solos vienen con un compañero igual. `/bloodmoon zona` lo avisa. Dormir la saltea, como cualquier noche.
 - **Jefe de zona:** en cualquier dimensión, en zonas de nivel 15 o más, hay un 1 % por minuto (con 2 días de juego de espera) de que aparezca un jefe a 16–24 bloques, a tu altura: 20 niveles más que la zona, el triple de vida, un afijo y 3 escoltas. Tiene una barra violeta que ven los jugadores a menos de 48 bloques. **Muerto por un jugador suelta siempre una tirada de botín raro**, como mínimo la épica, además de su loot normal. Si nadie se le acerca durante un minuto, se va.
   - **Furia:** cuando le queda la mitad de la vida, ruge, corre un 25 % más, pega un 30 % más y llama 2 escoltas más. La barra se pone roja.
-  - **Habilidades:** cada 10 segundos usa una, y la avisa un segundo antes con un sonido y un mensaje: una **onda de choque** que lastima (como un golpe suyo) y empuja lejos a los que están a menos de 6 bloques, o un **tirón** que trae hacia él a los que pelean desde lejos (de 6 a 24 bloques) y los frena un momento. Pelear pegado o de lejos todo el tiempo no sirve. Los jefes salen de los tags `mobspoderosos:jefe_de_zona/overworld` (zombi, esqueleto, vindicador, bruja), `…/nether` (esqueleto del Wither, piglin bruto, blaze) y `…/end` (enderman).
+  - **Habilidades:** cada 10 segundos usa una, y la avisa un segundo antes con un sonido y un mensaje: una **onda de choque** que lastima (como un golpe suyo) y empuja lejos a los que están a menos de 6 bloques, o un **tirón** que trae hacia él a los que pelean desde lejos (de 6 a 24 bloques) y los frena un momento. Pelear pegado o de lejos todo el tiempo no sirve. Los jefes salen de los tags `bloodmoonandbosses:jefe_de_zona/overworld` (zombi, esqueleto, vindicador, bruja), `…/nether` (esqueleto del Wither, piglin bruto, blaze) y `…/end` (enderman).
 - Los eventos no les tocan a los jugadores en creativo o espectador, ni en dificultad pacífica.
 
 ### Comandos
 
 | Comando | Qué hace |
 |---|---|
-| `/mobspoderosos zona` | Muestra el nivel de los mobs en la zona donde estás: lo que pone la distancia, lo que suman los días del mundo y la chance de campeón |
-| `/mobspoderosos invocar <entidad> <nivel> [afijo]` | Aparece un mob con ese nivel (y su equipo) delante tuyo, opcionalmente con un afijo (`veloz`, `vampiro`, `explosivo`, `invocador`, `blindado`, `venenoso`, `congelante`, `teletransportador`). Requiere ser operador |
-| `/mobspoderosos evento estampida [jugador]` | Larga una estampida contra vos o contra el jugador, sin esperar el sorteo, a cualquier hora (requiere ser operador) |
-| `/mobspoderosos evento jefe [jugador]` | Hace aparecer un jefe de zona cerca (requiere ser operador) |
-| `/mobspoderosos evento luna_de_sangre` | Empieza la luna de sangre; sólo de noche (requiere ser operador) |
-| `/mobspoderosos recargar` | Vuelve a leer `config/mobspoderosos.json` sin reiniciar el servidor (requiere ser operador) |
+| `/bloodmoon zona` | Muestra el nivel de los mobs en la zona donde estás: lo que pone la distancia, lo que suman los días del mundo y la chance de campeón |
+| `/bloodmoon invocar <entidad> <nivel> [afijo]` | Aparece un mob con ese nivel (y su equipo) delante tuyo, opcionalmente con un afijo (`veloz`, `vampiro`, `explosivo`, `invocador`, `blindado`, `venenoso`, `congelante`, `teletransportador`). Requiere ser operador |
+| `/bloodmoon evento estampida [jugador]` | Larga una estampida contra vos o contra el jugador, sin esperar el sorteo, a cualquier hora (requiere ser operador) |
+| `/bloodmoon evento jefe [jugador]` | Hace aparecer un jefe de zona cerca (requiere ser operador) |
+| `/bloodmoon evento luna_de_sangre` | Empieza la luna de sangre; sólo de noche (requiere ser operador) |
+| `/bloodmoon recargar` | Vuelve a leer `config/bloodmoonandbosses.json` sin reiniciar el servidor (requiere ser operador) |
 
 ### Configuración
 
-En el primer arranque se crea **`config/mobspoderosos.json`** con todos los valores por defecto. Editalo y usá `/mobspoderosos recargar`, o reiniciá el servidor.
+En el primer arranque se crea **`config/bloodmoonandbosses.json`** con todos los valores por defecto. Editalo y usá `/bloodmoon recargar`, o reiniciá el servidor.
 
 - **Al recargar, los mobs que ya están no cambian:** la vida, el daño, la armadura, el nombre y el equipo se ponen cuando el mob aparece. El loot, los ítems raros y la experiencia se calculan al morir, así que esos cambios valen enseguida.
 - **Los eventos y los afijos también toman los valores nuevos enseguida**, salvo `velocidadVeloz`, que se pone al aparecer.
@@ -137,70 +133,32 @@ En el primer arranque se crea **`config/mobspoderosos.json`** con todos los valo
 | `lunaDeSangre` | ver arriba | `activa`, `chance` (por noche de luna llena), `nivelesExtra`, `chanceDeCompania` |
 | `jefeDeZona` | ver arriba | `activo`, `chancePorMinuto`, `diasEntreJefes`, `nivelMinimo`, `nivelesExtra`, `multiplicadorDeVida`, `escoltas`, `radioDeBarra`, `segundosAbandonado`; la furia: `vidaFuria` (fracción de la vida; 0 la apaga), `velocidadFuria`, `danioFuria`, `escoltasFuria`; las habilidades: `segundosEntreHabilidades`, `radioOnda`, `danioOnda` (en golpes del jefe), `fuerzaOnda`, `radioTiron` |
 
-## Requisitos
+## Funciona con
 
-| | Versión |
-|---|---|
-| Minecraft Java | 26.3 |
-| [Fabric Loader](https://fabricmc.net/use/) | 0.19.5 o más nuevo |
-| [Fabric API](https://modrinth.com/mod/fabric-api) | para 26.3 |
-| Java | 25 |
+- **Hero's Forge:** los valores por defecto están balanceados contra sus estadísticas. Con el equipo y los puntos que se esperan en cada zona, un zombi se mata en 5 o 6 golpes en todo el mundo.
+- **Mythic Loot:** los mobs con nivel sueltan armas y armaduras con afijos según su nivel, y los jefes de zona sueltan siempre una épica o mejor.
+- **Soul Link:** no se tocan.
 
-## Instalación
+## Requisitos e instalación
 
-Toda la lógica corre en el servidor.
+Minecraft Java 26.3, [Fabric Loader](https://fabricmc.net/use/) 0.19.5 o más nuevo, [Fabric API](https://modrinth.com/mod/fabric-api) y Java 25. Toda la lógica corre en el servidor.
 
-- **Servidor dedicado:** copiá `mobspoderosos-<versión>.jar` y Fabric API a la carpeta `mods/` del servidor. Los jugadores no necesitan instalar nada: el nombre con el nivel y la vida lo ve cualquier cliente.
-- **Singleplayer o LAN:** instalalo en el cliente del que abre el mundo, junto con Fabric API.
-- Se puede usar junto con **Soul Link**: no se tocan.
-- Con **Mythic Loot**, los mobs con nivel sueltan armas y armaduras con afijos según su nivel, y los jefes de zona sueltan siempre una épica o mejor.
+- **Servidor:** copiá `bloodmoonandbosses-<versión>.jar` y Fabric API a `mods/`. Los jugadores no necesitan nada: el nombre con el nivel y la vida lo ve cualquier cliente.
+- **Singleplayer o LAN:** en el cliente del que abre el mundo, junto con Fabric API.
 
-## Compilar
+### Actualizar desde una versión anterior a la 0.11.0
 
-```bash
-./gradlew build          # Windows: gradlew build
-```
+Hasta la 0.10.0 el id era `mobspoderosos` y el comando `/mobspoderosos` (el mod antes se llamaba Mobs Poderosos). Borrá el jar viejo y poné el nuevo: **la config, el nivel y el afijo de cada mob y la luna de sangre se pasan solos** al id nuevo. Los mobs se pasan a medida que se cargan sus chunks. Si tenés un datapack que cambia los tags o las tablas de botín, movelo de `data/mobspoderosos/` a `data/bloodmoonandbosses/`. El comando ahora es `/bloodmoon`. Por las dudas, hacé una copia del mundo antes.
 
-El jar queda en `build/libs/`.
-
-El proyecto pide Java 25 (`gradle/gradle-daemon-jvm.properties`). Si Gradle no encuentra tu JDK 25, ajustá `org.gradle.java.installations.paths` en `gradle.properties` con la ruta donde lo tengas instalado.
-
-## Probar
+## Desarrollo
 
 ```bash
-./gradlew runGameTest    # pruebas automáticas en un servidor sin ventana
+./gradlew build          # compila y corre las pruebas; el jar queda en build/libs/
+./gradlew runGameTest    # sólo las pruebas automáticas, en un servidor sin ventana
 ```
 
-Las pruebas verifican:
-
-- la fórmula del nivel en las tres dimensiones, el nivel extra por los días del mundo y la chance de campeón;
-- las estadísticas y sus topes;
-- el radio de los creepers;
-- qué motivos de spawn dan nivel y cuáles no;
-- que los mobs de estructuras reciban nivel al cargarse el chunk;
-- que el nivel sobreviva a guardar y cargar el mundo;
-- las conversiones (zombi a ahogado, aldeano curado, slimes divididos);
-- el loot extra (sólo si lo mata un jugador, por probabilidad para el evocador, y nada para los mobs de `sin_tiradas_extra`) y la experiencia por nivel;
-- la armadura por nivel (material, sin casco para los que se queman, sólo para los mobs que la dibujan), los encantamientos y la chance de soltar el equipo;
-- que las tablas de ítems raros carguen y se tiren sólo desde su nivel y si mató un jugador;
-- la lectura del archivo de configuración (valores por defecto, claves que faltan, archivos inválidos);
-- los afijos (nombre, velocidad, conversiones, el vampiro que se cura, los refuerzos del invocador, la explosión demorada, la armadura del blindado, el veneno, la lentitud y la escarcha, y el salto del teletransportador);
-- que el nombre se actualice cuando la vida máxima sube;
-- la estampida (cuántos mobs, el líder, el premio sólo si los mataron jugadores), el jefe de zona (vida, barra, botín asegurado, la furia a media vida y la onda y el tirón) y la luna de sangre (niveles extra y compañeros).
-
-Para probar a mano, mirá [claude/general/probar-en-el-juego.md](claude/general/probar-en-el-juego.md).
-
-## Estructura
-
-```
-src/main/       el mod: marca el mob al aparecer (mixin en finalizeSpawn), le aplica el nivel y el equipo cuando entra al mundo, lo pasa en las conversiones y multiplica el loot y la experiencia al morir
-src/gametest/   pruebas automáticas (Fabric GameTest)
-claude/         documentación técnica para agentes de IA (invariantes, decisiones y bugs ya resueltos)
-docs/           el plan del mod por fases
-```
-
-Para entender por qué el código está hecho así, empezá por [CLAUDE.md](CLAUDE.md) y [claude/mod/INDICE.md](claude/mod/INDICE.md).
+Pide Java 25: si Gradle no encuentra tu JDK, agregá `org.gradle.java.installations.paths=<ruta a tu JDK 25>` a tu `~/.gradle/gradle.properties`. La documentación técnica está en [CLAUDE.md](CLAUDE.md).
 
 ## Licencia
 
-[MIT](LICENSE): podés usarlo, modificarlo y redistribuirlo (también en modpacks) siempre que mantengas el aviso de copyright.
+[MIT](LICENSE).
