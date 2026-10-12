@@ -606,6 +606,35 @@ public class BloodmoonAndBossesGameTest {
 	}
 
 	@GameTest
+	public void particulasDeLosCampeones(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		ServerPlayer jugador = joinSurvivalPlayer(helper, "observador");
+		BlockPos centro = helper.absolutePos(CENTRO);
+		jugador.snapTo(centro.getX() + 0.5, centro.getY(), centro.getZ() + 0.5, 0, 0);
+
+		Zombie explosivo = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		NivelDeMob.aparecer(explosivo, 20, Afijo.EXPLOSIVO);
+		Zombie comun = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		NivelDeMob.aplicar(comun, 20);
+		Zombie invisible = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		NivelDeMob.aparecer(invisible, 20, Afijo.VELOZ);
+		invisible.setInvisible(true);
+
+		var conParticulas = Afijo.conParticulas(level.getServer());
+		helper.assertTrue(conParticulas.contains(explosivo), Component.literal("Un campeón cerca de un jugador suelta partículas"));
+		helper.assertFalse(conParticulas.contains(comun), Component.literal("Un mob sin afijo no"));
+		helper.assertFalse(conParticulas.contains(invisible), Component.literal("Uno invisible tampoco: las partículas lo delatarían"));
+		for (Afijo afijo : Afijo.values()) {
+			helper.assertTrue(afijo.particula() != null, Component.literal(afijo + " tiene su partícula"));
+		}
+		// Que mandarlas no reviente con mobs de verdad alrededor
+		Afijo.mostrarParticulas(level.getServer());
+
+		level.getServer().getPlayerList().remove(jugador);
+		helper.succeed();
+	}
+
+	@GameTest
 	public void afijoTeletransportador(GameTestHelper helper) {
 		ServerLevel level = helper.getLevel();
 		ponerPiso(helper);

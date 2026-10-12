@@ -87,7 +87,7 @@ public record Configuracion(
 			0.05,
 			// Todos los campeones con afijo: así se distinguen en el nombre. La explosión es la de un creeper común. El
 			// blindado suma media armadura de hierro; el veneno y la lentitud son de nivel II, como las pociones fuertes
-			new Afijos(1.0, 0.3, 0.5, 3.0f, 30, 2, 3, 10, 6.0, 0.5, 5, 2, 3, 2, 0.5, 3),
+			new Afijos(1.0, 0.3, 0.5, 3.0f, 30, 2, 3, 10, 6.0, 0.5, 5, 2, 3, 2, 0.5, 3, true, 10),
 			// Con 3 % por minuto, una noche (unos 7 minutos) tiene ~20 % de estampida; después hay 3 días de respiro
 			new Estampida(true, 0.03, 3, 10, 6, 10, 16, 24, 32, 0.25, 180),
 			// La luna llena es una noche de cada ocho: con 50 %, una luna de sangre cada 16 días en promedio
@@ -138,6 +138,7 @@ public record Configuracion(
 		exigir(afijos != null && estampida != null && lunaDeSangre != null && jefeDeZona != null, "falta uno de los eventos");
 		exigir(afijos.chance() >= 0 && afijos.chance() <= 1, "afijos.chance va de 0 a 1");
 		exigir(afijos.chanceTeletransporte() >= 0 && afijos.chanceTeletransporte() <= 1, "afijos.chanceTeletransporte va de 0 a 1");
+		exigir(afijos.ticksEntreParticulas() >= 1, "afijos.ticksEntreParticulas tiene que ser 1 o más");
 		exigir(afijos.nivelVeneno() >= 1 && afijos.nivelCongelante() >= 1, "afijos.nivelVeneno y nivelCongelante tienen que ser 1 o más (1 = nivel I)");
 		exigir(estampida.chancePorMinuto() >= 0 && estampida.chancePorMinuto() <= 1, "estampida.chancePorMinuto va de 0 a 1");
 		exigir(estampida.nivelesPorMobExtra() >= 1, "estampida.nivelesPorMobExtra tiene que ser 1 o más");
@@ -180,12 +181,13 @@ public record Configuracion(
 	/**
 	 * Rasgos de los campeones. chance: probabilidad de que un campeón tenga uno. velocidadVeloz y curacionVampiro son
 	 * fracciones (0.3 = +30 % de velocidad, 0.5 = se cura la mitad del daño que hace). armaduraBlindado y
-	 * empujeBlindado se suman a los atributos. nivelVeneno y nivelCongelante son el nivel del efecto (2 = II).
+	 * empujeBlindado se suman a los atributos. nivelVeneno y nivelCongelante son el nivel del efecto (2 = II). particulas:
+	 * si los campeones sueltan la partícula de su afijo, cada ticksEntreParticulas.
 	 */
 	public record Afijos(double chance, double velocidadVeloz, double curacionVampiro, float potenciaExplosivo, int ticksDeMecha,
 			int refuerzosInvocador, int invocacionesMaximas, int segundosEntreInvocaciones, double armaduraBlindado, double empujeBlindado,
 			int segundosVeneno, int nivelVeneno, int segundosCongelante, int nivelCongelante, double chanceTeletransporte,
-			int segundosEntreTeletransportes) {
+			int segundosEntreTeletransportes, boolean particulas, int ticksEntreParticulas) {
 	}
 
 	/** Los días son de juego (20 minutos reales), contados con el gameTime: dormir no los adelanta. */

@@ -83,6 +83,9 @@ public final class Eventos {
 			}
 		}
 
+		if (ahora % BloodmoonAndBosses.config().afijos().ticksEntreParticulas() == 0) {
+			Afijo.mostrarParticulas(servidor);
+		}
 		if (ahora % TICKS_POR_SEGUNDO == 0) {
 			LunaDeSangre.actualizar(servidor.overworld());
 			Estampida.actualizarTodas();

@@ -1,7 +1,9 @@
 package com.bloodmoonandbosses;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.mojang.serialization.Codec;
 import org.jspecify.annotations.Nullable;
@@ -13,10 +15,13 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
@@ -39,14 +44,15 @@ import net.minecraft.world.phys.Vec3;
 
 /** El rasgo de un campeón: se ve en el nombre ("Zombi [Nv 27] [Vampiro]") y viaja con el mob en las conversiones. */
 public enum Afijo implements StringRepresentable {
-	VELOZ("veloz", "Veloz", ChatFormatting.AQUA),
-	VAMPIRO("vampiro", "Vampiro", ChatFormatting.DARK_RED),
-	EXPLOSIVO("explosivo", "Explosivo", ChatFormatting.RED),
-	INVOCADOR("invocador", "Invocador", ChatFormatting.LIGHT_PURPLE),
-	BLINDADO("blindado", "Blindado", ChatFormatting.GRAY),
-	VENENOSO("venenoso", "Venenoso", ChatFormatting.DARK_GREEN),
-	CONGELANTE("congelante", "Congelante", ChatFormatting.BLUE),
-	TELETRANSPORTADOR("teletransportador", "Teletransportador", ChatFormatting.DARK_AQUA);
+	// Cada uno con su partícula, para reconocerlo de lejos o en una cueva, antes de leer el nombre
+	VELOZ("veloz", "Veloz", ChatFormatting.AQUA, ParticleTypes.CLOUD),
+	VAMPIRO("vampiro", "Vampiro", ChatFormatting.DARK_RED, ParticleTypes.CRIMSON_SPORE),
+	EXPLOSIVO("explosivo", "Explosivo", ChatFormatting.RED, ParticleTypes.SMOKE),
+	INVOCADOR("invocador", "Invocador", ChatFormatting.LIGHT_PURPLE, ParticleTypes.WITCH),
+	BLINDADO("blindado", "Blindado", ChatFormatting.GRAY, ParticleTypes.ELECTRIC_SPARK),
+	VENENOSO("venenoso", "Venenoso", ChatFormatting.DARK_GREEN, ParticleTypes.ITEM_SLIME),
+	CONGELANTE("congelante", "Congelante", ChatFormatting.BLUE, ParticleTypes.SNOWFLAKE),
+	TELETRANSPORTADOR("teletransportador", "Teletransportador", ChatFormatting.DARK_AQUA, ParticleTypes.PORTAL);
 
 	public static final Codec<Afijo> CODEC = StringRepresentable.fromEnum(Afijo::values);
 	public static final AttachmentType<Afijo> AFIJO = AttachmentRegistry.createPersistent(BloodmoonAndBosses.id("afijo"), CODEC);
@@ -58,15 +64,23 @@ public enum Afijo implements StringRepresentable {
 	public static final TagKey<EntityType<?>> NO_INVOCAN = TagKey.create(Registries.ENTITY_TYPE, BloodmoonAndBosses.id("no_invocan"));
 
 	private static final Identifier MODIFICADOR = BloodmoonAndBosses.id("afijo");
+	// Más lejos, vanilla no le manda las partículas al cliente igual (sendParticles sin forzar llega a 32 bloques)
+	private static final double RADIO_DE_PARTICULAS = 32;
 
 	private final String id;
 	private final String nombre;
 	private final ChatFormatting color;
+	private final SimpleParticleType particula;
 
-	Afijo(String id, String nombre, ChatFormatting color) {
+	Afijo(String id, String nombre, ChatFormatting color, SimpleParticleType particula) {
 		this.id = id;
 		this.nombre = nombre;
 		this.color = color;
+		this.particula = particula;
+	}
+
+	public SimpleParticleType particula() {
+		return particula;
 	}
 
 	@Override
@@ -229,6 +243,48 @@ public enum Afijo implements StringRepresentable {
 			}
 		}
 		level.playSound(null, invocador.blockPosition(), SoundEvents.EVOKER_PREPARE_SUMMON, SoundSource.HOSTILE, 1.0f, 1.0f);
+	}
+
+	/**
+	 * Los campeones a los que les tocan partículas: vivos, visibles y a menos de RADIO_DE_PARTICULAS de algún jugador.
+	 * Se buscan alrededor de los jugadores y no en todo el mundo: lejos de todos nadie las vería, y recorrer cada mob
+	 * cargado cada medio segundo no vale la pena. Un Set, porque dos jugadores juntos verían al mismo mob dos veces.
+	 */
+	public static Set<Mob> conParticulas(MinecraftServer servidor) {
+		Set<Mob> mobs = new LinkedHashSet<>();
+		for (ServerPlayer jugador : servidor.getPlayerList().getPlayers()) {
+			mobs.addAll(jugador.level().getEntitiesOfClass(Mob.class, jugador.getBoundingBox().inflate(RADIO_DE_PARTICULAS),
+					mob -> mob.isAlive() && !mob.isInvisible() && de(mob) != null));
+		}
+		return mobs;
+	}
+
+	/** Cada ticksEntreParticulas, desde el reloj de Eventos. Son partículas de vanilla: las ve cualquier cliente. */
+	public static void mostrarParticulas(MinecraftServer servidor) {
+		if (!particulasActivas()) {
+			return;
+		}
+		for (Mob mob : conParticulas(servidor)) {
+			Afijo afijo = de(mob);
+			if (afijo == null || !(mob.level() instanceof ServerLevel level)) {
+				continue;
+			}
+			double ancho = mob.getBbWidth() * 0.4;
+			if (afijo == VELOZ) {
+				// A los pies, como el polvo de correr
+				level.sendParticles(afijo.particula, mob.getX(), mob.getY() + 0.1, mob.getZ(), 2, ancho, 0.05, ancho, 0.01);
+			} else if (afijo == EXPLOSIVO) {
+				// Una mecha: humo y alguna chispa arriba de la cabeza
+				level.sendParticles(ParticleTypes.SMOKE, mob.getX(), mob.getY(1) + 0.2, mob.getZ(), 2, 0.1, 0.1, 0.1, 0.01);
+				level.sendParticles(ParticleTypes.SMALL_FLAME, mob.getX(), mob.getY(1) + 0.2, mob.getZ(), 1, 0.1, 0.05, 0.1, 0.005);
+			} else {
+				level.sendParticles(afijo.particula, mob.getX(), mob.getY(0.5), mob.getZ(), 2, ancho, mob.getBbHeight() * 0.3, ancho, 0.02);
+			}
+		}
+	}
+
+	private static boolean particulasActivas() {
+		return BloodmoonAndBosses.config().afijos().particulas();
 	}
 
 	/** AFTER_DEATH: la explosión llega un rato después, con el sonido de la mecha, para que se pueda escapar. */

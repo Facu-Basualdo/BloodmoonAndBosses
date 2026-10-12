@@ -43,12 +43,22 @@ Todo es del lado del servidor: barra de jefe (`ServerBossEvent`), títulos (`Cli
 | Congelante | `AFTER_DAMAGE` sobre el atacante | `SLOWNESS` como el veneno, más `setTicksFrozen` para la escarcha de la nieve polvo en pantalla. **Por debajo de `getTicksRequiredToFreeze()`** (140): con el máximo, vanilla lastima por frío. Fuera de la nieve baja 2 por tick, así que `segundosCongelante × 40` dura esos segundos |
 | Teletransportador | `AFTER_DAMAGE` sobre la víctima | Con `chanceTeletransporte` y una espera de `segundosEntreTeletransportes` (`ULTIMO_TELETRANSPORTE`, en memoria), salta a 2–4 bloques **del que le pegó** con `lugarCerca` y lo toma de objetivo: alejarse o tirarle flechas no alcanza. Sin un atacante vivo (lava, caída) no salta |
 
+### Partículas
+
+**Cada `ticksEntreParticulas` (10), `Afijo.mostrarParticulas` le pone a cada campeón la partícula de su afijo** (`Afijo.particula()`): así se reconoce de lejos o en una cueva, antes de leer el nombre. Se apagan con `afijos.particulas`.
+
+- **Se buscan alrededor de cada jugador** (`conParticulas`, 32 bloques) y no en todo el mundo: `sendParticles` sin forzar no le llega a un cliente a más de 32 bloques, así que lejos de todos nadie las vería. Es un `Set`: con dos jugadores juntos, el mob iría dos veces.
+- **Los invisibles no** (una poción de invisibilidad): las partículas lo delatarían.
+- Veloz va a los pies y explosivo arriba de la cabeza (humo + `SMALL_FLAME`, una mecha); el resto, alrededor del cuerpo. Son partículas de vanilla: un cliente sin el mod las ve.
+- Los jefes también tienen afijo, así que también las sueltan.
+
 ## El reloj: Eventos
 
 `Eventos.registrar()` engancha un `END_SERVER_TICK`:
 
 | Cada | Qué |
 |---|---|
+| `ticksEntreParticulas` | `Afijo.mostrarParticulas` |
 | tick | Las tareas de `programar` que vencieron (la explosión, el compañero de la luna). Se corren sólo si su `ServerLevel` sigue cargado |
 | segundo | `LunaDeSangre.actualizar`, `Estampida.actualizarTodas`, `JefeDeZona.actualizarTodos` |
 | minuto | `sortear` de la estampida y del jefe, por jugador (las chances de la config son por minuto) |

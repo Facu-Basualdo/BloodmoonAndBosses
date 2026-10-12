@@ -64,18 +64,18 @@ Cerca de la base el juego se siente casi como vanilla; a varios miles de bloques
 
 Ninguno necesita el mod en el cliente: usan la barra de jefe, los títulos y los sonidos de vanilla.
 
-- **Afijos de campeón:** cada campeón tiene uno al azar, y lo conserva si se convierte (un zombi que se ahoga sigue siendo veloz).
+- **Afijos de campeón:** cada campeón tiene uno al azar, y lo conserva si se convierte (un zombi que se ahoga sigue siendo veloz). **Cada afijo suelta sus partículas** cada medio segundo, así se reconoce de lejos o en una cueva antes de leer el nombre.
 
-  | Afijo | Qué hace |
-  |---|---|
-  | **Veloz** | Corre un 30 % más rápido |
-  | **Vampiro** | Se cura la mitad del daño que hace (también con flechas). Los creepers no pueden serlo |
-  | **Explosivo** | Al morir suena la mecha de un creeper y, un segundo y medio después, explota como uno. No rompe bloques |
-  | **Invocador** | Cuando lo lastimás llama dos refuerzos de su especie, con el nivel de la zona. Hasta 3 veces, cada 10 segundos. Los vex no pueden serlo (tag `bloodmoonandbosses:no_invocan`) |
-  | **Blindado** | +6 de armadura y la mitad de resistencia al empuje |
-  | **Venenoso** | Sus golpes (también las flechas y la explosión de un creeper) envenenan: veneno II por 5 segundos |
-  | **Congelante** | Sus golpes dan lentitud II por 3 segundos, con la escarcha de la nieve polvo en la pantalla (no lastima por frío) |
-  | **Teletransportador** | Cuando le pegás, la mitad de las veces aparece al lado tuyo, como un enderman. Como mucho cada 3 segundos: alejarse o tirarle flechas no alcanza |
+  | Afijo | Partículas | Qué hace |
+  |---|---|---|
+  | **Veloz** | polvo en los pies | Corre un 30 % más rápido |
+  | **Vampiro** | esporas rojas | Se cura la mitad del daño que hace (también con flechas). Los creepers no pueden serlo |
+  | **Explosivo** | humo y chispas arriba de la cabeza, como una mecha | Al morir suena la mecha de un creeper y, un segundo y medio después, explota como uno. No rompe bloques |
+  | **Invocador** | violetas, de bruja | Cuando lo lastimás llama dos refuerzos de su especie, con el nivel de la zona. Hasta 3 veces, cada 10 segundos. Los vex no pueden serlo (tag `bloodmoonandbosses:no_invocan`) |
+  | **Blindado** | chispas blancas | +6 de armadura y la mitad de resistencia al empuje |
+  | **Venenoso** | gotas verdes | Sus golpes (también las flechas y la explosión de un creeper) envenenan: veneno II por 5 segundos |
+  | **Congelante** | copos de nieve | Sus golpes dan lentitud II por 3 segundos, con la escarcha de la nieve polvo en la pantalla (no lastima por frío) |
+  | **Teletransportador** | de portal | Cuando le pegás, la mitad de las veces aparece al lado tuyo, como un enderman. Como mucho cada 3 segundos: alejarse o tirarle flechas no alcanza |
 
 - **Estampida:** de noche, si estás al aire libre en el overworld, en una zona de nivel 10 o más, hay un 3 % por minuto de que suene un cuerno a lo lejos y entre 6 y 16 mobs de la zona (más cuanto más alto el nivel) carguen contra vos, todos desde el mismo lado, más rápido de lo normal. Uno es el líder: un campeón con afijo. Una barra roja muestra cuántos quedan. **Si los jugadores matan al menos la mitad, te llevás una tirada de botín raro** (la épica desde el nivel 50, la legendaria desde el 80) directo al inventario. Si te morís, se dispersan o pasan 3 minutos, termina sin premio; los que se queman al amanecer no cuentan. Después hay 3 días de juego de respiro. Los mobs salen del tag `bloodmoonandbosses:estampida` (zombi, esqueleto, araña).
 - **Luna de sangre:** las noches de luna llena hay un 50 % de que la luna sea de sangre (en promedio una cada 16 días). Aparece un título rojo y una barra que se vacía hasta el amanecer. Esa noche los mobs que aparecen en el overworld tienen **+10 niveles** (y por eso más loot), y la mitad de los que aparecen solos vienen con un compañero igual. `/bloodmoon zona` lo avisa. Dormir la saltea, como cualquier noche.
@@ -128,7 +128,7 @@ En el primer arranque se crea **`config/bloodmoonandbosses.json`** con todos los
 | `chanceTiradaExtra` | 0,5 % por nivel, tope 50 % | Probabilidad de cada tirada extra de los mobs de `tiradas_extra_por_chance` |
 | `botinRaro`, `botinEpico`, `botinLegendario` | ver arriba | `{"nivelMinimo": 20, "chance": 0.15}`: desde qué nivel y con qué probabilidad se tira cada tabla |
 | `experienciaPorNivel` | 0.05 | Experiencia extra por nivel (`0.05` = +5 %) |
-| `afijos` | ver arriba | `chance` (de que un campeón tenga afijo; 0 los apaga), `velocidadVeloz`, `curacionVampiro`, `potenciaExplosivo` y `ticksDeMecha`, `refuerzosInvocador`, `invocacionesMaximas` y `segundosEntreInvocaciones`, `armaduraBlindado` y `empujeBlindado`, `segundosVeneno` y `nivelVeneno` (2 = II), `segundosCongelante` y `nivelCongelante`, `chanceTeletransporte` y `segundosEntreTeletransportes` |
+| `afijos` | ver arriba | `chance` (de que un campeón tenga afijo; 0 los apaga), `velocidadVeloz`, `curacionVampiro`, `potenciaExplosivo` y `ticksDeMecha`, `refuerzosInvocador`, `invocacionesMaximas` y `segundosEntreInvocaciones`, `armaduraBlindado` y `empujeBlindado`, `segundosVeneno` y `nivelVeneno` (2 = II), `segundosCongelante` y `nivelCongelante`, `chanceTeletransporte` y `segundosEntreTeletransportes`, `particulas` (`false` las apaga) y `ticksEntreParticulas` |
 | `estampida` | ver arriba | `activa`, `chancePorMinuto`, `diasEntreEstampidas`, `nivelMinimo`, `mobsBase` + uno cada `nivelesPorMobExtra` hasta `mobsMaximos`, `distanciaMinima`/`distanciaMaxima`, `velocidadExtra`, `segundosMaximos` |
 | `lunaDeSangre` | ver arriba | `activa`, `chance` (por noche de luna llena), `nivelesExtra`, `chanceDeCompania` |
 | `jefeDeZona` | ver arriba | `activo`, `chancePorMinuto`, `diasEntreJefes`, `nivelMinimo`, `nivelesExtra`, `multiplicadorDeVida`, `escoltas`, `radioDeBarra`, `segundosAbandonado`; la furia: `vidaFuria` (fracción de la vida; 0 la apaga), `velocidadFuria`, `danioFuria`, `escoltasFuria`; las habilidades: `segundosEntreHabilidades`, `radioOnda`, `danioOnda` (en golpes del jefe), `fuerzaOnda`, `radioTiron` |
