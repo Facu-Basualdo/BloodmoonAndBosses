@@ -1,3 +1,4 @@
 {
-	"tag.item.bloodmoonandbosses.equipo_valioso": "Valuable mob equipment"
+	"tag.item.bloodmoonandbosses.equipo_valioso": "Valuable mob equipment",
+	"modmenu.descriptionTranslation.bloodmoonandbosses": "Hostile mobs spawn with levels: the farther from spawn and the older the world, the stronger they are and the better their loot. With affixed champions, stampedes, blood moons and zone bosses. Server-side: vanilla clients can join."
 }

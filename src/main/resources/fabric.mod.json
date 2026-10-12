@@ -3,8 +3,15 @@
 	"id": "bloodmoonandbosses",
 	"version": "${version}",
 	"name": "Bloodmoon & Bosses",
-	"description": "Los mobs hostiles aparecen con niveles: cuanto más lejos del spawn y más viejo el mundo, más fuertes son y mejor loot dan. Con campeones con afijos, estampidas, lunas de sangre y jefes de zona.",
-	"authors": [],
+	"description": "Hostile mobs spawn with levels: the farther from spawn and the older the world, the stronger they are and the better their loot. With affixed champions, stampedes, blood moons and zone bosses. Server-side: vanilla clients can join.",
+	"authors": [
+		"FacuBas"
+	],
+	"contact": {
+		"homepage": "https://github.com/Facu-Basualdo/BloodmoonAndBosses",
+		"sources": "https://github.com/Facu-Basualdo/BloodmoonAndBosses",
+		"issues": "https://github.com/Facu-Basualdo/BloodmoonAndBosses/issues"
+	},
 	"license": "MIT",
 	"icon": "assets/bloodmoonandbosses/icon.png",
 	"environment": "*",

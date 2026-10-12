@@ -1,3 +1,4 @@
 {
-	"tag.item.bloodmoonandbosses.equipo_valioso": "Equipo valioso de mobs"
+	"tag.item.bloodmoonandbosses.equipo_valioso": "Equipo valioso de mobs",
+	"modmenu.descriptionTranslation.bloodmoonandbosses": "Los mobs hostiles aparecen con niveles: cuanto más lejos del spawn y más viejo el mundo, más fuertes son y mejor loot dan. Con campeones con afijos, estampidas, lunas de sangre y jefes de zona."
 }
