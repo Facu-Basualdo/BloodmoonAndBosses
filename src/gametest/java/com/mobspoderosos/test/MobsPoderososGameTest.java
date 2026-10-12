@@ -570,18 +570,21 @@ public class MobsPoderososGameTest {
 		Mob atacante = spawn(helper, EntityTypes.VILLAGER, EntitySpawnReason.COMMAND);
 		atacante.snapTo(helper.absolutePos(CENTRO), 0, 0);
 
-		// La chance es 0,5 por golpe: se le borra la espera entre intentos. Que no salte en 20 golpes es 1 en un millón
+		// Se llama directo a lo que corre en AFTER_DAMAGE: con hurtServer, después del primer golpe el mob queda
+		// invulnerable unos ticks y los demás no cuentan, así que el test tendría una sola chance de 0,5.
+		// Que no salte en 20 intentos es 1 en un millón
+		DamageSource golpe = level.damageSources().mobAttack(atacante);
 		for (int i = 0; i < 20 && !teletransportador.hasAttached(Afijo.ULTIMO_TELETRANSPORTE); i++) {
-			teletransportador.removeAttached(Afijo.ULTIMO_TELETRANSPORTE);
-			teletransportador.setHealth(teletransportador.getMaxHealth());
-			teletransportador.hurtServer(level, level.damageSources().mobAttack(atacante), 1);
+			Afijo.alRecibirDanio(teletransportador, golpe, 1, 1, false);
 		}
 		helper.assertTrue(teletransportador.hasAttached(Afijo.ULTIMO_TELETRANSPORTE), Component.literal("Al lastimarlo se teletransporta"));
 		double distancia = Math.sqrt(teletransportador.distanceToSqr(atacante));
 		helper.assertTrue(distancia <= 5.5, Component.literal("Aparece al lado del que le pegó (a " + distancia + " bloques)"));
 
 		BlockPos donde = teletransportador.blockPosition();
-		teletransportador.hurtServer(level, level.damageSources().mobAttack(atacante), 1);
+		for (int i = 0; i < 20; i++) {
+			Afijo.alRecibirDanio(teletransportador, golpe, 1, 1, false);
+		}
 		helper.assertValueEqual(donde, teletransportador.blockPosition(), "Durante la espera no vuelve a saltar");
 		helper.succeed();
 	}
@@ -592,12 +595,13 @@ public class MobsPoderososGameTest {
 		Zombie zombie = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(zombie, 20);
 		helper.runAfterDelay(1, () -> {
-			assertTerminaEn(helper, zombie, "❤ 52/52");
+			// Sólo el máximo: mientras espera, el zombi se puede quemar al sol y perder vida
+			assertTerminaEn(helper, zombie, "/52");
 			zombie.getAttribute(Attributes.MAX_HEALTH).addOrReplacePermanentModifier(
 					new AttributeModifier(MobsPoderosos.id("prueba"), 10, AttributeModifier.Operation.ADD_VALUE));
 			helper.runAfterDelay(2, () -> {
 				// 78 y no 62: el ADD_MULTIPLIED_BASE del nivel (×2,6) multiplica también los 10 que se suman
-				assertTerminaEn(helper, zombie, "❤ 52/78");
+				assertTerminaEn(helper, zombie, "/78");
 				helper.succeed();
 			});
 		});
