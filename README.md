@@ -1,5 +1,7 @@
 # Bloodmoon & Bosses
 
+<p align="center"><img src="src/main/resources/assets/mobspoderosos/icon.png" alt="Bloodmoon & Bosses" width="256"></p>
+
 > Antes se llamaba **Mobs Poderosos**. El id del mod sigue siendo `mobspoderosos`: el comando es `/mobspoderosos`, la config `config/mobspoderosos.json` y los tags `mobspoderosos:…`, así que los mundos y las configuraciones que ya existen siguen andando.
 
 Mod de Fabric para **Minecraft Java 26.3** en el que los mobs hostiles aparecen con **niveles**. Cuanto más lejos del spawn del mundo y cuanto más viejo es el mundo, más nivel tienen: más vida, más daño, más armadura y más velocidad, y aparecen con mejor equipo encantado. El nivel y la vida se ven en el nombre del mob: **"Zombi [Nv 7] ❤ 34/40"**. Los mobs de más nivel también sueltan más loot, ítems raros y más experiencia.
