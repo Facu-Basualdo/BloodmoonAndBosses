@@ -1,4 +1,4 @@
-package com.mobspoderosos;
+package com.bloodmoonandbosses;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,9 +21,9 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 public final class EquipoPorNivel {
 	// Sólo los que dibujan la armadura: a un illager se la pondría invisible
-	public static final TagKey<EntityType<?>> USAN_EQUIPO = TagKey.create(Registries.ENTITY_TYPE, MobsPoderosos.id("usan_equipo"));
+	public static final TagKey<EntityType<?>> USAN_EQUIPO = TagKey.create(Registries.ENTITY_TYPE, BloodmoonAndBosses.id("usan_equipo"));
 	// Con la chance de soltar subida, en nivel 40+ la netherita encantada saldría gratis
-	public static final TagKey<Item> EQUIPO_VALIOSO = TagKey.create(Registries.ITEM, MobsPoderosos.id("equipo_valioso"));
+	public static final TagKey<Item> EQUIPO_VALIOSO = TagKey.create(Registries.ITEM, BloodmoonAndBosses.id("equipo_valioso"));
 
 	private static final List<EquipmentSlot> ARMADURA = List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET);
 	private static final List<EquipmentSlot> CON_EQUIPO = List.of(EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND,
@@ -48,7 +48,7 @@ public final class EquipoPorNivel {
 
 	/** Sólo al aparecer: en una conversión el mob nuevo ya trae el equipo del viejo. */
 	public static void equipar(Mob mob, int nivel) {
-		Configuracion config = MobsPoderosos.config();
+		Configuracion config = BloodmoonAndBosses.config();
 		RandomSource random = mob.getRandom();
 		if (mob.is(USAN_EQUIPO)) {
 			ponerArmadura(mob, nivel, config, random);
@@ -58,7 +58,7 @@ public final class EquipoPorNivel {
 	}
 
 	public static Material material(int nivel, RandomSource random) {
-		int rango = Math.min(nivel / MobsPoderosos.config().nivelesPorMaterialDeArmadura(), POR_RANGO.size() - 1);
+		int rango = Math.min(nivel / BloodmoonAndBosses.config().nivelesPorMaterialDeArmadura(), POR_RANGO.size() - 1);
 		List<Material> opciones = POR_RANGO.get(rango);
 		return opciones.get(random.nextInt(opciones.size()));
 	}

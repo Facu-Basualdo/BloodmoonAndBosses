@@ -34,11 +34,11 @@ Todo es del lado del servidor: barra de jefe (`ServerBossEvent`), títulos (`Cli
 
 | Afijo | Dónde | Detalle |
 |---|---|---|
-| Veloz | `Afijo.aplicarModificadores`, llamado desde `aplicarEstadisticas` | Modificador `mobspoderosos:afijo` en `MOVEMENT_SPEED`. Desde ahí, las conversiones lo rehacen solas |
+| Veloz | `Afijo.aplicarModificadores`, llamado desde `aplicarEstadisticas` | Modificador `bloodmoonandbosses:afijo` en `MOVEMENT_SPEED`. Desde ahí, las conversiones lo rehacen solas |
 | Vampiro | `ServerLivingEntityEvents.AFTER_DAMAGE` | `source.getEntity()` y no `getDirectEntity()`: en una flecha es el esqueleto. Cura `danioRecibido × curacionVampiro`. No le toca al creeper |
 | Explosivo | `AFTER_DEATH` + `Eventos.programar` | La explosión va `ticksDeMecha` después, con el sonido de la mecha. `ExplosionInteraction.NONE`: no rompe bloques |
 | Invocador | `AFTER_DAMAGE` sobre la víctima | `INVOCACIONES` es persistente (si no, guardar y cargar el chunk le devolvería todas). `ULTIMA_INVOCACION` no lo es: la espera se reinicia, y no importa. Tag `no_invocan` (vex: sin evocador no desaparece nunca) |
-| Blindado | `Afijo.aplicarModificadores` | `mobspoderosos:afijo` en `ARMOR` (`armaduraBlindado`) y `KNOCKBACK_RESISTANCE` (`empujeBlindado`), `ADD_VALUE`. `modificar` con 0 **saca** el modificador: cada afijo pone los suyos y saca los de los otros |
+| Blindado | `Afijo.aplicarModificadores` | `bloodmoonandbosses:afijo` en `ARMOR` (`armaduraBlindado`) y `KNOCKBACK_RESISTANCE` (`empujeBlindado`), `ADD_VALUE`. `modificar` con 0 **saca** el modificador: cada afijo pone los suyos y saca los de los otros |
 | Venenoso | `AFTER_DAMAGE` sobre el atacante | `POISON` de `nivelVeneno` (1 = I, el amplificador es `nivel − 1`) por `segundosVeneno`, con el atacante como fuente. Con `getEntity()`, también un esqueleto con flechas o un creeper con su explosión |
 | Congelante | `AFTER_DAMAGE` sobre el atacante | `SLOWNESS` como el veneno, más `setTicksFrozen` para la escarcha de la nieve polvo en pantalla. **Por debajo de `getTicksRequiredToFreeze()`** (140): con el máximo, vanilla lastima por frío. Fuera de la nieve baja 2 por tick, así que `segundosCongelante × 40` dura esos segundos |
 | Teletransportador | `AFTER_DAMAGE` sobre la víctima | Con `chanceTeletransporte` y una espera de `segundosEntreTeletransportes` (`ULTIMO_TELETRANSPORTE`, en memoria), salta a 2–4 bloques **del que le pegó** con `lugarCerca` y lo toma de objetivo: alejarse o tirarle flechas no alcanza. Sin un atacante vivo (lava, caída) no salta |
@@ -88,7 +88,7 @@ Todo es del lado del servidor: barra de jefe (`ServerBossEvent`), títulos (`Cli
 **No depende de memoria:** el attachment persistente `JEFE` lo marca, y `JefeDeZona.alCargar` (`ENTITY_LOAD`) lo vuelve a seguir con una barra nueva. `ENTITY_UNLOAD`, que también corre al morir o al desaparecer, le saca la barra a todos. Así la barra no queda colgada ni después de un reinicio ni cuando el chunk se descarga.
 
 - **`setPersistenceRequired`:** si no, a más de 128 bloques del jugador desaparece al instante. A cambio, **se va solo** si nadie está a menos de `radioDeBarra` durante `segundosAbandonado` (`discard`). Las escoltas son mobs comunes.
-- **Vida:** un modificador `mobspoderosos:jefe` con `ADD_MULTIPLIED_TOTAL` (multiplica también lo que sumó el nivel), y `setHealth(getMaxHealth())` después.
+- **Vida:** un modificador `bloodmoonandbosses:jefe` con `ADD_MULTIPLIED_TOTAL` (multiplica también lo que sumó el nivel), y `setHealth(getMaxHealth())` después.
 - **Aparece a la altura del jugador** (`superficie = false`): en una mina tiene que aparecer en la mina. Tipos por dimensión: tags `jefe_de_zona/overworld`, `nether` y `end`.
 - **No aparece si ya hay un jefe seguido a menos de 128 bloques** del jugador.
 - **El botín asegurado va en el mismo `@WrapOperation` que el botín raro** (`BotinPorNivel.soltarBotinDeJefe`), así que respeta `mobDrops` y exige que lo haya matado un jugador. Ver [botín](botin.md).
@@ -100,7 +100,7 @@ Todo corre en `actualizarTodos` (cada segundo), sólo para los jefes seguidos.
 
 | Mecánica | Cuándo | Qué hace |
 |---|---|---|
-| Furia (`enfurecer`) | La vida baja de `vidaFuria` × el máximo (0,5) | Attachment persistente `FURIA`; `mobspoderosos:furia` con `ADD_MULTIPLIED_TOTAL` en `MOVEMENT_SPEED` y `ATTACK_DAMAGE`; `escoltasFuria` escoltas con el nivel de la zona contra su objetivo; rugido de devastador; la barra pasa a **roja** y dice "· Furia" |
+| Furia (`enfurecer`) | La vida baja de `vidaFuria` × el máximo (0,5) | Attachment persistente `FURIA`; `bloodmoonandbosses:furia` con `ADD_MULTIPLIED_TOTAL` en `MOVEMENT_SPEED` y `ATTACK_DAMAGE`; `escoltasFuria` escoltas con el nivel de la zona contra su objetivo; rugido de devastador; la barra pasa a **roja** y dice "· Furia" |
 | Onda de choque | Hay alguien a menos de `radioOnda` | Lastima `ATTACK_DAMAGE × danioOnda` (`mobAttack`) y empuja para afuera con `fuerzaOnda` |
 | Tirón | Hay alguien entre `radioOnda` y `radioTiron` (y dentro de `radioDeBarra`) | Lo trae hasta ~3 bloques del jefe y le da lentitud II 2 segundos |
 

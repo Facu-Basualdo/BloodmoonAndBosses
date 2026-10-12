@@ -1,4 +1,4 @@
-package com.mobspoderosos;
+package com.bloodmoonandbosses;
 
 import java.util.UUID;
 
@@ -29,8 +29,8 @@ import net.minecraft.world.level.MoonPhase;
  */
 public final class LunaDeSangre {
 	// En el ServerLevel y persistentes: si el servidor se reinicia a mitad de la noche, la luna sigue y no se vuelve a sortear
-	public static final AttachmentType<Long> NOCHE_ACTIVA = AttachmentRegistry.createPersistent(MobsPoderosos.id("luna_de_sangre"), Codec.LONG);
-	public static final AttachmentType<Long> NOCHE_SORTEADA = AttachmentRegistry.createPersistent(MobsPoderosos.id("noche_sorteada"), Codec.LONG);
+	public static final AttachmentType<Long> NOCHE_ACTIVA = AttachmentRegistry.createPersistent(BloodmoonAndBosses.id("luna_de_sangre"), Codec.LONG);
+	public static final AttachmentType<Long> NOCHE_SORTEADA = AttachmentRegistry.createPersistent(BloodmoonAndBosses.id("noche_sorteada"), Codec.LONG);
 
 	private static @Nullable ServerBossEvent barra;
 
@@ -38,11 +38,11 @@ public final class LunaDeSangre {
 	}
 
 	public static boolean activa(ServerLevel level) {
-		return level.dimension() == Level.OVERWORLD && level.hasAttached(NOCHE_ACTIVA) && MobsPoderosos.config().lunaDeSangre().activa();
+		return level.dimension() == Level.OVERWORLD && level.hasAttached(NOCHE_ACTIVA) && BloodmoonAndBosses.config().lunaDeSangre().activa();
 	}
 
 	public static int nivelesExtra(ServerLevel level) {
-		return activa(level) ? MobsPoderosos.config().lunaDeSangre().nivelesExtra() : 0;
+		return activa(level) ? BloodmoonAndBosses.config().lunaDeSangre().nivelesExtra() : 0;
 	}
 
 	public static boolean esLunaLlena(ServerLevel level) {
@@ -51,7 +51,7 @@ public final class LunaDeSangre {
 
 	/** Cada segundo. La noche se sortea una sola vez, al empezar: así dormir o reconectarse no da otra tirada. */
 	public static void actualizar(ServerLevel overworld) {
-		Configuracion.LunaDeSangre config = MobsPoderosos.config().lunaDeSangre();
+		Configuracion.LunaDeSangre config = BloodmoonAndBosses.config().lunaDeSangre();
 		boolean noche = NivelDeZona.esDeNoche(overworld);
 		long dia = NivelDeZona.dias(overworld);
 
@@ -70,7 +70,7 @@ public final class LunaDeSangre {
 		}
 	}
 
-	/** También para /mobspoderosos evento: sólo de noche, porque al amanecer se termina sola. */
+	/** También para /bloodmoon evento: sólo de noche, porque al amanecer se termina sola. */
 	public static boolean empezar(ServerLevel overworld) {
 		if (!NivelDeZona.esDeNoche(overworld) || overworld.dimension() != Level.OVERWORLD) {
 			return false;
@@ -121,7 +121,7 @@ public final class LunaDeSangre {
 	 * compañero no traiga otro.
 	 */
 	public static void alAparecerNatural(Mob mob, ServerLevel level) {
-		if (!activa(level) || mob.getRandom().nextDouble() >= MobsPoderosos.config().lunaDeSangre().chanceDeCompania()) {
+		if (!activa(level) || mob.getRandom().nextDouble() >= BloodmoonAndBosses.config().lunaDeSangre().chanceDeCompania()) {
 			return;
 		}
 		Eventos.programar(level, 1, () -> {

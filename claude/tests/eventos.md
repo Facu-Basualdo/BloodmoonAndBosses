@@ -6,8 +6,8 @@
 
 | Test | Qué verifica |
 |---|---|
-| `afijos` | Nombre "[Nv 20] [Veloz]" que sigue siendo del mod · modificador `mobspoderosos:afijo` de +0,3 · zombi → ahogado conserva el afijo, el nombre y el modificador · un creeper no puede ser vampiro, un vex (`no_invocan`) no puede ser invocador · el vampiro se cura al pegarle a un aldeano y uno sin afijo no |
-| `afijosNuevos` | Blindado: `mobspoderosos:afijo` en `ARMOR` y `KNOCKBACK_RESISTANCE`, y no en `MOVEMENT_SPEED` · el golpe del venenoso envenena con el nivel de la config · el del congelante da lentitud y escarcha por debajo del máximo · sin afijo, ningún efecto · todos los ids se leen de vuelta con `porId` |
+| `afijos` | Nombre "[Nv 20] [Veloz]" que sigue siendo del mod · modificador `bloodmoonandbosses:afijo` de +0,3 · zombi → ahogado conserva el afijo, el nombre y el modificador · un creeper no puede ser vampiro, un vex (`no_invocan`) no puede ser invocador · el vampiro se cura al pegarle a un aldeano y uno sin afijo no |
+| `afijosNuevos` | Blindado: `bloodmoonandbosses:afijo` en `ARMOR` y `KNOCKBACK_RESISTANCE`, y no en `MOVEMENT_SPEED` · el golpe del venenoso envenena con el nivel de la config · el del congelante da lentitud y escarcha por debajo del máximo · sin afijo, ningún efecto · todos los ids se leen de vuelta con `porId` |
 | `afijoTeletransportador` | Hasta 20 llamadas a `Afijo.alRecibirDanio` (la chance es 0,5): salta a menos de 5,5 bloques del atacante · dentro de la espera no vuelve a saltar. **Directo y no con `hurtServer`:** después del primer golpe el mob queda invulnerable unos ticks y los demás golpes del mismo tick no llegan a `AFTER_DAMAGE`, así que el test tenía una sola chance |
 | `furiaDelJefe` | Con la vida llena no está furioso y la barra es violeta · por debajo de `vidaFuria`: furioso, velocidad y daño × (1 + furia), `escoltasFuria` zombis nuevos, barra roja con "Furia" · otra vuelta no lo enfurece de nuevo |
 | `habilidadesDelJefe` | Sin nadie a tiro, ninguna · con un jugador a 2 bloques, la onda: lo lastima, lo empuja para afuera y marca `needsSync` · con uno a 15, el tirón: lo trae y le da lentitud · más allá de `radioTiron`, ninguna |
@@ -20,7 +20,7 @@
 | `lunaDeSangre` | `esDeNoche` en los bordes (12999, 13000, 22999, 23000) · `nivelesExtra` con y sin `NOCHE_ACTIVA` · 20 zombis `NATURAL` con luna traen al menos un compañero |
 | `archivoDeConfiguracion` | (en [configuración](configuracion.md)) los eventos aparecen en el archivo y `estampida.distanciaMaxima` menor que la mínima se rechaza |
 
-**No cubre** los sorteos (`sortear`: noche, cielo, espera y chance), la barra de la luna, el abandono del jefe ni los títulos y sonidos: dependen del reloj del mundo y de la config global. Se prueban a mano con `/mobspoderosos evento …` (ver [probar en el juego](../general/probar-en-el-juego.md)).
+**No cubre** los sorteos (`sortear`: noche, cielo, espera y chance), la barra de la luna, el abandono del jefe ni los títulos y sonidos: dependen del reloj del mundo y de la config global. Se prueban a mano con `/bloodmoon evento …` (ver [probar en el juego](../general/probar-en-el-juego.md)).
 
 ## Cosas que no son obvias
 

@@ -6,14 +6,14 @@ Cuatro features nuevas. Todo sigue siendo del lado del servidor: barra de jefe, 
 
 - **`NivelDeMob.invocarConNivel(tipo, level, pos, motivo, nivel, afijo)`**: crea el mob, corre `finalizeSpawn` (equipo de vanilla), le aplica nivel + equipo **antes** de `addFreshEntity`. Como ya tiene `NIVEL`, `alCargar` sólo le borra `PENDIENTE` (es la misma rama que usan las conversiones). Lo usan la estampida, las escoltas del jefe, los refuerzos del invocador y la compañía de la luna de sangre: ninguno vuelve a tirar campeón, así que no hay recursión.
 - **`Eventos`**: un `END_SERVER_TICK`. Cada tick corre las tareas demoradas (la explosión del afijo explosivo, la compañía de la luna); cada segundo actualiza la luna, las estampidas y los jefes; cada minuto sortea estampidas y jefes por jugador.
-- **`/mobspoderosos evento <estampida|jefe|luna_de_sangre> [jugador]`** (op) para probarlos sin esperar.
-- Config: cuatro objetos nuevos en `config/mobspoderosos.json` (`afijos`, `estampida`, `lunaDeSangre`, `jefeDeZona`), cada uno con `activo` y sus números.
+- **`/bloodmoon evento <estampida|jefe|luna_de_sangre> [jugador]`** (op) para probarlos sin esperar.
+- Config: cuatro objetos nuevos en `config/bloodmoonandbosses.json` (`afijos`, `estampida`, `lunaDeSangre`, `jefeDeZona`), cada uno con `activo` y sus números.
 
 ## Afijos de campeón
 
 - Cada campeón (`chanceDeCampeon`) recibe un afijo al azar con `afijos.chance` (por defecto 1): **Veloz**, **Vampiro**, **Explosivo**, **Invocador**.
 - Attachment persistente `AFIJO`. El nombre pasa a ser "Zombi [Nv 27] [Vampiro]": `nombre(tipo, nivel, afijo)` y `esNombreDelMod` lo incluyen, así las conversiones lo siguen reconociendo. Las conversiones copian el afijo.
-- Veloz: modificador de velocidad propio (`mobspoderosos:afijo`), aplicado dentro de `aplicarEstadisticas` para que las conversiones lo rehagan.
+- Veloz: modificador de velocidad propio (`bloodmoonandbosses:afijo`), aplicado dentro de `aplicarEstadisticas` para que las conversiones lo rehagan.
 - Vampiro: `AFTER_DAMAGE`, si el atacante (`source.getEntity()`, cubre flechas) es vampiro se cura una fracción del daño hecho. No le toca al creeper.
 - Explosivo: `AFTER_DEATH` programa una explosión 1,5 s después con el sonido de mecha del creeper. `ExplosionInteraction.NONE`: no rompe bloques (si no, los campeones romperían bases).
 - Invocador: `AFTER_DAMAGE` sobre el invocador, con espera entre usos y un máximo por mob (attachments persistentes), llama refuerzos de su tipo con el nivel de la zona. Tag `no_invocan` (vex).

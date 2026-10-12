@@ -1,4 +1,4 @@
-package com.mobspoderosos;
+package com.bloodmoonandbosses;
 
 import java.util.ArrayList;
 import java.util.List;

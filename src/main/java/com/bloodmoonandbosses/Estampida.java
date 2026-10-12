@@ -1,4 +1,4 @@
-package com.mobspoderosos;
+package com.bloodmoonandbosses;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,13 +43,13 @@ import net.minecraft.world.level.Level;
  * comunes.
  */
 public final class Estampida {
-	public static final TagKey<EntityType<?>> TIPOS = TagKey.create(Registries.ENTITY_TYPE, MobsPoderosos.id("estampida"));
+	public static final TagKey<EntityType<?>> TIPOS = TagKey.create(Registries.ENTITY_TYPE, BloodmoonAndBosses.id("estampida"));
 	// En el jugador, persistente y copiado al morir: si no, morirse o reconectarse saltearía la espera
-	public static final AttachmentType<Long> ULTIMA = AttachmentRegistry.create(MobsPoderosos.id("ultima_estampida"),
+	public static final AttachmentType<Long> ULTIMA = AttachmentRegistry.create(BloodmoonAndBosses.id("ultima_estampida"),
 			builder -> builder.persistent(Codec.LONG).copyOnDeath());
 
 	// Transitorios: no se guardan con el mob, así que si el servidor se reinicia vuelve a su velocidad normal
-	private static final Identifier MODIFICADOR = MobsPoderosos.id("estampida");
+	private static final Identifier MODIFICADOR = BloodmoonAndBosses.id("estampida");
 	private static final Map<UUID, Estampida> ACTIVAS = new HashMap<>();
 
 	private final ServerPlayer jugador;
@@ -89,7 +89,7 @@ public final class Estampida {
 
 	/** Cada minuto, por jugador. */
 	public static void sortear(ServerPlayer jugador) {
-		Configuracion.Estampida config = MobsPoderosos.config().estampida();
+		Configuracion.Estampida config = BloodmoonAndBosses.config().estampida();
 		if (!config.activa() || activa(jugador) || !Eventos.puedeTenerEventos(jugador)
 				|| !(jugador.level() instanceof ServerLevel level) || level.dimension() != Level.OVERWORLD) {
 			return;
@@ -110,7 +110,7 @@ public final class Estampida {
 	}
 
 	/**
-	 * Sin sorteo ni espera (es lo que usa /mobspoderosos evento). Devuelve el motivo si no pudo empezar. Al aire
+	 * Sin sorteo ni espera (es lo que usa /bloodmoon evento). Devuelve el motivo si no pudo empezar. Al aire
 	 * libre aparecen sobre la superficie; bajo techo, a la altura del jugador.
 	 */
 	public static @Nullable String empezar(ServerPlayer jugador, Configuracion.Estampida config) {
@@ -140,7 +140,7 @@ public final class Estampida {
 			}
 			// El primero es el líder: un campeón con afijo
 			boolean lider = mobs.isEmpty();
-			int nivel = NivelDeZona.calcular(level, pos, random) + (lider ? MobsPoderosos.config().nivelesDeCampeon() : 0);
+			int nivel = NivelDeZona.calcular(level, pos, random) + (lider ? BloodmoonAndBosses.config().nivelesDeCampeon() : 0);
 			Mob mob = NivelDeMob.invocarConNivel(tipo, level, pos, EntitySpawnReason.EVENT, nivel, lider);
 			if (mob != null) {
 				cargar(mob, jugador, config);

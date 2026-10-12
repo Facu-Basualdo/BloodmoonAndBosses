@@ -2,18 +2,18 @@
 
 [← Índice Mod](INDICE.md)
 
-Síntomas que esto evita: **un admin escribe mal un número y el servidor arranca con mobs sin nivel (o divide por cero)**, **una versión nueva del mod suma un valor y el archivo viejo lo deja en 0**, **un typo en una clave se ignora en silencio**, o **después de `/mobspoderosos recargar` alguien espera que los mobs que ya estaban cambien de vida**.
+Síntomas que esto evita: **un admin escribe mal un número y el servidor arranca con mobs sin nivel (o divide por cero)**, **una versión nueva del mod suma un valor y el archivo viejo lo deja en 0**, **un typo en una clave se ignora en silencio**, o **después de `/bloodmoon recargar` alguien espera que los mobs que ya estaban cambien de vida**.
 
 ## Dónde está y cuándo se lee
 
-**`config/mobspoderosos.json`** (`ArchivoDeConfiguracion.ruta()`, con `FabricLoader.getConfigDir()`). Se lee:
+**`config/bloodmoonandbosses.json`** (`ArchivoDeConfiguracion.ruta()`, con `FabricLoader.getConfigDir()`). Se lee:
 
 | Cuándo | Quién | Si falla |
 |---|---|---|
-| Al arrancar, **primero** en `MobsPoderosos.onInitialize` | `cargarConfiguracion()` | Queda `Configuracion.POR_DEFECTO` y el error va a la consola |
-| `/mobspoderosos recargar` (op) | `cargarConfiguracion()` | Queda la configuración anterior; el error va al chat de quien lo corrió y a la consola |
+| Al arrancar, **primero** en `BloodmoonAndBosses.onInitialize` | `cargarConfiguracion()` | Queda `Configuracion.POR_DEFECTO` y el error va a la consola |
+| `/bloodmoon recargar` (op) | `cargarConfiguracion()` | Queda la configuración anterior; el error va al chat de quien lo corrió y a la consola |
 
-`MobsPoderosos.config` es un campo `volatile` que se reemplaza entero: nadie ve una configuración a medio cargar.
+`BloodmoonAndBosses.config` es un campo `volatile` que se reemplaza entero: nadie ve una configuración a medio cargar.
 
 ## Lectura: por defecto + archivo, y se reescribe
 

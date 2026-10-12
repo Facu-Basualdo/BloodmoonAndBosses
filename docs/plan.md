@@ -7,39 +7,39 @@ Querés un segundo mod de Fabric, aparte de Soul Link, donde los mobs hostiles a
 - **Nivel** = distancia al spawn del mundo (con un extra en el Nether y el End).
 - **Visual** = un nombre sobre la cabeza ("Zombi [Nv 7]", con color por rango). Es todo del servidor y **no hace falta mod en el cliente**.
 - **Loot** = más tiradas de la tabla de vanilla + más experiencia, equipo encantado que se puede soltar, e ítems raros por rango de nivel.
-- **Repo** = uno nuevo en `C:\ReposGit\MobsPoderosos`, con la misma base que este proyecto.
+- **Repo** = uno nuevo en `C:\ReposGit\BloodmoonAndBosses`, con la misma base que este proyecto.
 
 Toda la lógica corre en el servidor, igual que en Soul Link. Los dos mods se pueden instalar juntos sin tocarse.
 
 ## Paso 0 — Crear el repo y dejar este plan ahí
 
-1. Crear `C:\ReposGit\MobsPoderosos\` y guardar este plan en `docs/plan.md` (la convención es que los planes van en `docs/`, no en `claude/`).
+1. Crear `C:\ReposGit\BloodmoonAndBosses\` y guardar este plan en `docs/plan.md` (la convención es que los planes van en `docs/`, no en `claude/`).
 2. Copiar la base de `C:\ReposGit\CompartirInventario`: `build.gradle`, `settings.gradle`, `gradle/` (incluye `gradle-daemon-jvm.properties` para Java 25), `gradlew`, `gradlew.bat`, `.gitignore`, `.gitattributes`, `LICENSE`, `.claude/commands/docs.md`, `scripts/verificar-docs.mjs`.
 3. Ajustar:
-   - `settings.gradle` → `rootProject.name = 'mobspoderosos'`
-   - `gradle.properties` → `version=0.1.0`, `group=com.mobspoderosos` (las versiones de MC/Loader/Loom/Fabric API y `org.gradle.java.installations.paths` quedan iguales)
-   - `build.gradle` → mod `"mobspoderosos"`, `modId = "mobspoderosos-test"` en `configureTests`. El run `client2` se puede quitar o dejar.
-   - `CLAUDE.md` nuevo con el mismo formato y las mismas reglas de workflow (`/docs`, `runGameTest`, subir la versión, español rioplatense, prefijo `mobspoderosos$` en mixins). Copiar las notas transversales de `claude/general/` (entorno Java/Gradle, MC 26 sin ofuscar, probar con dos jugadores), que valen tal cual.
+   - `settings.gradle` → `rootProject.name = 'bloodmoonandbosses'`
+   - `gradle.properties` → `version=0.1.0`, `group=com.bloodmoonandbosses` (las versiones de MC/Loader/Loom/Fabric API y `org.gradle.java.installations.paths` quedan iguales)
+   - `build.gradle` → mod `"bloodmoonandbosses"`, `modId = "bloodmoonandbosses-test"` en `configureTests`. El run `client2` se puede quitar o dejar.
+   - `CLAUDE.md` nuevo con el mismo formato y las mismas reglas de workflow (`/docs`, `runGameTest`, subir la versión, español rioplatense, prefijo `bloodmoonandbosses$` en mixins). Copiar las notas transversales de `claude/general/` (entorno Java/Gradle, MC 26 sin ofuscar, probar con dos jugadores), que valen tal cual.
 4. `git init` (sin commitear hasta que lo pidas).
 
 ## Arquitectura
 
-Paquete `com.mobspoderosos`, mixins en `com.mobspoderosos.mixin`.
+Paquete `com.bloodmoonandbosses`, mixins en `com.bloodmoonandbosses.mixin`.
 
 | Archivo | Responsabilidad |
 |---|---|
-| `MobsPoderosos.java` | Entrypoint `main`: carga la config, registra los attachments, los eventos y el comando |
-| `Configuracion.java` | Record con todos los números y sus valores por defecto (desde la fase 1). En la fase 5 se suma la carga/guardado de `config/mobspoderosos.json` con Gson (viene con MC) |
+| `BloodmoonAndBosses.java` | Entrypoint `main`: carga la config, registra los attachments, los eventos y el comando |
+| `Configuracion.java` | Record con todos los números y sus valores por defecto (desde la fase 1). En la fase 5 se suma la carga/guardado de `config/bloodmoonandbosses.json` con Gson (viene con MC) |
 | `NivelDeZona.java` | `int calcular(ResourceKey<Level> dimension, BlockPos spawn, BlockPos pos, Configuracion, RandomSource)`: la fórmula pura, sin `ServerLevel`, para poder testearla con un random con seed fijo. Un overload de conveniencia saca la dimensión y el spawn del `ServerLevel` |
 | `NivelDeMob.java` | Attachments `NIVEL` y `PENDIENTE`, `aplicar(Mob, nivel)` (atributos, vida llena, nombre) y `alConvertir(viejo, nuevo)` (conversiones, ver §1) |
 | `EquipoPorNivel.java` | Agrega armadura, encanta armadura y arma, y ajusta `setDropChance` |
 | `BotinPorNivel.java` | Al morir: tiradas extra de vanilla + tabla de ítems raros por rango |
-| `ComandoMobsPoderosos.java` | `/mobspoderosos zona` (nivel donde estás) · `/mobspoderosos invocar <entidad> <nivel>` (op, para probar) · `/mobspoderosos recargar` (op, fase 5) |
+| `ComandoBloodmoonAndBosses.java` | `/bloodmoon zona` (nivel donde estás) · `/bloodmoon invocar <entidad> <nivel>` (op, para probar) · `/bloodmoon recargar` (op, fase 5) |
 | `mixin/MobMixin.java` | `finalizeSpawn` HEAD: si el motivo escala, marca el mob con el attachment `PENDIENTE` |
 | `mixin/LivingEntityMixin.java` | `getExperienceReward` RETURN: multiplica la experiencia · silencia el log "Named entity died" (ver Riesgos) |
 | `mixin/CreeperAccessor.java` | `@Accessor` de `Creeper.explosionRadius` (es `private int`) para agrandar la explosión |
 
-Recursos: `fabric.mod.json`, `mobspoderosos.mixins.json`, `data/mobspoderosos/loot_table/botin_por_nivel/{raro,epico,legendario}.json`, `data/mobspoderosos/tags/entity_type/{sin_nivel,usan_equipo,sin_tiradas_extra}.json`, `assets/mobspoderosos/icon.png`.
+Recursos: `fabric.mod.json`, `bloodmoonandbosses.mixins.json`, `data/bloodmoonandbosses/loot_table/botin_por_nivel/{raro,epico,legendario}.json`, `data/bloodmoonandbosses/tags/entity_type/{sin_nivel,usan_equipo,sin_tiradas_extra}.json`, `assets/bloodmoonandbosses/icon.png`.
 
 ### 1. Cuándo se le asigna el nivel a un mob
 
@@ -48,7 +48,7 @@ Recursos: `fabric.mod.json`, `mobspoderosos.mixins.json`, `data/mobspoderosos/lo
 - `ServerEntityEvents.ENTITY_LOAD` (lifecycle-events) corre cuando el mob entra al mundo, **después** de que vanilla le puso el equipo. Ahí: si es `Enemy`, tiene `PENDIENTE` y no tiene `NIVEL`, se calcula el nivel, se aplica todo y se quita `PENDIENTE`. Por eso no hace falta engancharse en cada subclase.
 - **Motivos** (`EntitySpawnReason` en 26.3):
   - **Escalan por posición:** `NATURAL`, `CHUNK_GENERATION`, `STRUCTURE`, `PATROL`, `EVENT` (raids), `REINFORCEMENT` (refuerzos de zombi), `JOCKEY` (el esqueleto que monta la araña; si no, la araña tiene nivel y el jinete no), `MOB_SUMMONED` (vexes del evocador), `TRIGGERED` (jinetes esqueleto de la trampa del rayo, lepismas de bloques infestados). Los que aparecen por otro mob salen en el mismo lugar, así que quedan prácticamente con el mismo nivel.
-  - **No escalan:** `SPAWNER` y `TRIAL_SPAWNER` (si no, una granja de spawner se vuelve una fábrica de loot; se puede activar en la config), `SPAWN_ITEM_USE` (huevos; en 26.3 no existe `SPAWN_EGG`), `DISPENSER`, `COMMAND` (para eso está `/mobspoderosos invocar`), `BREEDING`, `BUCKET`, `LOAD`, `DIMENSION_TRAVEL`.
+  - **No escalan:** `SPAWNER` y `TRIAL_SPAWNER` (si no, una granja de spawner se vuelve una fábrica de loot; se puede activar en la config), `SPAWN_ITEM_USE` (huevos; en 26.3 no existe `SPAWN_EGG`), `DISPENSER`, `COMMAND` (para eso está `/bloodmoon invocar`), `BREEDING`, `BUCKET`, `LOAD`, `DIMENSION_TRAVEL`.
   - **`CONVERSION`:** no se calcula por posición; lo maneja el evento de conversión (abajo).
 - **Conversiones (`ServerLivingEntityEvents.MOB_CONVERSION`, firma `(Mob viejo, Mob nuevo, ConversionParams)`):** vanilla copia `CUSTOM_NAME` y `customNameVisible` en `ConversionType` (verificado), pero no el nivel. Sin esto, un zombi ahogado sería un ahogado llamado "Zombi [Nv 7]" con estadísticas base, un aldeano zombi curado quedaría como aldeano llamado "Aldeano zombi [Nv 12]" para siempre, y los slimes al dividirse (que usan `convertTo(..., TRIGGERED, ...)`) tendrían hijos con el nombre del padre y sin nivel. `NivelDeMob.alConvertir`:
   - si el viejo tenía `NIVEL` y el nuevo es `Enemy` (y no está en `sin_nivel`): le copia el nivel y llama a `aplicar` (que rehace el nombre con el tipo nuevo y pisa lo que haya puesto `ENTITY_LOAD`);
@@ -75,7 +75,7 @@ El `RandomSource` es el del mob, para que los tests puedan pasarle uno con seed 
 
 ### 3. Estadísticas (`NivelDeMob.aplicar`)
 
-Modificadores **permanentes** con un `Identifier` fijo `mobspoderosos:nivel` (`addOrReplacePermanentModifier`). Vanilla los guarda en el NBT del mob y no se apilan si se aplica dos veces:
+Modificadores **permanentes** con un `Identifier` fijo `bloodmoonandbosses:nivel` (`addOrReplacePermanentModifier`). Vanilla los guarda en el NBT del mob y no se apilan si se aplica dos veces:
 
 | Atributo | Operación | Por nivel | Tope | Se llega al tope en |
 |---|---|---|---|---|
@@ -140,11 +140,11 @@ En el Nether el +10 y la escala ×8 hacen que los niveles altos lleguen rápido:
 
 ### 7. Config y comando
 
-> **Fase 5:** `config/mobspoderosos.json` se mezcla sobre los valores por defecto antes de leerlo (con records, Gson deja en 0 lo que falta), se valida y recién ahí se reescribe; un archivo con error queda intacto. Ver [claude/mod/configuracion.md](../claude/mod/configuracion.md).
+> **Fase 5:** `config/bloodmoonandbosses.json` se mezcla sobre los valores por defecto antes de leerlo (con records, Gson deja en 0 lo que falta), se valida y recién ahí se reescribe; un archivo con error queda intacto. Ver [claude/mod/configuracion.md](../claude/mod/configuracion.md).
 
-`Configuracion` es un record con valores por defecto desde la fase 1, así ningún número queda escrito a mano en el código. En la fase 5, `config/mobspoderosos.json` se crea con esos valores en el primer arranque: `bloquesPorNivel`, `nivelMaximo`, extras por dimensión, porcentaje y tope por atributo, radio del creeper, chances de armadura y de soltar equipo, `cascoParaLosQueSeQueman`, `tiradasExtraMaximas`, `escalarSpawners`, `nombreSiempreVisible`, chances de loot. `/mobspoderosos recargar` la vuelve a leer sin reiniciar el servidor (sólo afecta a los mobs que aparezcan después).
+`Configuracion` es un record con valores por defecto desde la fase 1, así ningún número queda escrito a mano en el código. En la fase 5, `config/bloodmoonandbosses.json` se crea con esos valores en el primer arranque: `bloquesPorNivel`, `nivelMaximo`, extras por dimensión, porcentaje y tope por atributo, radio del creeper, chances de armadura y de soltar equipo, `cascoParaLosQueSeQueman`, `tiradasExtraMaximas`, `escalarSpawners`, `nombreSiempreVisible`, chances de loot. `/bloodmoon recargar` la vuelve a leer sin reiniciar el servidor (sólo afecta a los mobs que aparezcan después).
 
-El comando `/mobspoderosos invocar zombie 30` pone un mob con ese nivel justo delante (sirve para probar sin caminar 4500 bloques). Llama a `finalizeSpawn` con `COMMAND` (para que vanilla le ponga el equipo), lo agrega al mundo y después aplica el nivel y el equipo a mano.
+El comando `/bloodmoon invocar zombie 30` pone un mob con ese nivel justo delante (sirve para probar sin caminar 4500 bloques). Llama a `finalizeSpawn` con `COMMAND` (para que vanilla le ponga el equipo), lo agrega al mundo y después aplica el nivel y el equipo a mano.
 
 ## Riesgos
 
@@ -181,4 +181,4 @@ El comando `/mobspoderosos invocar zombie 30` pone un mob con ese nivel justo de
 - Guardar y recargar el mob (`ValueOutput`/`ValueInput`) conserva el nivel y no reaplica los modificadores.
 - El mob con nivel sigue teniendo `isPersistenceRequired() == false`.
 
-**A mano** (`gradlew runServer` + `runClient`, ver la nota de probar con dos jugadores): `/mobspoderosos zona` en el spawn y a 3000 bloques, `/mobspoderosos invocar skeleton 45` y ver su nombre dorado, la armadura de netherita encantada (sin casco), el loot extra y la experiencia. Comparar los números con la tabla de §6. Ahogar un zombi con nivel y ver que el ahogado tiene el nombre correcto. También probar con un cliente **vanilla sin el mod**, para confirmar que no hace falta nada del lado del cliente.
+**A mano** (`gradlew runServer` + `runClient`, ver la nota de probar con dos jugadores): `/bloodmoon zona` en el spawn y a 3000 bloques, `/bloodmoon invocar skeleton 45` y ver su nombre dorado, la armadura de netherita encantada (sin casco), el loot extra y la experiencia. Comparar los números con la tabla de §6. Ahogar un zombi con nivel y ver que el ahogado tiene el nombre correcto. También probar con un cliente **vanilla sin el mod**, para confirmar que no hace falta nada del lado del cliente.

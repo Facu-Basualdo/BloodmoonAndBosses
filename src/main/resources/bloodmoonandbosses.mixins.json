@@ -1,6 +1,6 @@
 {
 	"required": true,
-	"package": "com.mobspoderosos.mixin",
+	"package": "com.bloodmoonandbosses.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
 		"CreeperAccessor",

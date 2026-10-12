@@ -1,4 +1,4 @@
-package com.mobspoderosos;
+package com.bloodmoonandbosses;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,15 +15,15 @@ import net.minecraft.world.level.storage.loot.LootTable;
 
 public final class BotinPorNivel {
 	// Mobs cuya tabla tiene ítems que no deberían multiplicarse: calaveras de wither, caparazones de shulker
-	public static final TagKey<EntityType<?>> SIN_TIRADAS_EXTRA = TagKey.create(Registries.ENTITY_TYPE, MobsPoderosos.id("sin_tiradas_extra"));
+	public static final TagKey<EntityType<?>> SIN_TIRADAS_EXTRA = TagKey.create(Registries.ENTITY_TYPE, BloodmoonAndBosses.id("sin_tiradas_extra"));
 	// Cada tirada extra es una chance que sube con el nivel: con tiradas seguras, cada evocador lejano daría varios tótems
-	public static final TagKey<EntityType<?>> TIRADAS_EXTRA_POR_CHANCE = TagKey.create(Registries.ENTITY_TYPE, MobsPoderosos.id("tiradas_extra_por_chance"));
+	public static final TagKey<EntityType<?>> TIRADAS_EXTRA_POR_CHANCE = TagKey.create(Registries.ENTITY_TYPE, BloodmoonAndBosses.id("tiradas_extra_por_chance"));
 
 	private BotinPorNivel() {
 	}
 
 	public static int tiradasExtra(int nivel) {
-		Configuracion config = MobsPoderosos.config();
+		Configuracion config = BloodmoonAndBosses.config();
 		return Math.min(nivel / config.nivelesPorTiradaExtra(), config.tiradasExtraMaximas());
 	}
 
@@ -33,7 +33,7 @@ public final class BotinPorNivel {
 			return 0;
 		}
 		if (mob.is(TIRADAS_EXTRA_POR_CHANCE)) {
-			return MobsPoderosos.config().chanceTiradaExtra().en(NivelDeMob.nivel(mob));
+			return BloodmoonAndBosses.config().chanceTiradaExtra().en(NivelDeMob.nivel(mob));
 		}
 		return 1;
 	}
@@ -99,10 +99,10 @@ public final class BotinPorNivel {
 		if (nivel == 0) {
 			return base;
 		}
-		return (int) Math.round(base * (1 + nivel * MobsPoderosos.config().experienciaPorNivel()));
+		return (int) Math.round(base * (1 + nivel * BloodmoonAndBosses.config().experienciaPorNivel()));
 	}
 
-	/** Las tablas de data/mobspoderosos/loot_table/botin_por_nivel: se pueden pisar con un datapack. */
+	/** Las tablas de data/bloodmoonandbosses/loot_table/botin_por_nivel: se pueden pisar con un datapack. */
 	public enum Botin {
 		RARO("raro", Configuracion::botinRaro),
 		EPICO("epico", Configuracion::botinEpico),
@@ -112,7 +112,7 @@ public final class BotinPorNivel {
 		private final Function<Configuracion, Configuracion.Rareza> rareza;
 
 		Botin(String nombre, Function<Configuracion, Configuracion.Rareza> rareza) {
-			this.tabla = ResourceKey.create(Registries.LOOT_TABLE, MobsPoderosos.id("botin_por_nivel/" + nombre));
+			this.tabla = ResourceKey.create(Registries.LOOT_TABLE, BloodmoonAndBosses.id("botin_por_nivel/" + nombre));
 			this.rareza = rareza;
 		}
 
@@ -121,7 +121,7 @@ public final class BotinPorNivel {
 		}
 
 		public Configuracion.Rareza rareza() {
-			return rareza.apply(MobsPoderosos.config());
+			return rareza.apply(BloodmoonAndBosses.config());
 		}
 	}
 }

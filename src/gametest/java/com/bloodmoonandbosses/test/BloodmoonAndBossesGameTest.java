@@ -1,4 +1,4 @@
-package com.mobspoderosos.test;
+package com.bloodmoonandbosses.test;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -10,18 +10,19 @@ import java.util.UUID;
 import com.mojang.authlib.GameProfile;
 import io.netty.channel.embedded.EmbeddedChannel;
 
-import com.mobspoderosos.Afijo;
-import com.mobspoderosos.ArchivoDeConfiguracion;
-import com.mobspoderosos.BotinPorNivel;
-import com.mobspoderosos.Configuracion;
-import com.mobspoderosos.EquipoPorNivel;
-import com.mobspoderosos.Estampida;
-import com.mobspoderosos.JefeDeZona;
-import com.mobspoderosos.LunaDeSangre;
-import com.mobspoderosos.MobsPoderosos;
-import com.mobspoderosos.NivelDeMob;
-import com.mobspoderosos.NivelDeZona;
-import com.mobspoderosos.mixin.CreeperAccessor;
+import com.bloodmoonandbosses.Afijo;
+import com.bloodmoonandbosses.ArchivoDeConfiguracion;
+import com.bloodmoonandbosses.BotinPorNivel;
+import com.bloodmoonandbosses.Configuracion;
+import com.bloodmoonandbosses.EquipoPorNivel;
+import com.bloodmoonandbosses.Estampida;
+import com.bloodmoonandbosses.JefeDeZona;
+import com.bloodmoonandbosses.LunaDeSangre;
+import com.bloodmoonandbosses.MigracionDeId;
+import com.bloodmoonandbosses.BloodmoonAndBosses;
+import com.bloodmoonandbosses.NivelDeMob;
+import com.bloodmoonandbosses.NivelDeZona;
+import com.bloodmoonandbosses.mixin.CreeperAccessor;
 
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 
@@ -72,14 +73,14 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-public class MobsPoderososGameTest {
+public class BloodmoonAndBossesGameTest {
 	private static final BlockPos DENTRO = new BlockPos(2, 1, 2);
 	// Para los eventos, que buscan lugar alrededor: en el medio de la estructura de 8 × 8
 	private static final BlockPos CENTRO = new BlockPos(4, 1, 4);
 
 	@GameTest
 	public void nivelPorDistancia(GameTestHelper helper) {
-		Configuracion fija = MobsPoderosos.config().conVariacion(0);
+		Configuracion fija = BloodmoonAndBosses.config().conVariacion(0);
 		RandomSource random = RandomSource.create(42);
 
 		helper.assertValueEqual(1, NivelDeZona.calcular(Level.OVERWORLD, BlockPos.ZERO, BlockPos.ZERO, fija, random), "Nivel en el spawn");
@@ -91,7 +92,7 @@ public class MobsPoderososGameTest {
 		// En el End el spawn del overworld no cuenta: 1 + 10 + 40
 		helper.assertValueEqual(51, NivelDeZona.calcular(Level.END, new BlockPos(5000, 64, 0), new BlockPos(1000, 64, 0), fija, random), "El End mide desde (0, 0)");
 
-		Configuracion variable = MobsPoderosos.config().conVariacion(1);
+		Configuracion variable = BloodmoonAndBosses.config().conVariacion(1);
 		for (int i = 0; i < 50; i++) {
 			int nivel = NivelDeZona.calcular(Level.OVERWORLD, BlockPos.ZERO, new BlockPos(1500, 70, 0), variable, random);
 			helper.assertTrue(nivel >= 15 && nivel <= 17, Component.literal("Con variación el nivel queda en 16 ± 1 (dio " + nivel + ")"));
@@ -101,7 +102,7 @@ public class MobsPoderososGameTest {
 
 	@GameTest
 	public void nivelPorTiempoYCampeon(GameTestHelper helper) {
-		Configuracion config = MobsPoderosos.config().conExtras(5, 20, 0.05, 10);
+		Configuracion config = BloodmoonAndBosses.config().conExtras(5, 20, 0.05, 10);
 		helper.assertValueEqual(0, NivelDeZona.porTiempo(4, config), "Antes de los 5 días no suma");
 		helper.assertValueEqual(1, NivelDeZona.porTiempo(5, config), "A los 5 días, +1");
 		helper.assertValueEqual(19, NivelDeZona.porTiempo(99, config), "A los 99 días, +19");
@@ -143,9 +144,9 @@ public class MobsPoderososGameTest {
 
 		NivelDeMob.aplicar(zombie, 100);
 		assertCerca(helper, 180, zombie.getMaxHealth(), "La vida topea en ×9");
-		AttributeModifier danio = zombie.getAttribute(Attributes.ATTACK_DAMAGE).getModifier(MobsPoderosos.id("nivel"));
+		AttributeModifier danio = zombie.getAttribute(Attributes.ATTACK_DAMAGE).getModifier(BloodmoonAndBosses.id("nivel"));
 		assertCerca(helper, 4.0, danio.amount(), "El daño topea en +400 %");
-		AttributeModifier armadura = zombie.getAttribute(Attributes.ARMOR).getModifier(MobsPoderosos.id("nivel"));
+		AttributeModifier armadura = zombie.getAttribute(Attributes.ARMOR).getModifier(BloodmoonAndBosses.id("nivel"));
 		assertCerca(helper, 12, armadura.amount(), "La armadura topea en +12");
 
 		zombie.setCustomName(Component.literal("Pepe"));
@@ -195,8 +196,8 @@ public class MobsPoderososGameTest {
 		Creeper fuerte = spawn(helper, EntityTypes.CREEPER, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(debil, 59);
 		NivelDeMob.aplicar(fuerte, 60);
-		helper.assertValueEqual(3, ((CreeperAccessor) debil).mobspoderosos$getExplosionRadius(), "Radio de un creeper de nivel 59");
-		helper.assertValueEqual(4, ((CreeperAccessor) fuerte).mobspoderosos$getExplosionRadius(), "Radio de un creeper de nivel 60");
+		helper.assertValueEqual(3, ((CreeperAccessor) debil).bloodmoonandbosses$getExplosionRadius(), "Radio de un creeper de nivel 59");
+		helper.assertValueEqual(4, ((CreeperAccessor) fuerte).bloodmoonandbosses$getExplosionRadius(), "Radio de un creeper de nivel 60");
 		helper.succeed();
 	}
 
@@ -488,7 +489,7 @@ public class MobsPoderososGameTest {
 		NivelDeMob.aparecer(veloz, 20, Afijo.VELOZ);
 		helper.assertTrue(veloz.getCustomName().getString().contains("[Nv 20] [Veloz]"), Component.literal("El afijo va en el nombre: " + veloz.getCustomName().getString()));
 		helper.assertTrue(NivelDeMob.esNombreDelMod(veloz), Component.literal("Con el afijo, el nombre sigue siendo del mod"));
-		AttributeModifier velocidad = veloz.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(MobsPoderosos.id("afijo"));
+		AttributeModifier velocidad = veloz.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(BloodmoonAndBosses.id("afijo"));
 		helper.assertTrue(velocidad != null, Component.literal("El veloz tiene su modificador de velocidad"));
 		assertCerca(helper, 0.3, velocidad.amount(), "El veloz corre un 30 % más");
 
@@ -496,7 +497,7 @@ public class MobsPoderososGameTest {
 		});
 		helper.assertValueEqual(Afijo.VELOZ, Afijo.de(ahogado), "El afijo pasa en la conversión");
 		helper.assertTrue(ahogado.getCustomName().getString().contains("[Veloz]"), Component.literal("Y sigue en el nombre: " + ahogado.getCustomName().getString()));
-		helper.assertTrue(ahogado.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(MobsPoderosos.id("afijo")) != null, Component.literal("Y el modificador también"));
+		helper.assertTrue(ahogado.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(BloodmoonAndBosses.id("afijo")) != null, Component.literal("Y el modificador también"));
 
 		helper.assertFalse(Afijo.posibles(spawn(helper, EntityTypes.CREEPER, EntitySpawnReason.COMMAND)).contains(Afijo.VAMPIRO), Component.literal("Un creeper no puede ser vampiro"));
 		helper.assertFalse(Afijo.posibles(spawn(helper, EntityTypes.VEX, EntitySpawnReason.COMMAND)).contains(Afijo.INVOCADOR), Component.literal("Un vex (tag no_invocan) no puede ser invocador"));
@@ -518,19 +519,62 @@ public class MobsPoderososGameTest {
 		helper.succeed();
 	}
 
+	/**
+	 * Un mob guardado con el id viejo (mobspoderosos): al volver a cargarse (ENTITY_LOAD) conserva su nivel, su afijo y
+	 * su vida, con los attachments y los modificadores en el id nuevo, y no se le sortea un nivel nuevo.
+	 */
+	@GameTest
+	public void unMobDelIdViejoConservaSuNivel(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		Zombie viejo = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		viejo.setAttached(MigracionDeId.<Integer>attachmentViejo("nivel"), 30);
+		viejo.setAttached(MigracionDeId.<Afijo>attachmentViejo("afijo"), Afijo.VELOZ);
+		viejo.setAttached(MigracionDeId.<Boolean>attachmentViejo("jefe"), true);
+		viejo.getAttribute(Attributes.MAX_HEALTH).addOrReplacePermanentModifier(
+				new AttributeModifier(MigracionDeId.viejo("nivel"), 2.4, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+
+		Zombie cargado = recrear(level, viejo, helper.absolutePos(DENTRO));
+		helper.assertValueEqual(NivelDeMob.nivel(cargado), 30, "El nivel pasa al id nuevo");
+		helper.assertValueEqual(Afijo.de(cargado), Afijo.VELOZ, "El afijo también");
+		helper.assertTrue(JefeDeZona.esJefe(cargado), Component.literal("Y la marca de jefe"));
+		helper.assertFalse(cargado.hasAttached(MigracionDeId.attachmentViejo("nivel")), Component.literal("El attachment viejo se saca"));
+		helper.assertFalse(cargado.getAttribute(Attributes.MAX_HEALTH).hasModifier(MigracionDeId.viejo("nivel")), Component.literal("El modificador viejo se saca"));
+		helper.assertTrue(cargado.getAttribute(Attributes.MAX_HEALTH).hasModifier(BloodmoonAndBosses.id("nivel")), Component.literal("Y queda con el id nuevo"));
+		assertCerca(helper, 68, cargado.getMaxHealth(), "La vida máxima es la misma: 20 × 3,4");
+		cargado.discard();
+
+		ServerLevel overworld = level.getServer().overworld();
+		overworld.setAttached(MigracionDeId.<Long>attachmentViejo("noche_sorteada"), 1234L);
+		MigracionDeId.migrarMundos(level.getServer());
+		helper.assertValueEqual(overworld.getAttached(LunaDeSangre.NOCHE_SORTEADA), 1234L, "El sorteo de la luna pasa al id nuevo");
+		helper.assertFalse(overworld.hasAttached(MigracionDeId.attachmentViejo("noche_sorteada")), Component.literal("Y el del mundo viejo se saca"));
+
+		try {
+			Path carpeta = Files.createTempDirectory("bloodmoon");
+			Path vieja = carpeta.resolve("mobspoderosos.json");
+			Files.writeString(vieja, "{\"bloquesPorNivel\": 75}");
+			Path nueva = carpeta.resolve("bloodmoonandbosses.json");
+			helper.assertTrue(MigracionDeId.moverSiFalta(vieja, nueva), Component.literal("La config vieja se renombra"));
+			helper.assertValueEqual(Files.readString(nueva), "{\"bloquesPorNivel\": 75}", "Con lo que tenía");
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+		helper.succeed();
+	}
+
 	@GameTest
 	public void afijosNuevos(GameTestHelper helper) {
 		ServerLevel level = helper.getLevel();
-		Configuracion.Afijos config = MobsPoderosos.config().afijos();
+		Configuracion.Afijos config = BloodmoonAndBosses.config().afijos();
 
 		Zombie blindado = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aparecer(blindado, 20, Afijo.BLINDADO);
-		AttributeModifier armadura = blindado.getAttribute(Attributes.ARMOR).getModifier(MobsPoderosos.id("afijo"));
+		AttributeModifier armadura = blindado.getAttribute(Attributes.ARMOR).getModifier(BloodmoonAndBosses.id("afijo"));
 		helper.assertTrue(armadura != null, Component.literal("El blindado tiene armadura extra"));
 		assertCerca(helper, config.armaduraBlindado(), armadura.amount(), "Armadura del blindado");
-		assertCerca(helper, config.empujeBlindado(), blindado.getAttribute(Attributes.KNOCKBACK_RESISTANCE).getModifier(MobsPoderosos.id("afijo")).amount(),
+		assertCerca(helper, config.empujeBlindado(), blindado.getAttribute(Attributes.KNOCKBACK_RESISTANCE).getModifier(BloodmoonAndBosses.id("afijo")).amount(),
 				"Resistencia al empuje del blindado");
-		helper.assertTrue(blindado.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(MobsPoderosos.id("afijo")) == null,
+		helper.assertTrue(blindado.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(BloodmoonAndBosses.id("afijo")) == null,
 				Component.literal("El blindado no corre más: el modificador de velocidad es sólo del veloz"));
 
 		Zombie venenoso = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
@@ -598,7 +642,7 @@ public class MobsPoderososGameTest {
 			// Sólo el máximo: mientras espera, el zombi se puede quemar al sol y perder vida
 			assertTerminaEn(helper, zombie, "/52");
 			zombie.getAttribute(Attributes.MAX_HEALTH).addOrReplacePermanentModifier(
-					new AttributeModifier(MobsPoderosos.id("prueba"), 10, AttributeModifier.Operation.ADD_VALUE));
+					new AttributeModifier(BloodmoonAndBosses.id("prueba"), 10, AttributeModifier.Operation.ADD_VALUE));
 			helper.runAfterDelay(2, () -> {
 				// 78 y no 62: el ADD_MULTIPLIED_BASE del nivel (×2,6) multiplica también los 10 que se suman
 				assertTerminaEn(helper, zombie, "/78");
@@ -614,7 +658,7 @@ public class MobsPoderososGameTest {
 		ServerPlayer jugador = joinSurvivalPlayer(helper, "provocador");
 		BlockPos centro = helper.absolutePos(CENTRO);
 		jugador.snapTo(centro.getX() + 0.5, centro.getY(), centro.getZ() + 0.5, 0, 0);
-		Configuracion.JefeDeZona config = MobsPoderosos.config().jefeDeZona();
+		Configuracion.JefeDeZona config = BloodmoonAndBosses.config().jefeDeZona();
 
 		Zombie jefe = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(jefe, 30);
@@ -652,7 +696,7 @@ public class MobsPoderososGameTest {
 	@GameTest
 	public void habilidadesDelJefe(GameTestHelper helper) {
 		ServerLevel level = helper.getLevel();
-		Configuracion.JefeDeZona config = MobsPoderosos.config().jefeDeZona();
+		Configuracion.JefeDeZona config = BloodmoonAndBosses.config().jefeDeZona();
 		Zombie jefe = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(jefe, 30);
 		JefeDeZona.convertir(jefe, config);
@@ -696,7 +740,7 @@ public class MobsPoderososGameTest {
 		NivelDeMob.aparecer(invocador, 30, Afijo.INVOCADOR);
 		invocador.hurtServer(level, level.damageSources().generic(), 1);
 		List<Zombie> refuerzos = level.getEntitiesOfClass(Zombie.class, invocador.getBoundingBox().inflate(5), z -> z != invocador);
-		helper.assertValueEqual(MobsPoderosos.config().afijos().refuerzosInvocador(), refuerzos.size(), "Al lastimarlo llama refuerzos");
+		helper.assertValueEqual(BloodmoonAndBosses.config().afijos().refuerzosInvocador(), refuerzos.size(), "Al lastimarlo llama refuerzos");
 		for (Zombie refuerzo : refuerzos) {
 			helper.assertTrue(NivelDeMob.nivel(refuerzo) >= 1, Component.literal("Los refuerzos tienen nivel"));
 			helper.assertFalse(refuerzo.hasAttached(NivelDeMob.PENDIENTE), Component.literal("Y no quedan pendientes"));
@@ -719,7 +763,7 @@ public class MobsPoderososGameTest {
 		float vida = victima.getHealth();
 		explosivo.hurtServer(level, level.damageSources().genericKill(), 100_000);
 		assertCerca(helper, vida, victima.getHealth(), "Al morir no explota enseguida");
-		helper.runAfterDelay(MobsPoderosos.config().afijos().ticksDeMecha() + 2, () -> {
+		helper.runAfterDelay(BloodmoonAndBosses.config().afijos().ticksDeMecha() + 2, () -> {
 			helper.assertTrue(victima.getHealth() < vida || victima.isDeadOrDying(), Component.literal("Un rato después explota y lastima a los que están cerca"));
 			helper.succeed();
 		});
@@ -766,7 +810,7 @@ public class MobsPoderososGameTest {
 		for (Mob mob : mobs) {
 			helper.assertTrue(mob.getTarget() == jugador, Component.literal("Todos van contra el jugador"));
 			helper.assertTrue(NivelDeMob.nivel(mob) >= 1, Component.literal("Todos tienen nivel"));
-			helper.assertTrue(mob.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(MobsPoderosos.id("estampida")) != null, Component.literal("Y corren más"));
+			helper.assertTrue(mob.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(BloodmoonAndBosses.id("estampida")) != null, Component.literal("Y corren más"));
 		}
 
 		// remove(KILLED) en vez de esperar la animación de muerte: así nada pasa entre matar y premiar
@@ -810,7 +854,7 @@ public class MobsPoderososGameTest {
 		ponerPiso(helper);
 		BlockPos centro = helper.absolutePos(CENTRO);
 		jugador.snapTo(centro.getX() + 0.5, centro.getY(), centro.getZ() + 0.5, 0, 0);
-		Configuracion.JefeDeZona config = MobsPoderosos.config().jefeDeZona();
+		Configuracion.JefeDeZona config = BloodmoonAndBosses.config().jefeDeZona();
 
 		Mob jefe = JefeDeZona.aparecer(jugador, config, 2, 4);
 		helper.assertTrue(jefe != null, Component.literal("Aparece el jefe"));
@@ -850,7 +894,7 @@ public class MobsPoderososGameTest {
 		for (int i = 0; i < 5; i++) {
 			Mob jefe = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
 			NivelDeMob.aplicar(jefe, 19);
-			JefeDeZona.convertir(jefe, MobsPoderosos.config().jefeDeZona());
+			JefeDeZona.convertir(jefe, BloodmoonAndBosses.config().jefeDeZona());
 			jefe.hurtServer(level, level.damageSources().playerAttack(jugador), 100_000);
 			helper.assertTrue(contarSoltadosMenos(helper, jefe, Items.SADDLE) > 0, Component.literal("El jefe siempre suelta la tabla épica"));
 		}
@@ -872,7 +916,7 @@ public class MobsPoderososGameTest {
 
 		// Todo en el mismo tick y se saca antes de volver: los otros tests no llegan a ver la luna
 		level.setAttached(LunaDeSangre.NOCHE_ACTIVA, NivelDeZona.dias(level));
-		helper.assertValueEqual(MobsPoderosos.config().lunaDeSangre().nivelesExtra(), LunaDeSangre.nivelesExtra(level), "Con luna de sangre suma");
+		helper.assertValueEqual(BloodmoonAndBosses.config().lunaDeSangre().nivelesExtra(), LunaDeSangre.nivelesExtra(level), "Con luna de sangre suma");
 		// 20 spawns NATURAL al 50 %: que no venga ningún compañero tiene probabilidad 2^-20
 		for (int i = 0; i < 20; i++) {
 			spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.NATURAL);
@@ -890,7 +934,7 @@ public class MobsPoderososGameTest {
 	@GameTest
 	public void archivoDeConfiguracion(GameTestHelper helper) {
 		try {
-			Path carpeta = Files.createTempDirectory("mobspoderosos");
+			Path carpeta = Files.createTempDirectory("bloodmoonandbosses");
 
 			Path nuevo = carpeta.resolve("nuevo.json");
 			helper.assertValueEqual(Configuracion.POR_DEFECTO, ArchivoDeConfiguracion.leer(nuevo), "Sin archivo se usan los valores por defecto");

@@ -1,4 +1,4 @@
-package com.mobspoderosos;
+package com.bloodmoonandbosses;
 
 public record Configuracion(
 		int bloquesPorNivel,

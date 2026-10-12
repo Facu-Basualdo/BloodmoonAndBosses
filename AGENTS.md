@@ -1,6 +1,6 @@
-# Bloodmoon & Bosses (antes Mobs Poderosos) — mod de Minecraft
+# Bloodmoon & Bosses — mod de Minecraft
 
-**El nombre visible es "Bloodmoon & Bosses", pero el id sigue siendo `mobspoderosos`** (paquete, comando, config, tags, attachments y prefijo de los mixins). No lo renombres: los attachments se guardan con ese id en el NBT de los mobs y los mundos, y un id nuevo les borraría el nivel.
+**El id es `bloodmoonandbosses` desde la 0.11.0 (antes `mobspoderosos`)**, y el comando es `/bloodmoon`. Lo guardado con el id viejo (el nivel de cada mob, la config, la luna) se pasa solo: ver [migración del id](claude/mod/migracion-de-id.md). No lo vuelvas a cambiar sin una migración. Además, **Mythic Loot lee por id `bloodmoonandbosses:nivel`, `bloodmoonandbosses:jefe` y `bloodmoonandbosses:afijo`** (sin depender de las clases de este mod): cambiarles el id o el tipo de valor lo rompe.
 
 Mod de Fabric para **Minecraft Java 26.3** que hace aparecer a los mobs hostiles con **niveles**: cuanto más lejos del spawn del mundo, más vida, daño y armadura tienen, y mejor loot dan. El nivel se ve en el nombre ("Zombi [Nv 7]"). Java 25, Gradle 9.7 + Fabric Loom 1.18, Fabric Loader 0.19.5, Fabric API 0.162.0+26.3. Toda la lógica corre en el servidor: los jugadores no necesitan instalar nada.
 
@@ -31,7 +31,7 @@ El mismo tema en distintas áreas usa el mismo nombre de archivo (`Codex/mod/niv
 |---|---|
 | [Entorno Java y Gradle](Codex/general/entorno-java-gradle.md) | `~/.gradle/gradle.properties` fuerza JDK 17 (React Native) y gana sobre el proyecto · Java 25 se fija con `gradle/gradle-daemon-jvm.properties` + `org.gradle.java.installations.paths` · sin eso Loom falla con "requires JVM runtime version 25" |
 | [Minecraft 26.x sin ofuscar](Codex/general/minecraft-26-sin-ofuscar.md) | Desde 26.1 se usan los nombres de Mojang (Yarn está muerto: los tutoriales viejos tienen otros nombres) · antes de escribir un mixin, verificá firmas con `javap` sobre el jar de `.gradle/loom-cache` · las constantes de tipos de entidad están en `EntityTypes`, no en `EntityType` |
-| [Probar en el juego](Codex/general/probar-en-el-juego.md) | `runServer` necesita `eula=true` y `online-mode=false` en `run/` · `/mobspoderosos invocar <entidad> <nivel>` evita caminar miles de bloques · probá también con un cliente vanilla: el mod no tiene que hacer falta del lado del cliente |
+| [Probar en el juego](Codex/general/probar-en-el-juego.md) | `runServer` necesita `eula=true` y `online-mode=false` en `run/` · `/bloodmoon invocar <entidad> <nivel>` evita caminar miles de bloques · probá también con un cliente vanilla: el mod no tiene que hacer falta del lado del cliente |
 
 ## Features que cruzan áreas
 
@@ -51,8 +51,8 @@ El mismo tema en distintas áreas usa el mismo nombre de archivo (`Codex/mod/niv
 
 ## Convenciones de código
 
-- Paquete `com.mobspoderosos`; mixins en `com.mobspoderosos.mixin`, registrados en `src/main/resources/mobspoderosos.mixins.json`.
-- **Métodos y accessors agregados por mixins llevan prefijo `mobspoderosos$`** para no chocar con otros mods.
+- Paquete `com.bloodmoonandbosses`; mixins en `com.bloodmoonandbosses.mixin`, registrados en `src/main/resources/bloodmoonandbosses.mixins.json`.
+- **Métodos y accessors agregados por mixins llevan prefijo `bloodmoonandbosses$`** para no chocar con otros mods.
 - **Ningún número de balance escrito a mano en el código:** van en `Configuracion`.
 - Indentación con tabs, imports agrupados: java/terceros → `net.fabricmc` → `net.minecraft`.
 - Comentarios sólo para el porqué (qué rompería vanilla si no estuviera), no para parafrasear.

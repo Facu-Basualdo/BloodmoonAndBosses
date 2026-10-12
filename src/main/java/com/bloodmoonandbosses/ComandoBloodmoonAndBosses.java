@@ -1,4 +1,4 @@
-package com.mobspoderosos;
+package com.bloodmoonandbosses;
 
 import java.util.Arrays;
 
@@ -26,13 +26,16 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 
-public final class ComandoMobsPoderosos {
-	private ComandoMobsPoderosos() {
+public final class ComandoBloodmoonAndBosses {
+	// Corto y no el id del mod: se escribe en el chat
+	public static final String COMANDO = "bloodmoon";
+
+	private ComandoBloodmoonAndBosses() {
 	}
 
 	public static void registrar(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext contexto) {
-		dispatcher.register(Commands.literal(MobsPoderosos.MOD_ID)
-				.then(Commands.literal("zona").executes(ComandoMobsPoderosos::zona))
+		dispatcher.register(Commands.literal(COMANDO)
+				.then(Commands.literal("zona").executes(ComandoBloodmoonAndBosses::zona))
 				.then(Commands.literal("invocar")
 						.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
 						.then(Commands.argument("entidad", ResourceArgument.resource(contexto, Registries.ENTITY_TYPE))
@@ -53,16 +56,16 @@ public final class ComandoMobsPoderosos {
 								.executes(ctx -> jefe(ctx, ctx.getSource().getPlayerOrException()))
 								.then(Commands.argument("jugador", EntityArgument.player())
 										.executes(ctx -> jefe(ctx, EntityArgument.getPlayer(ctx, "jugador")))))
-						.then(Commands.literal("luna_de_sangre").executes(ComandoMobsPoderosos::lunaDeSangre)))
+						.then(Commands.literal("luna_de_sangre").executes(ComandoBloodmoonAndBosses::lunaDeSangre)))
 				.then(Commands.literal("recargar")
 						.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
-						.executes(ComandoMobsPoderosos::recargar)));
+						.executes(ComandoBloodmoonAndBosses::recargar)));
 	}
 
 	private static int zona(CommandContext<CommandSourceStack> ctx) {
 		CommandSourceStack fuente = ctx.getSource();
 		// Sin variación: es el nivel "de la zona", el que tendría un mob sin la tirada de ±1
-		Configuracion config = MobsPoderosos.config().conVariacion(0);
+		Configuracion config = BloodmoonAndBosses.config().conVariacion(0);
 		ServerLevel level = fuente.getLevel();
 		BlockPos spawn = level.getServer().getRespawnData().pos();
 		int porDistancia = NivelDeZona.calcular(level.dimension(), spawn, BlockPos.containing(fuente.getPosition()), config, level.getRandom());
@@ -110,7 +113,7 @@ public final class ComandoMobsPoderosos {
 	}
 
 	private static int estampida(CommandContext<CommandSourceStack> ctx, ServerPlayer jugador) {
-		@Nullable String error = Estampida.empezar(jugador, MobsPoderosos.config().estampida());
+		@Nullable String error = Estampida.empezar(jugador, BloodmoonAndBosses.config().estampida());
 		if (error != null) {
 			ctx.getSource().sendFailure(Component.literal("No empezó la estampida: " + error));
 			return 0;
@@ -120,7 +123,7 @@ public final class ComandoMobsPoderosos {
 	}
 
 	private static int jefe(CommandContext<CommandSourceStack> ctx, ServerPlayer jugador) {
-		Mob jefe = JefeDeZona.aparecer(jugador, MobsPoderosos.config().jefeDeZona(), 16, 24);
+		Mob jefe = JefeDeZona.aparecer(jugador, BloodmoonAndBosses.config().jefeDeZona(), 16, 24);
 		if (jefe == null) {
 			ctx.getSource().sendFailure(Component.literal("No hay lugar cerca de ").append(jugador.getName()).append(" para un jefe (o el tag de esta dimensión está vacío)"));
 			return 0;
@@ -139,7 +142,7 @@ public final class ComandoMobsPoderosos {
 	}
 
 	private static int recargar(CommandContext<CommandSourceStack> ctx) {
-		@Nullable String error = MobsPoderosos.cargarConfiguracion();
+		@Nullable String error = BloodmoonAndBosses.cargarConfiguracion();
 		if (error != null) {
 			ctx.getSource().sendFailure(Component.literal("No se pudo leer la configuración, sigue la anterior: " + error));
 			return 0;

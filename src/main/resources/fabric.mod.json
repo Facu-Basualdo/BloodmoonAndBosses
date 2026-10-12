@@ -1,20 +1,20 @@
 {
 	"schemaVersion": 1,
-	"id": "mobspoderosos",
+	"id": "bloodmoonandbosses",
 	"version": "${version}",
 	"name": "Bloodmoon & Bosses",
 	"description": "Los mobs hostiles aparecen con niveles: cuanto más lejos del spawn y más viejo el mundo, más fuertes son y mejor loot dan. Con campeones con afijos, estampidas, lunas de sangre y jefes de zona.",
 	"authors": [],
 	"license": "MIT",
-	"icon": "assets/mobspoderosos/icon.png",
+	"icon": "assets/bloodmoonandbosses/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.mobspoderosos.MobsPoderosos"
+			"com.bloodmoonandbosses.BloodmoonAndBosses"
 		]
 	},
 	"mixins": [
-		"mobspoderosos.mixins.json"
+		"bloodmoonandbosses.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.19.5",

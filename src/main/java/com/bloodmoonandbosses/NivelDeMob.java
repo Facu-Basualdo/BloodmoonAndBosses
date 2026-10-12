@@ -1,11 +1,11 @@
-package com.mobspoderosos;
+package com.bloodmoonandbosses;
 
 import java.util.List;
 
 import com.mojang.serialization.Codec;
 import org.jspecify.annotations.Nullable;
 
-import com.mobspoderosos.mixin.CreeperAccessor;
+import com.bloodmoonandbosses.mixin.CreeperAccessor;
 
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
@@ -32,12 +32,12 @@ import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Enemy;
 
 public final class NivelDeMob {
-	public static final AttachmentType<Integer> NIVEL = AttachmentRegistry.createPersistent(MobsPoderosos.id("nivel"), Codec.INT);
+	public static final AttachmentType<Integer> NIVEL = AttachmentRegistry.createPersistent(BloodmoonAndBosses.id("nivel"), Codec.INT);
 	// Persistente y no un campo: los mobs de estructuras se guardan a NBT en el ProtoChunk y se recrean al completarse el chunk
-	public static final AttachmentType<Boolean> PENDIENTE = AttachmentRegistry.createPersistent(MobsPoderosos.id("pendiente"), Codec.BOOL);
-	public static final TagKey<EntityType<?>> SIN_NIVEL = TagKey.create(Registries.ENTITY_TYPE, MobsPoderosos.id("sin_nivel"));
+	public static final AttachmentType<Boolean> PENDIENTE = AttachmentRegistry.createPersistent(BloodmoonAndBosses.id("pendiente"), Codec.BOOL);
+	public static final TagKey<EntityType<?>> SIN_NIVEL = TagKey.create(Registries.ENTITY_TYPE, BloodmoonAndBosses.id("sin_nivel"));
 
-	private static final Identifier MODIFICADOR = MobsPoderosos.id("nivel");
+	private static final Identifier MODIFICADOR = BloodmoonAndBosses.id("nivel");
 	private static final int RADIO_CREEPER_VANILLA = 3;
 
 	private NivelDeMob() {
@@ -52,7 +52,7 @@ public final class NivelDeMob {
 	public static boolean escala(EntitySpawnReason motivo) {
 		return switch (motivo) {
 			case NATURAL, CHUNK_GENERATION, STRUCTURE, PATROL, EVENT, REINFORCEMENT, JOCKEY, MOB_SUMMONED, TRIGGERED -> true;
-			case SPAWNER, TRIAL_SPAWNER -> MobsPoderosos.config().escalarSpawners();
+			case SPAWNER, TRIAL_SPAWNER -> BloodmoonAndBosses.config().escalarSpawners();
 			default -> false;
 		};
 	}
@@ -74,7 +74,7 @@ public final class NivelDeMob {
 		if (mob.hasAttached(NIVEL) || !puedeTenerNivel(mob)) {
 			return;
 		}
-		Configuracion config = MobsPoderosos.config();
+		Configuracion config = BloodmoonAndBosses.config();
 		int nivel = NivelDeZona.calcular(level, mob.blockPosition(), mob.getRandom());
 		@Nullable Afijo afijo = null;
 		if (NivelDeZona.esCampeon(config, mob.getRandom())) {
@@ -112,7 +112,7 @@ public final class NivelDeMob {
 		}
 		mob.snapTo(pos, mob.getRandom().nextFloat() * 360, 0);
 		mob.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), motivo, null);
-		aparecer(mob, Math.clamp(nivel, 1, MobsPoderosos.config().nivelMaximo()), conAfijo ? Afijo.alAzar(mob, mob.getRandom()) : null);
+		aparecer(mob, Math.clamp(nivel, 1, BloodmoonAndBosses.config().nivelMaximo()), conAfijo ? Afijo.alAzar(mob, mob.getRandom()) : null);
 		level.addFreshEntityWithPassengers(mob);
 		return mob;
 	}
@@ -179,7 +179,7 @@ public final class NivelDeMob {
 	/** "Zombi [Nv 7] ❤ 34/40" con vidaEnElNombre: un componente vacío con dos hijos, el del nivel y el de la vida. */
 	public static Component nombre(Mob mob, int nivel) {
 		Component base = nombre(mob.getType(), nivel, Afijo.de(mob));
-		if (!MobsPoderosos.config().vidaEnElNombre()) {
+		if (!BloodmoonAndBosses.config().vidaEnElNombre()) {
 			return base;
 		}
 		// Para arriba: un mob con 0,3 de vida que dijera 0 parecería muerto
@@ -195,7 +195,7 @@ public final class NivelDeMob {
 
 	/** Por quintos del nivel máximo: si se cambia nivelMaximo, los colores se reparten igual. */
 	private static ChatFormatting color(int nivel) {
-		int quinto = nivel * 5 / MobsPoderosos.config().nivelMaximo();
+		int quinto = nivel * 5 / BloodmoonAndBosses.config().nivelMaximo();
 		if (quinto >= 4) {
 			return ChatFormatting.GOLD;
 		} else if (quinto == 3) {
@@ -209,7 +209,7 @@ public final class NivelDeMob {
 	}
 
 	private static void aplicarEstadisticas(Mob mob, int nivel) {
-		Configuracion config = MobsPoderosos.config();
+		Configuracion config = BloodmoonAndBosses.config();
 		mob.setAttached(NIVEL, nivel);
 		modificar(mob, Attributes.MAX_HEALTH, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, config.vida().en(nivel));
 		modificar(mob, Attributes.ATTACK_DAMAGE, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, config.danio().en(nivel));
@@ -220,7 +220,7 @@ public final class NivelDeMob {
 
 		// La explosión del creeper no usa ATTACK_DAMAGE: sin esto sólo se vuelve más resistente
 		if (mob instanceof Creeper creeper && nivel >= config.nivelRadioCreeper()) {
-			((CreeperAccessor) creeper).mobspoderosos$setExplosionRadius(RADIO_CREEPER_VANILLA + config.radioCreeperExtra());
+			((CreeperAccessor) creeper).bloodmoonandbosses$setExplosionRadius(RADIO_CREEPER_VANILLA + config.radioCreeperExtra());
 		}
 
 		Afijo.aplicarModificadores(mob);
@@ -231,7 +231,7 @@ public final class NivelDeMob {
 
 	private static void ponerNombre(Mob mob, int nivel) {
 		mob.setCustomName(nombre(mob, nivel));
-		mob.setCustomNameVisible(MobsPoderosos.config().nombreSiempreVisible());
+		mob.setCustomNameVisible(BloodmoonAndBosses.config().nombreSiempreVisible());
 	}
 
 	private static void modificar(Mob mob, Holder<Attribute> atributo, AttributeModifier.Operation operacion, double valor) {

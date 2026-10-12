@@ -1,4 +1,4 @@
-package com.mobspoderosos;
+package com.bloodmoonandbosses;
 
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
@@ -21,7 +21,7 @@ public final class NivelDeZona {
 	 * El del campeón se suma aparte (NivelDeMob.alCargar), porque los mobs de los eventos no tiran campeón.
 	 */
 	public static int calcular(ServerLevel level, BlockPos pos, RandomSource random) {
-		Configuracion config = MobsPoderosos.config();
+		Configuracion config = BloodmoonAndBosses.config();
 		BlockPos spawn = level.getServer().getRespawnData().pos();
 		int nivel = calcular(level.dimension(), spawn, pos, config, random) + porTiempo(dias(level), config) + LunaDeSangre.nivelesExtra(level);
 		return Mth.clamp(nivel, 1, config.nivelMaximo());

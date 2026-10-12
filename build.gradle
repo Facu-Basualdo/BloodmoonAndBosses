@@ -10,7 +10,7 @@ repositories {
 
 loom {
 	mods {
-		"mobspoderosos" {
+		"bloodmoonandbosses" {
 			sourceSet sourceSets.main
 		}
 	}
@@ -64,7 +64,7 @@ java {
 fabricApi {
 	configureTests {
 		createSourceSet = true
-		modId = "mobspoderosos-test"
+		modId = "bloodmoonandbosses-test"
 		enableGameTests = true
 		enableClientGameTests = false
 		eula = true

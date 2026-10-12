@@ -2,9 +2,9 @@
 
 [← Índice Tests](INDICE.md)
 
-`MobsPoderososGameTest` tiene **varios tests independientes**, cada uno con `helper.succeed()` al final. A diferencia de Soul Link, acá no hay estado global del servidor: cada test usa sus propios mobs y pueden correr en paralelo.
+`BloodmoonAndBossesGameTest` tiene **varios tests independientes**, cada uno con `helper.succeed()` al final. A diferencia de Soul Link, acá no hay estado global del servidor: cada test usa sus propios mobs y pueden correr en paralelo.
 
-`gradlew runGameTest` cuenta un test más que los de `MobsPoderososGameTest`: el que sobra es de Fabric. Los tests de loot y experiencia están en [tests: botín](botin.md), los de equipo en [tests: equipo](equipo.md) y los del archivo de configuración en [tests: configuración](configuracion.md).
+`gradlew runGameTest` cuenta un test más que los de `BloodmoonAndBossesGameTest`: el que sobra es de Fabric. Los tests de loot y experiencia están en [tests: botín](botin.md), los de equipo en [tests: equipo](equipo.md) y los del archivo de configuración en [tests: configuración](configuracion.md).
 
 ## Qué cubre
 
@@ -15,6 +15,7 @@
 | `aplicarNivel` | Vida ×2,6 en nivel 20 y vida llena, aplicar dos veces deja **un** modificador, nombre con "[Nv 20]" no visible siempre, `isPersistenceRequired()` sigue en `false`, topes en nivel 100 (vida ×9, daño +400 %, armadura +12), un name tag hace que `esNombreDelMod` dé `false` |
 | `vidaEnElNombre` | Nombre "[Nv 20] ❤ 52/52" al aparecer · `setHealth(30.4)` → "❤ 31/52" y `setHealth(0.3)` → "❤ 1/52" (redondea para arriba) · un golpe real con `hurtServer` actualiza el nombre · después de `recrear` (NBT) `esNombreDelMod` sigue en `true` · un nombre sin la vida (mob de antes de la 0.8.0) se reconoce y gana la vida al primer `setHealth` · un name tag no se pisa |
 | `creeper` | Radio 3 en nivel 59 y 4 en nivel 60 |
+| `unMobDelIdViejoConservaSuNivel` | Un zombi con los attachments `mobspoderosos:*` y el modificador viejo, recreado con `recrear` (pasa por `ENTITY_LOAD`): nivel 30, afijo, jefe y 68 de vida máxima en el id nuevo, sin nada viejo · el sorteo de la luna pasa en el overworld · la config se renombra. Los attachments viejos se piden con `MigracionDeId.attachmentViejo`: registrarlos de nuevo daría id duplicado |
 | `vidaMaximaQueSubeEnElNombre` | Un modificador de +10 en `MAX_HEALTH` cambia el máximo del nombre de 52 a 78 dos ticks después (se compara sólo el máximo: el zombi se puede quemar al sol mientras espera) (78 y no 62: el `ADD_MULTIPLIED_BASE` del nivel multiplica también lo sumado) |
 | `motivosDeSpawn` | `NATURAL` y `JOCKEY` escalan · `SPAWNER`, `SPAWN_ITEM_USE` y el guardián anciano con `STRUCTURE` (tag `sin_nivel`) no · un aldeano con `NATURAL` queda sin nivel **y sin `PENDIENTE`** |
 | `mobDeEstructura` | Un zombi con `finalizeSpawn(STRUCTURE)` → NBT → recreado y agregado al mundo recibe nivel. Recargar uno con nivel 33 conserva el nivel y no duplica modificadores |

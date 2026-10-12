@@ -1,4 +1,4 @@
-package com.mobspoderosos;
+package com.bloodmoonandbosses;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,15 +49,15 @@ public enum Afijo implements StringRepresentable {
 	TELETRANSPORTADOR("teletransportador", "Teletransportador", ChatFormatting.DARK_AQUA);
 
 	public static final Codec<Afijo> CODEC = StringRepresentable.fromEnum(Afijo::values);
-	public static final AttachmentType<Afijo> AFIJO = AttachmentRegistry.createPersistent(MobsPoderosos.id("afijo"), CODEC);
+	public static final AttachmentType<Afijo> AFIJO = AttachmentRegistry.createPersistent(BloodmoonAndBosses.id("afijo"), CODEC);
 	// Persistente: si no, guardar y cargar el chunk le devolvería todas las invocaciones
-	public static final AttachmentType<Integer> INVOCACIONES = AttachmentRegistry.createPersistent(MobsPoderosos.id("invocaciones"), Codec.INT);
-	public static final AttachmentType<Long> ULTIMA_INVOCACION = AttachmentRegistry.create(MobsPoderosos.id("ultima_invocacion"));
-	public static final AttachmentType<Long> ULTIMO_TELETRANSPORTE = AttachmentRegistry.create(MobsPoderosos.id("ultimo_teletransporte"));
+	public static final AttachmentType<Integer> INVOCACIONES = AttachmentRegistry.createPersistent(BloodmoonAndBosses.id("invocaciones"), Codec.INT);
+	public static final AttachmentType<Long> ULTIMA_INVOCACION = AttachmentRegistry.create(BloodmoonAndBosses.id("ultima_invocacion"));
+	public static final AttachmentType<Long> ULTIMO_TELETRANSPORTE = AttachmentRegistry.create(BloodmoonAndBosses.id("ultimo_teletransporte"));
 	// Mobs que no pueden llamar copias de sí mismos: un vex sin evocador no desaparece nunca
-	public static final TagKey<EntityType<?>> NO_INVOCAN = TagKey.create(Registries.ENTITY_TYPE, MobsPoderosos.id("no_invocan"));
+	public static final TagKey<EntityType<?>> NO_INVOCAN = TagKey.create(Registries.ENTITY_TYPE, BloodmoonAndBosses.id("no_invocan"));
 
-	private static final Identifier MODIFICADOR = MobsPoderosos.id("afijo");
+	private static final Identifier MODIFICADOR = BloodmoonAndBosses.id("afijo");
 
 	private final String id;
 	private final String nombre;
@@ -114,7 +114,7 @@ public enum Afijo implements StringRepresentable {
 
 	/** Para un campeón que aparece solo: la chance de la config decide si tiene afijo. */
 	public static @Nullable Afijo paraCampeon(Mob mob, RandomSource random) {
-		double chance = MobsPoderosos.config().afijos().chance();
+		double chance = BloodmoonAndBosses.config().afijos().chance();
 		if (chance <= 0 || random.nextDouble() >= chance) {
 			return null;
 		}
@@ -123,7 +123,7 @@ public enum Afijo implements StringRepresentable {
 
 	/** Dentro de aplicarEstadisticas: así una conversión, que copia el afijo, también rehace el modificador. */
 	public static void aplicarModificadores(Mob mob) {
-		Configuracion.Afijos config = MobsPoderosos.config().afijos();
+		Configuracion.Afijos config = BloodmoonAndBosses.config().afijos();
 		Afijo afijo = de(mob);
 		modificar(mob, Attributes.MOVEMENT_SPEED, afijo == VELOZ ? config.velocidadVeloz() : 0, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
 		modificar(mob, Attributes.ARMOR, afijo == BLINDADO ? config.armaduraBlindado() : 0, AttributeModifier.Operation.ADD_VALUE);
@@ -151,7 +151,7 @@ public enum Afijo implements StringRepresentable {
 		if (danioRecibido <= 0 || !(victima.level() instanceof ServerLevel level)) {
 			return;
 		}
-		Configuracion.Afijos config = MobsPoderosos.config().afijos();
+		Configuracion.Afijos config = BloodmoonAndBosses.config().afijos();
 		// getEntity y no getDirectEntity: en una flecha es el esqueleto que la tiró, y en una explosión el creeper
 		if (source.getEntity() instanceof Mob atacante && atacante != victima) {
 			Afijo afijo = de(atacante);
@@ -182,7 +182,7 @@ public enum Afijo implements StringRepresentable {
 
 	/** Como un enderman, pero hacia el que le pegó: aparece a su lado, así que alejarse o tirarle flechas no alcanza. */
 	private static void teletransportar(Mob mob, ServerLevel level, LivingEntity enemigo) {
-		Configuracion.Afijos config = MobsPoderosos.config().afijos();
+		Configuracion.Afijos config = BloodmoonAndBosses.config().afijos();
 		long ahora = level.getGameTime();
 		Long ultimo = mob.getAttached(ULTIMO_TELETRANSPORTE);
 		RandomSource random = mob.getRandom();
@@ -205,7 +205,7 @@ public enum Afijo implements StringRepresentable {
 	}
 
 	private static void invocar(Mob invocador, ServerLevel level, @Nullable LivingEntity enemigo) {
-		Configuracion.Afijos config = MobsPoderosos.config().afijos();
+		Configuracion.Afijos config = BloodmoonAndBosses.config().afijos();
 		int hechas = invocador.getAttachedOrElse(INVOCACIONES, 0);
 		long ahora = level.getGameTime();
 		Long ultima = invocador.getAttached(ULTIMA_INVOCACION);
@@ -236,7 +236,7 @@ public enum Afijo implements StringRepresentable {
 		if (!(muerto instanceof Mob mob) || de(mob) != EXPLOSIVO || !(mob.level() instanceof ServerLevel level)) {
 			return;
 		}
-		Configuracion.Afijos config = MobsPoderosos.config().afijos();
+		Configuracion.Afijos config = BloodmoonAndBosses.config().afijos();
 		Vec3 pos = mob.position();
 		level.playSound(null, mob.blockPosition(), SoundEvents.CREEPER_PRIMED, SoundSource.HOSTILE, 1.0f, 0.5f);
 		Eventos.programar(level, config.ticksDeMecha(), () -> {

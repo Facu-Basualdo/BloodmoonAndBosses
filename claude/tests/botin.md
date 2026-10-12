@@ -2,7 +2,7 @@
 
 [← Índice Tests](INDICE.md)
 
-Cuatro tests de `MobsPoderososGameTest` cubren el loot extra, el botín raro y la experiencia. El loot es al azar, así que **los tests usan mobs cuya tabla es determinista** en vez de comparar ítems con un seed fijo.
+Cuatro tests de `BloodmoonAndBossesGameTest` cubren el loot extra, el botín raro y la experiencia. El loot es al azar, así que **los tests usan mobs cuya tabla es determinista** en vez de comparar ítems con un seed fijo.
 
 ## Qué cubre
 

@@ -1,15 +1,15 @@
 {
 	"schemaVersion": 1,
-	"id": "mobspoderosos-test",
+	"id": "bloodmoonandbosses-test",
 	"version": "1.0.0",
 	"name": "Bloodmoon & Bosses - Tests",
 	"environment": "*",
 	"entrypoints": {
 		"fabric-gametest": [
-			"com.mobspoderosos.test.MobsPoderososGameTest"
+			"com.bloodmoonandbosses.test.BloodmoonAndBossesGameTest"
 		]
 	},
 	"depends": {
-		"mobspoderosos": "*"
+		"bloodmoonandbosses": "*"
 	}
 }

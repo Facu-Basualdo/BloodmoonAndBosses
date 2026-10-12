@@ -2,7 +2,7 @@
 
 [← Índice Tests](INDICE.md)
 
-Tres tests de `MobsPoderososGameTest` cubren `EquipoPorNivel`. **La armadura es al azar, así que se prueba con muchos mobs y con lo que nunca puede pasar**, no comparando ítems con un seed.
+Tres tests de `BloodmoonAndBossesGameTest` cubren `EquipoPorNivel`. **La armadura es al azar, así que se prueba con muchos mobs y con lo que nunca puede pasar**, no comparando ítems con un seed.
 
 ## Qué cubre
 

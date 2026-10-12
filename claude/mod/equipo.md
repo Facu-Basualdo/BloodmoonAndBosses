@@ -11,7 +11,7 @@ Síntomas que esto evita: **los vex empiezan a soltar su espada de hierro**, **l
 | Camino | ¿Equipo? | Por qué |
 |---|---|---|
 | `NivelDeMob.alCargar` (`ENTITY_LOAD` con `PENDIENTE`) | Sí | Vanilla ya le puso su equipo en `finalizeSpawn`: el mod completa y encanta sobre eso (ver [niveles](niveles.md)) |
-| `/mobspoderosos invocar` | Sí | Pasa por `finalizeSpawn` con `COMMAND` y después por `aparecer` |
+| `/bloodmoon invocar` | Sí | Pasa por `finalizeSpawn` con `COMMAND` y después por `aparecer` |
 | `NivelDeMob.alConvertir` | **No** | `ConversionType` copia el equipo del mob viejo al nuevo: equiparlo de nuevo le sumaría piezas y encantamientos en cada conversión |
 | `NivelDeMob.aplicar` a secas | No | Lo usan los tests de estadísticas y las conversiones |
 
@@ -19,7 +19,7 @@ Síntomas que esto evita: **los vex empiezan a soltar su espada de hierro**, **l
 
 ## Armadura: sólo para usan_equipo
 
-**La armadura nueva va sólo a los mobs del tag `mobspoderosos:usan_equipo`** (`EquipoPorNivel.USAN_EQUIPO`): zombis, husks, ahogados, aldeanos zombi, piglins zombificados, esqueletos, strays, bogged, parched, esqueletos del Wither, piglins y piglins brutos. Son los que **dibujan** la armadura: los illagers y el vex no tienen capa de armadura en el modelo, así que se la pondría invisible (y igual protegería).
+**La armadura nueva va sólo a los mobs del tag `bloodmoonandbosses:usan_equipo`** (`EquipoPorNivel.USAN_EQUIPO`): zombis, husks, ahogados, aldeanos zombi, piglins zombificados, esqueletos, strays, bogged, parched, esqueletos del Wither, piglins y piglins brutos. Son los que **dibujan** la armadura: los illagers y el vex no tienen capa de armadura en el modelo, así que se la pondría invisible (y igual protegería).
 
 - Por cada ranura de armadura **vacía**, chance `chanceArmaduraExtra.en(nivel)` (0,75 % por nivel, tope 50 %, desde el nivel 67). Lo que puso vanilla no se toca.
 - El material sale de `EquipoPorNivel.material(nivel, random)`: un rango cada `nivelesPorMaterialDeArmadura` (20) niveles, con tope en el último.
@@ -51,7 +51,7 @@ Síntomas que esto evita: **los vex empiezan a soltar su espada de hierro**, **l
 |---|---|---|
 | Chance actual **0** | No se toca | Vanilla la pone en 0 a propósito: el vex nunca suelta su espada. Subirla regalaba espadas de hierro (lo encontró un gametest) |
 | Chance actual ≥ tope (2.0 de `setGuaranteedDrop`, lo que el mob levantó) | No se toca | `nueva > actual` es falso: la chance nunca baja |
-| Ítem en el tag `mobspoderosos:equipo_valioso` | No se toca (queda en 0,085) | Diamante, netherita y el tridente. Si no, en nivel 80+ la armadura de netherita encantada sale en uno de cada cuatro mobs |
+| Ítem en el tag `bloodmoonandbosses:equipo_valioso` | No se toca (queda en 0,085) | Diamante, netherita y el tridente. Si no, en nivel 80+ la armadura de netherita encantada sale en uno de cada cuatro mobs |
 | El resto | Sube | |
 
 - Las chances se leen con `mob.getDropChances().byEquipment(slot)` y se escriben con `setDropChance`. En 26.3 viven en el record `DropChances`, que vanilla guarda en el NBT: sobreviven al recargar el chunk.

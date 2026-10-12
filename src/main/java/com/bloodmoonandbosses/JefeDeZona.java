@@ -1,4 +1,4 @@
-package com.mobspoderosos;
+package com.bloodmoonandbosses;
 
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -54,17 +54,17 @@ import net.minecraft.world.phys.Vec3;
  * están cerca o un tirón que trae a los que pelean de lejos.
  */
 public final class JefeDeZona {
-	public static final AttachmentType<Boolean> JEFE = AttachmentRegistry.createPersistent(MobsPoderosos.id("jefe"), Codec.BOOL);
+	public static final AttachmentType<Boolean> JEFE = AttachmentRegistry.createPersistent(BloodmoonAndBosses.id("jefe"), Codec.BOOL);
 	// Persistente: un jefe que se enfureció y vuelve con su chunk no se enfurece de nuevo (ni llama otra tanda de escoltas)
-	public static final AttachmentType<Boolean> FURIA = AttachmentRegistry.createPersistent(MobsPoderosos.id("furia"), Codec.BOOL);
-	public static final AttachmentType<Long> ULTIMO = AttachmentRegistry.create(MobsPoderosos.id("ultimo_jefe"),
+	public static final AttachmentType<Boolean> FURIA = AttachmentRegistry.createPersistent(BloodmoonAndBosses.id("furia"), Codec.BOOL);
+	public static final AttachmentType<Long> ULTIMO = AttachmentRegistry.create(BloodmoonAndBosses.id("ultimo_jefe"),
 			builder -> builder.persistent(Codec.LONG).copyOnDeath());
 	public static final TagKey<EntityType<?>> TIPOS_OVERWORLD = tipos("overworld");
 	public static final TagKey<EntityType<?>> TIPOS_NETHER = tipos("nether");
 	public static final TagKey<EntityType<?>> TIPOS_END = tipos("end");
 
-	private static final Identifier MODIFICADOR = MobsPoderosos.id("jefe");
-	private static final Identifier MODIFICADOR_FURIA = MobsPoderosos.id("furia");
+	private static final Identifier MODIFICADOR = BloodmoonAndBosses.id("jefe");
+	private static final Identifier MODIFICADOR_FURIA = BloodmoonAndBosses.id("furia");
 	// El aviso de una habilidad: lo justo para alejarse dos o tres bloques, o cubrirse
 	private static final int TICKS_DE_AVISO = 20;
 	// Cuánto se queda lejos del jefe el que trae el tirón: si llegara encima, el siguiente golpe sería seguro
@@ -81,7 +81,7 @@ public final class JefeDeZona {
 	}
 
 	private static TagKey<EntityType<?>> tipos(String dimension) {
-		return TagKey.create(Registries.ENTITY_TYPE, MobsPoderosos.id("jefe_de_zona/" + dimension));
+		return TagKey.create(Registries.ENTITY_TYPE, BloodmoonAndBosses.id("jefe_de_zona/" + dimension));
 	}
 
 	public static boolean esJefe(Entity entity) {
@@ -99,7 +99,7 @@ public final class JefeDeZona {
 
 	/** Cada minuto, por jugador. */
 	public static void sortear(ServerPlayer jugador) {
-		Configuracion.JefeDeZona config = MobsPoderosos.config().jefeDeZona();
+		Configuracion.JefeDeZona config = BloodmoonAndBosses.config().jefeDeZona();
 		if (!config.activo() || !Eventos.puedeTenerEventos(jugador) || !(jugador.level() instanceof ServerLevel level)) {
 			return;
 		}
@@ -124,7 +124,7 @@ public final class JefeDeZona {
 		return false;
 	}
 
-	/** Sin sorteo ni espera (es lo que usa /mobspoderosos evento). Devuelve el jefe, o null si no encontró lugar. */
+	/** Sin sorteo ni espera (es lo que usa /bloodmoon evento). Devuelve el jefe, o null si no encontró lugar. */
 	public static @Nullable Mob aparecer(ServerPlayer jugador, Configuracion.JefeDeZona config, int distanciaMinima, int distanciaMaxima) {
 		if (!(jugador.level() instanceof ServerLevel level)) {
 			return null;
@@ -195,7 +195,7 @@ public final class JefeDeZona {
 		}
 		ServerBossEvent barra = new ServerBossEvent(UUID.randomUUID(), nombreDeLaBarra(jefe), colorDeLaBarra(jefe), BossEvent.BossBarOverlay.NOTCHED_10);
 		long ahora = level.getGameTime();
-		SEGUIDOS.put(jefe, new Seguido(barra, ahora, ahora + MobsPoderosos.config().jefeDeZona().segundosEntreHabilidades() * 20L));
+		SEGUIDOS.put(jefe, new Seguido(barra, ahora, ahora + BloodmoonAndBosses.config().jefeDeZona().segundosEntreHabilidades() * 20L));
 	}
 
 	/** ENTITY_LOAD: un jefe que vuelve con su chunk o después de un reinicio. */
@@ -220,7 +220,7 @@ public final class JefeDeZona {
 			return;
 		}
 		Component mensaje = Component.literal("Cayó el jefe de zona: ").append(NivelDeMob.nombreSinVida((Mob) muerto)).withStyle(ChatFormatting.GOLD);
-		int radio = MobsPoderosos.config().jefeDeZona().radioDeBarra();
+		int radio = BloodmoonAndBosses.config().jefeDeZona().radioDeBarra();
 		for (Player jugador : level.getEntitiesOfClass(Player.class, muerto.getBoundingBox().inflate(radio), Entity::isAlive)) {
 			jugador.sendSystemMessage(mensaje);
 		}
@@ -228,7 +228,7 @@ public final class JefeDeZona {
 
 	/** Cada segundo: la barra la ven los que están cerca, y un jefe sin nadie cerca durante un rato se va. */
 	public static void actualizarTodos() {
-		Configuracion.JefeDeZona config = MobsPoderosos.config().jefeDeZona();
+		Configuracion.JefeDeZona config = BloodmoonAndBosses.config().jefeDeZona();
 		for (Map.Entry<Mob, Seguido> entrada : List.copyOf(SEGUIDOS.entrySet())) {
 			Mob jefe = entrada.getKey();
 			Seguido seguido = entrada.getValue();

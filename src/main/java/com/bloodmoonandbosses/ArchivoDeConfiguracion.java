@@ -1,4 +1,4 @@
-package com.mobspoderosos;
+package com.bloodmoonandbosses;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,7 +14,7 @@ import com.google.gson.JsonParser;
 
 import net.fabricmc.loader.api.FabricLoader;
 
-/** config/mobspoderosos.json: los valores de Configuracion, editables sin recompilar. */
+/** config/bloodmoonandbosses.json: los valores de Configuracion, editables sin recompilar. */
 public final class ArchivoDeConfiguracion {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
@@ -22,7 +22,7 @@ public final class ArchivoDeConfiguracion {
 	}
 
 	public static Path ruta() {
-		return FabricLoader.getInstance().getConfigDir().resolve(MobsPoderosos.MOD_ID + ".json");
+		return FabricLoader.getInstance().getConfigDir().resolve(BloodmoonAndBosses.MOD_ID + ".json");
 	}
 
 	/**
@@ -53,7 +53,7 @@ public final class ArchivoDeConfiguracion {
 			JsonElement porDefecto = destino.get(clave);
 			if (porDefecto == null) {
 				// Un nombre mal escrito quedaría ignorado en silencio: mejor avisar
-				MobsPoderosos.LOGGER.warn("Configuración: no existe la clave \"{}{}\", se ignora", prefijo, clave);
+				BloodmoonAndBosses.LOGGER.warn("Configuración: no existe la clave \"{}{}\", se ignora", prefijo, clave);
 			} else if (porDefecto.isJsonObject() && entrada.getValue().isJsonObject()) {
 				mezclar(porDefecto.getAsJsonObject(), entrada.getValue().getAsJsonObject(), prefijo + clave + ".");
 			} else {

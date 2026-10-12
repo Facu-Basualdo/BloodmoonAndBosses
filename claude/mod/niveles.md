@@ -18,7 +18,7 @@ Síntomas que esto evita: **un zombi aparece con nivel pero sin la armadura que 
 - **`PENDIENTE` es un attachment persistente, no un campo `@Unique`.** Los mobs de `STRUCTURE` y `CHUNK_GENERATION` se crean en un `WorldGenRegion`: `ProtoChunk.addEntity(Entity)` los guarda como NBT y, cuando el chunk está completo, el mob se recrea desde ese NBT. Un campo transitorio se perdería ahí (evocadores y vindicadores de las mansiones, la bruja de la cabaña, los shulkers del End). El attachment viaja en el NBT y `ENTITY_LOAD` lo encuentra al cargar el chunk.
 - **`alCargar` saca `PENDIENTE` aunque el mob no escale** (un aldeano con `NATURAL`): si no, quedaría para siempre en su NBT.
 
-Los attachments se registran en el inicializador estático de `NivelDeMob`, y `MobsPoderosos.onInitialize` llama a `NivelDeMob.inicializar()` (vacío) para cargar la clase. **Tienen que estar registrados antes de que se cargue el primer chunk:** si no, Fabric no sabe deserializar los que ya estaban guardados.
+Los attachments se registran en el inicializador estático de `NivelDeMob`, y `BloodmoonAndBosses.onInitialize` llama a `NivelDeMob.inicializar()` (vacío) para cargar la clase. **Tienen que estar registrados antes de que se cargue el primer chunk:** si no, Fabric no sabe deserializar los que ya estaban guardados.
 
 ## Qué motivos escalan
 
@@ -27,10 +27,10 @@ Los attachments se registran en el inicializador estático de `NivelDeMob`, y `M
 | `NATURAL`, `CHUNK_GENERATION`, `STRUCTURE`, `PATROL`, `EVENT` (raids) | Sí | Son los spawns "del mundo" |
 | `REINFORCEMENT`, `JOCKEY`, `MOB_SUMMONED`, `TRIGGERED` | Sí | Aparecen por otro mob, en el mismo lugar. Sin `JOCKEY`, la araña tendría nivel y el esqueleto que la monta no |
 | `SPAWNER`, `TRIAL_SPAWNER` | Sólo con `escalarSpawners` (`false` por defecto) | Una granja de spawner sería una fábrica de loot |
-| `SPAWN_ITEM_USE` (huevos), `DISPENSER`, `COMMAND`, `BREEDING`, `BUCKET`, `LOAD`, `DIMENSION_TRAVEL` | No | Para probar está `/mobspoderosos invocar` |
+| `SPAWN_ITEM_USE` (huevos), `DISPENSER`, `COMMAND`, `BREEDING`, `BUCKET`, `LOAD`, `DIMENSION_TRAVEL` | No | Para probar está `/bloodmoon invocar` |
 | `CONVERSION` | No por posición | Lo maneja `alConvertir` (abajo) |
 
-**`puedeTenerNivel` = `instanceof Enemy` y no está en el tag `mobspoderosos:sin_nivel`** (dragón, wither, guardián anciano, warden). El guardián anciano aparece con `STRUCTURE`, así que sin el tag tendría nivel. El tag se chequea con `mob.is(TagKey)`: `EntityType` no tiene `is(tag)` en 26.3.
+**`puedeTenerNivel` = `instanceof Enemy` y no está en el tag `bloodmoonandbosses:sin_nivel`** (dragón, wither, guardián anciano, warden). El guardián anciano aparece con `STRUCTURE`, así que sin el tag tendría nivel. El tag se chequea con `mob.is(TagKey)`: `EntityType` no tiene `is(tag)` en 26.3.
 
 ## Fórmula
 
@@ -48,7 +48,7 @@ nivel = 1 + floor(distanciaHorizontal / bloquesPorNivel) + extraDimensión ± va
 
 Con `bloquesPorNivel` 100 y `nivelMaximo` 100, el tope se alcanza a ~9900 bloques del spawn.
 
-`/mobspoderosos zona` usa `config.conVariacion(0)`: muestra el nivel de la zona, no una tirada. Suma el del tiempo (es el mismo para todos) y el de la luna de sangre si está activa, y sólo menciona la chance de campeón.
+`/bloodmoon zona` usa `config.conVariacion(0)`: muestra el nivel de la zona, no una tirada. Suma el del tiempo (es el mismo para todos) y el de la luna de sangre si está activa, y sólo menciona la chance de campeón.
 
 ### Tiempo y campeones
 
@@ -74,7 +74,7 @@ El campeón va aparte porque los mobs de los eventos usan `calcular` y no tienen
 
 ## Estadísticas
 
-**Todos los modificadores usan el mismo `Identifier` (`mobspoderosos:nivel`) y `addOrReplacePermanentModifier`.** Aplicar dos veces reemplaza, no apila; y como son permanentes, vanilla los guarda en el NBT del mob. Al recargar, `alCargar` no los vuelve a aplicar porque ya tiene `NIVEL`.
+**Todos los modificadores usan el mismo `Identifier` (`bloodmoonandbosses:nivel`) y `addOrReplacePermanentModifier`.** Aplicar dos veces reemplaza, no apila; y como son permanentes, vanilla los guarda en el NBT del mob. Al recargar, `alCargar` no los vuelve a aplicar porque ya tiene `NIVEL`.
 
 | Atributo | Operación | Por nivel / tope (`Configuracion`) |
 |---|---|---|

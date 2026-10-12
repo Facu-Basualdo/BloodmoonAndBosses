@@ -6,7 +6,7 @@ Síntomas que esto evita: **una granja automática de mobs con nivel suelta el t
 
 ## Tiradas extra: dentro de dropAllDeathLoot, no en AFTER_DEATH
 
-**Las tiradas extra y el botín raro se hacen en `LivingEntityMixin.mobspoderosos$tiradasExtra`, un `@WrapOperation` sobre la llamada a `dropFromLootTable(ServerLevel, DamageSource, boolean)` dentro de `LivingEntity.dropAllDeathLoot`.** No van en `ServerLivingEntityEvents.AFTER_DEATH`, aunque el plan original lo decía.
+**Las tiradas extra y el botín raro se hacen en `LivingEntityMixin.bloodmoonandbosses$tiradasExtra`, un `@WrapOperation` sobre la llamada a `dropFromLootTable(ServerLevel, DamageSource, boolean)` dentro de `LivingEntity.dropAllDeathLoot`.** No van en `ServerLivingEntityEvents.AFTER_DEATH`, aunque el plan original lo decía.
 
 `dropAllDeathLoot` en 26.3 (verificado con `javap`):
 
@@ -53,7 +53,7 @@ dropExperience(level, source.getEntity());
 
 **Cuántas tiradas hay lo decide el nivel; si cada una sale, lo decide `BotinPorNivel.chanceTiradaExtra(mob)`.** Cada tirada se sortea por separado con `mob.getRandom()`.
 
-| Tag (`data/mobspoderosos/tags/entity_type/`) | Mobs | Chance de cada tirada | Por qué |
+| Tag (`data/bloodmoonandbosses/tags/entity_type/`) | Mobs | Chance de cada tirada | Por qué |
 |---|---|---|---|
 | — | Todos los demás | 1 (segura) | |
 | `tiradas_extra_por_chance` (`TIRADAS_EXTRA_POR_CHANCE`) | `evoker` | `chanceTiradaExtra.en(nivel)`: +0,5 % por nivel, tope 50 % | Su tabla siempre da un tótem: con tiradas seguras, uno de nivel 60 soltaría 4. Así es ~0,9 tótems extra en promedio |
@@ -67,13 +67,13 @@ dropExperience(level, source.getEntity());
 
 **Después de las tiradas extra, `BotinPorNivel.soltarBotinRaro` sortea tres tablas propias, cada una por separado**: un mob de nivel 80 puede soltar las tres a la vez.
 
-| `BotinPorNivel.Botin` | Tabla (`data/mobspoderosos/loot_table/`) | Desde (`nivelMinimo`) | Chance |
+| `BotinPorNivel.Botin` | Tabla (`data/bloodmoonandbosses/loot_table/`) | Desde (`nivelMinimo`) | Chance |
 |---|---|---|---|
 | `RARO` | `botin_por_nivel/raro.json` | 20 | 15 % |
 | `EPICO` | `botin_por_nivel/epico.json` | 50 | 10 % |
 | `LEGENDARIO` | `botin_por_nivel/legendario.json` | 80 | 5 % |
 
-- Los números van en `Configuracion` (`botinRaro`, `botinEpico`, `botinLegendario`, records `Rareza`). Cada `Botin` los lee de la configuración actual, no al cargar la clase, así que `/mobspoderosos recargar` los cambia enseguida.
+- Los números van en `Configuracion` (`botinRaro`, `botinEpico`, `botinLegendario`, records `Rareza`). Cada `Botin` los lee de la configuración actual, no al cargar la clase, así que `/bloodmoon recargar` los cambia enseguida.
 - `botinesRaros(nivel)` es la lista de las que tocan, y es lo que prueban los tests. Con nivel 0 (sin nivel) da vacía aunque un `nivelMinimo` mal configurado fuera 0.
 - **Se tiran con `mob.dropFromLootTable(level, source, true, tabla)`**, el mismo overload que las tiradas extra: los parámetros son los de una muerte (`"type": "minecraft:entity"`) y los ítems aparecen donde murió el mob.
 - **Las tablas no pueden tener tótems ni monturas.** Los tests cuentan esos ítems (evocadores, devastadores) y otro ítem de la tabla los haría fallar al azar.
@@ -87,7 +87,7 @@ dropExperience(level, source.getEntity());
 
 ## Experiencia
 
-**`LivingEntityMixin.mobspoderosos$experienciaPorNivel` es un `@ModifyReturnValue` sobre `LivingEntity.getExperienceReward(ServerLevel, Entity)`.** Ese método es `final`, así que un solo mixin cubre todas las subclases. Corre después de `EnchantmentHelper.processMobExperience`, así que multiplica el valor ya procesado.
+**`LivingEntityMixin.bloodmoonandbosses$experienciaPorNivel` es un `@ModifyReturnValue` sobre `LivingEntity.getExperienceReward(ServerLevel, Entity)`.** Ese método es `final`, así que un solo mixin cubre todas las subclases. Corre después de `EnchantmentHelper.processMobExperience`, así que multiplica el valor ya procesado.
 
 `BotinPorNivel.experiencia(base, nivel) = round(base × (1 + nivel × experienciaPorNivel))`, con `0.1` por defecto. Si el mob no tiene nivel (`nivel == 0`) devuelve la base sin tocar.
 
