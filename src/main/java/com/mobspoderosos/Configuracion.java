@@ -39,7 +39,7 @@ public record Configuracion(
 		JefeDeZona jefeDeZona) {
 
 	/*
-	 * Hasta el nivel 100 (a unos 10.000 bloques) y pensados junto con Estadísticas RPG: cada escala llega a su
+	 * Hasta el nivel 100 (a unos 10.000 bloques) y pensados junto con Hero's Forge: cada escala llega a su
 	 * tope recién en el nivel 100, así que alejarse siempre se nota, y un jugador con el equipo y los puntos que
 	 * se esperan en cada zona mata a un zombi en 5 o 6 golpes.
 	 */
@@ -50,7 +50,7 @@ public record Configuracion(
 			40,
 			1,
 			// Con el mundo más viejo, el spawn también se pone peligroso: a los 100 días los mobs de al lado
-			// de la base son de nivel 21, lo que pide diamante y algunos puntos de Estadísticas RPG
+			// de la base son de nivel 21, lo que pide diamante y algunos puntos de Hero's Forge
 			5,
 			20,
 			// Uno de cada veinte mobs aparece 10 niveles por encima de su zona: la sorpresa que obliga a mirar el nombre

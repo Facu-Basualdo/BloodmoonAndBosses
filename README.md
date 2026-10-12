@@ -23,7 +23,7 @@ Cerca de la base el juego se siente casi como vanilla; a varios miles de bloques
 - **Campeones:** uno de cada 20 mobs (5 %) aparece con 10 niveles más que su zona y con un **afijo** que se ve en el nombre: **"Zombi [Nv 27] [Vampiro]"**. Ver [Eventos y afijos](#eventos-y-afijos).
 - La distancia, el tiempo y los campeones se suman, y todo se corta en el nivel 100. La tabla de arriba es sin el tiempo ni los campeones.
 - **Todo sigue subiendo hasta el nivel 100:** ninguna estadística llega a su tope antes, así que alejarse siempre se nota.
-- **Pensado para jugarse con Estadísticas RPG:** con el equipo y los puntos que se esperan en cada zona, un zombi se mata en 5 o 6 golpes en todo el mundo, y lo que aguantás va bajando hacia el nivel 100. Sin ese mod, la zona de nivel 100 es para pocos: un zombi aguanta 19 golpes de una espada de netherita con Filo V.
+- **Pensado para jugarse con Hero's Forge:** con el equipo y los puntos que se esperan en cada zona, un zombi se mata en 5 o 6 golpes en todo el mundo, y lo que aguantás va bajando hacia el nivel 100. Sin ese mod, la zona de nivel 100 es para pocos: un zombi aguanta 19 golpes de una espada de netherita con Filo V.
 - **Nether:** cada bloque cuenta como 8 (como los portales) y suma 20 niveles. **End:** se mide desde el centro de la isla principal y suma 40.
 - **El color del nombre** indica el rango, por quintos del nivel máximo: gris (1–19), verde (20–39), azul (40–59), violeta (60–79), dorado (80+).
 - **El nombre se ve al mirar al mob**, no a través de las paredes.
@@ -144,7 +144,7 @@ Toda la lógica corre en el servidor.
 
 - **Servidor dedicado:** copiá `mobspoderosos-<versión>.jar` y Fabric API a la carpeta `mods/` del servidor. Los jugadores no necesitan instalar nada: el nombre con el nivel y la vida lo ve cualquier cliente.
 - **Singleplayer o LAN:** instalalo en el cliente del que abre el mundo, junto con Fabric API.
-- Se puede usar junto con **Inventario Compartido**: no se tocan.
+- Se puede usar junto con **Soul Link**: no se tocan.
 
 ## Compilar
 

@@ -70,7 +70,7 @@ El campeón va aparte porque los mobs de los eventos usan `calcular` y no tienen
 - **Las dos funciones son puras y aparte de `calcular(dimension, …)`**, que sigue siendo sólo la zona: así los tests de distancia no dependen del reloj del mundo de prueba ni de la tirada de campeón.
 - **El nivel se fija al aparecer:** que pasen días no cambia a los mobs que ya están, igual que la config.
 - **El campeón tiene un afijo** (attachment `Afijo.AFIJO`, "[Vampiro]" en el nombre). `esNombreDelMod` compara con `nombre(tipo, nivel, afijo)`: si el afijo no estuviera en esa comparación, no reconocería el nombre de un campeón y las conversiones lo perderían. Detalle en [eventos](eventos.md).
-- El tiempo también cuenta para el balance con Estadísticas RPG: a los 100 días, al lado del spawn aparecen mobs de nivel 21.
+- El tiempo también cuenta para el balance con Hero's Forge: a los 100 días, al lado del spawn aparecen mobs de nivel 21.
 
 ## Estadísticas
 
@@ -85,13 +85,13 @@ El campeón va aparte porque los mobs de los eventos usan `calcular` y no tienen
 | `FOLLOW_RANGE` | `ADD_MULTIPLIED_BASE` | +0,5 % / +50 % |
 | `KNOCKBACK_RESISTANCE` | `ADD_VALUE` | +0,005 / 0,5 |
 
-**Todas las escalas llegan a su tope recién en el nivel 100, y están balanceadas contra Estadísticas RPG** (el mod hermano en el que el jugador compra vida, daño y armadura con experiencia, hasta 100 puntos por estadística). Con los topes antes de tiempo (el daño se quedaba quieto desde el nivel 25), alejarse dejaba de ser más peligroso y el jugador con puntos se volvía casi inmortal. El objetivo: con el equipo y los puntos que se esperan en cada zona, un zombi se mata en 5 o 6 golpes en todo el mundo y lo que aguanta el jugador baja de a poco hacia el 100. **Si se cambia una escala, hay que mirar los números del otro mod**, y al revés.
+**Todas las escalas llegan a su tope recién en el nivel 100, y están balanceadas contra Hero's Forge** (el mod hermano en el que el jugador compra vida, daño y armadura con experiencia, hasta 100 puntos por estadística). Con los topes antes de tiempo (el daño se quedaba quieto desde el nivel 25), alejarse dejaba de ser más peligroso y el jugador con puntos se volvía casi inmortal. El objetivo: con el equipo y los puntos que se esperan en cada zona, un zombi se mata en 5 o 6 golpes en todo el mundo y lo que aguanta el jugador baja de a poco hacia el 100. **Si se cambia una escala, hay que mirar los números del otro mod**, y al revés.
 
 - **`ADD_MULTIPLIED_BASE` multiplica la base más todos los `ADD_VALUE`, incluido el del arma.** Un zombi con espada de hierro de nivel 25 pega `(3 + 5) × 2`, no `3 × 2 + 5`. Por eso el daño topea más bajo que la vida.
 - `getAttribute` devuelve `null` para atributos que el mob no tiene (el creeper no tiene `ATTACK_DAMAGE`): `modificar` lo saltea.
 - **`setHealth(getMaxHealth())` al final.** Sin eso, el mob aparece con la vida base aunque el máximo haya subido.
 - **Creeper:** su explosión no usa `ATTACK_DAMAGE`. Desde `nivelRadioCreeper` (60), `CreeperAccessor` pone `explosionRadius` en 3 + `radioCreeperExtra` (4). Vanilla lo duplica si está cargado y lo guarda en el NBT como `ExplosionRadius`.
-- El daño de las flechas tampoco usa `ATTACK_DAMAGE`: los esqueletos escalan por el encantamiento del arco (ver [equipo](equipo.md)). Del lado del jugador pasa lo mismo: el daño de Estadísticas RPG no le sirve al arco, así que ese mod tiene una estadística aparte, **daño a distancia** (+100 % al máximo), balanceada para matar un zombi de nivel 100 en 5 o 6 flechas de Poder V. Si cambia la vida o la armadura por nivel, hay que mirar también esa.
+- El daño de las flechas tampoco usa `ATTACK_DAMAGE`: los esqueletos escalan por el encantamiento del arco (ver [equipo](equipo.md)). Del lado del jugador pasa lo mismo: el daño de Hero's Forge no le sirve al arco, así que ese mod tiene una estadística aparte, **daño a distancia** (+100 % al máximo), balanceada para matar un zombi de nivel 100 en 5 o 6 flechas de Poder V. Si cambia la vida o la armadura por nivel, hay que mirar también esa.
 
 ## Nombre
 

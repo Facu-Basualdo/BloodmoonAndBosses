@@ -2,7 +2,7 @@
 
 [← Índice Tests](INDICE.md)
 
-`MobsPoderososGameTest` tiene **varios tests independientes**, cada uno con `helper.succeed()` al final. A diferencia de Inventario Compartido, acá no hay estado global del servidor: cada test usa sus propios mobs y pueden correr en paralelo.
+`MobsPoderososGameTest` tiene **varios tests independientes**, cada uno con `helper.succeed()` al final. A diferencia de Soul Link, acá no hay estado global del servidor: cada test usa sus propios mobs y pueden correr en paralelo.
 
 `gradlew runGameTest` cuenta un test más que los de `MobsPoderososGameTest`: el que sobra es de Fabric. Los tests de loot y experiencia están en [tests: botín](botin.md), los de equipo en [tests: equipo](equipo.md) y los del archivo de configuración en [tests: configuración](configuracion.md).
 

@@ -1,15 +1,15 @@
-# Plan — Mod "Mobs Poderosos" (niveles por distancia, mejor loot)
+# Plan — Mod "Bloodmoon & Bosses" (niveles por distancia, mejor loot)
 
 ## Contexto
 
-Querés un segundo mod de Fabric, aparte de Inventario Compartido, donde los mobs hostiles aparezcan con **niveles**. Cuanto más lejos del spawn del mundo, más nivel. Un mob de más nivel es más fuerte y da **mejor loot**. Decisiones que tomaste:
+Querés un segundo mod de Fabric, aparte de Soul Link, donde los mobs hostiles aparezcan con **niveles**. Cuanto más lejos del spawn del mundo, más nivel. Un mob de más nivel es más fuerte y da **mejor loot**. Decisiones que tomaste:
 
 - **Nivel** = distancia al spawn del mundo (con un extra en el Nether y el End).
 - **Visual** = un nombre sobre la cabeza ("Zombi [Nv 7]", con color por rango). Es todo del servidor y **no hace falta mod en el cliente**.
 - **Loot** = más tiradas de la tabla de vanilla + más experiencia, equipo encantado que se puede soltar, e ítems raros por rango de nivel.
 - **Repo** = uno nuevo en `C:\ReposGit\MobsPoderosos`, con la misma base que este proyecto.
 
-Toda la lógica corre en el servidor, igual que en Inventario Compartido. Los dos mods se pueden instalar juntos sin tocarse.
+Toda la lógica corre en el servidor, igual que en Soul Link. Los dos mods se pueden instalar juntos sin tocarse.
 
 ## Paso 0 — Crear el repo y dejar este plan ahí
 
@@ -171,7 +171,7 @@ El comando `/mobspoderosos invocar zombie 30` pone un mob con ese nivel justo de
 
 ## Verificación
 
-**GameTests** (`src/gametest`, con `GameTestHelper`). Acá no hay estado global compartido como en Inventario Compartido, así que pueden ser varios tests independientes:
+**GameTests** (`src/gametest`, con `GameTestHelper`). Acá no hay estado global compartido como en Soul Link, así que pueden ser varios tests independientes:
 - `NivelDeZona` (función pura, con `RandomSource` de seed fijo y variación desactivada en una de las pruebas): posiciones a 0 / 1500 / 7500 bloques dan nivel 1 / 11 / 50 (tope); el Nether usa ×8 y suma el extra; el End mide desde `(0, 0)`.
 - `aplicar(zombie, 20)`: la vida máxima es la base × 3, la vida está llena, el nombre contiene "[Nv 20]", y aplicarlo dos veces no apila modificadores. `aplicar(zombie, 50)` respeta los topes (vida ×5, daño ×2).
 - Spawn con `SPAWNER` → sin attachment; con `NATURAL` → con nivel; con `JOCKEY` → el jinete también tiene nivel.
