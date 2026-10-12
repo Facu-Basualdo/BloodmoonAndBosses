@@ -149,8 +149,23 @@ public final class NivelDeMob {
 	public static boolean esNombreDelMod(Mob mob) {
 		Integer nivel = mob.getAttached(NIVEL);
 		Component nombre = mob.getCustomName();
-		// Sin la vida: la que dice el nombre puede ser de antes de un cambio de vidaEnElNombre o de un mob de una versión anterior
-		return nivel != null && nombre != null && sinVida(nombre).equals(nombre(mob.getType(), nivel, Afijo.de(mob)));
+		if (nivel == null || nombre == null) {
+			return false;
+		}
+		// Sin la vida: la que dice el nombre puede ser de antes de un cambio de vidaEnElNombre o de un mob de una versión anterior.
+		// En cualquier idioma y con el formato de antes de la 0.14: si no, cambiar el idioma de la config (o actualizar el mod)
+		// haría que todos los mobs que ya estaban parezcan bautizados por un jugador, y su nombre dejaría de seguir a la vida
+		Component actual = sinVida(nombre);
+		Afijo afijo = Afijo.de(mob);
+		if (actual.equals(nombreViejo(mob.getType(), nivel, afijo))) {
+			return true;
+		}
+		for (String idioma : Idioma.DISPONIBLES) {
+			if (actual.equals(nombre(idioma, mob.getType(), nivel, afijo))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/** Lo llama cada setHealth: el nombre sigue a la vida, salvo que sea un name tag de un jugador. */
@@ -172,8 +187,23 @@ public final class NivelDeMob {
 
 	/** "Zombi [Nv 7] [Vampiro]" para un campeón con afijo, sin la vida. */
 	public static Component nombre(EntityType<?> tipo, int nivel, @Nullable Afijo afijo) {
+		return nombre(BloodmoonAndBosses.config().idioma(), tipo, nivel, afijo);
+	}
+
+	/**
+	 * Con el respaldo en ese idioma. Lo ven todos los que están cerca, así que va traducible: un cliente con el mod lo ve
+	 * en su idioma y uno vanilla, en el de la config. El tipo ("Zombi") es de vanilla y lo traduce siempre el cliente.
+	 */
+	private static Component nombre(String idioma, EntityType<?> tipo, int nivel, @Nullable Afijo afijo) {
+		Component nombre = tipo.getDescription().copy().append(" ").append(Idioma.guardado(idioma, "bloodmoonandbosses.nombre.nivel", nivel))
+				.withStyle(color(nivel));
+		return afijo == null ? nombre : nombre.copy().append(afijo.etiqueta(idioma));
+	}
+
+	/** Como era hasta la 0.13, texto fijo en español. */
+	private static Component nombreViejo(EntityType<?> tipo, int nivel, @Nullable Afijo afijo) {
 		Component nombre = tipo.getDescription().copy().append(" [Nv " + nivel + "]").withStyle(color(nivel));
-		return afijo == null ? nombre : nombre.copy().append(afijo.etiqueta());
+		return afijo == null ? nombre : nombre.copy().append(afijo.etiquetaVieja());
 	}
 
 	/** "Zombi [Nv 7] ❤ 34/40" con vidaEnElNombre: un componente vacío con dos hijos, el del nivel y el de la vida. */

@@ -45,14 +45,14 @@ import net.minecraft.world.phys.Vec3;
 /** El rasgo de un campeón: se ve en el nombre ("Zombi [Nv 27] [Vampiro]") y viaja con el mob en las conversiones. */
 public enum Afijo implements StringRepresentable {
 	// Cada uno con su partícula, para reconocerlo de lejos o en una cueva, antes de leer el nombre
-	VELOZ("veloz", "Veloz", ChatFormatting.AQUA, ParticleTypes.CLOUD),
-	VAMPIRO("vampiro", "Vampiro", ChatFormatting.DARK_RED, ParticleTypes.CRIMSON_SPORE),
-	EXPLOSIVO("explosivo", "Explosivo", ChatFormatting.RED, ParticleTypes.SMOKE),
-	INVOCADOR("invocador", "Invocador", ChatFormatting.LIGHT_PURPLE, ParticleTypes.WITCH),
-	BLINDADO("blindado", "Blindado", ChatFormatting.GRAY, ParticleTypes.ELECTRIC_SPARK),
-	VENENOSO("venenoso", "Venenoso", ChatFormatting.DARK_GREEN, ParticleTypes.ITEM_SLIME),
-	CONGELANTE("congelante", "Congelante", ChatFormatting.BLUE, ParticleTypes.SNOWFLAKE),
-	TELETRANSPORTADOR("teletransportador", "Teletransportador", ChatFormatting.DARK_AQUA, ParticleTypes.PORTAL);
+	VELOZ("veloz", ChatFormatting.AQUA, ParticleTypes.CLOUD),
+	VAMPIRO("vampiro", ChatFormatting.DARK_RED, ParticleTypes.CRIMSON_SPORE),
+	EXPLOSIVO("explosivo", ChatFormatting.RED, ParticleTypes.SMOKE),
+	INVOCADOR("invocador", ChatFormatting.LIGHT_PURPLE, ParticleTypes.WITCH),
+	BLINDADO("blindado", ChatFormatting.GRAY, ParticleTypes.ELECTRIC_SPARK),
+	VENENOSO("venenoso", ChatFormatting.DARK_GREEN, ParticleTypes.ITEM_SLIME),
+	CONGELANTE("congelante", ChatFormatting.BLUE, ParticleTypes.SNOWFLAKE),
+	TELETRANSPORTADOR("teletransportador", ChatFormatting.DARK_AQUA, ParticleTypes.PORTAL);
 
 	public static final Codec<Afijo> CODEC = StringRepresentable.fromEnum(Afijo::values);
 	public static final AttachmentType<Afijo> AFIJO = AttachmentRegistry.createPersistent(BloodmoonAndBosses.id("afijo"), CODEC);
@@ -68,13 +68,11 @@ public enum Afijo implements StringRepresentable {
 	private static final double RADIO_DE_PARTICULAS = 32;
 
 	private final String id;
-	private final String nombre;
 	private final ChatFormatting color;
 	private final SimpleParticleType particula;
 
-	Afijo(String id, String nombre, ChatFormatting color, SimpleParticleType particula) {
+	Afijo(String id, ChatFormatting color, SimpleParticleType particula) {
 		this.id = id;
-		this.nombre = nombre;
 		this.color = color;
 		this.particula = particula;
 	}
@@ -90,7 +88,17 @@ public enum Afijo implements StringRepresentable {
 
 	/** Entre corchetes y no como adjetivo: "Bruja Vampiro" no concuerda, "Bruja [Nv 4] [Vampiro]" sí. */
 	public Component etiqueta() {
-		return Component.literal(" [" + nombre + "]").withStyle(color);
+		return etiqueta(BloodmoonAndBosses.config().idioma());
+	}
+
+	/** Con el respaldo en ese idioma: para reconocer el nombre de un mob que apareció con otra config. */
+	public Component etiqueta(String idioma) {
+		return Component.literal(" [").append(Idioma.guardado(idioma, "bloodmoonandbosses.afijo." + id)).append("]").withStyle(color);
+	}
+
+	/** Como era hasta la 0.13, texto fijo en español: para reconocer el nombre de los mobs que ya estaban. */
+	public Component etiquetaVieja() {
+		return Component.literal(" [" + Idioma.plantilla(Idioma.ESPANOL, "bloodmoonandbosses.afijo." + id) + "]").withStyle(color);
 	}
 
 	public static @Nullable Afijo de(Mob mob) {

@@ -116,6 +116,7 @@ En el primer arranque se crea **`config/bloodmoonandbosses.json`** con todos los
 | `chanceDeCampeon` / `nivelesDeCampeon` | 0.05 / 10 | Probabilidad de que un mob aparezca como campeón (de 0 a 1), y cuántos niveles extra tiene |
 | `escalarSpawners` | `false` | Si los mobs de spawners también tienen nivel |
 | `nombreSiempreVisible` | `false` | Si el nombre se ve a través de las paredes |
+| `idioma` | `"en_us"` | `en_us` o `es_ar`: el de los nombres de los mobs y la barra de la luna de sangre para quien no tiene el mod en el cliente, y el de la consola. Los títulos y mensajes los ve cada jugador en el idioma de su juego |
 | `vidaEnElNombre` | `true` | Si el nombre muestra la vida ("❤ 34/40"). Al recargar, los mobs que ya están cambian la próxima vez que reciban daño o se curen |
 | `vida`, `danio`, `velocidad`, `rangoDeSeguimiento` | +8 %, +4 %, +0,2 %, +0,5 % por nivel | Porcentaje sobre la base, por nivel y tope (`0.08` = +8 %) |
 | `armadura`, `resistenciaAlEmpuje` | +0,12 / +0,005 por nivel | Puntos que se suman, por nivel y tope |

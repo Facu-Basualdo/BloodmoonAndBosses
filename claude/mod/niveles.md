@@ -95,6 +95,8 @@ El campeón va aparte porque los mobs de los eventos usan `calcular` y no tienen
 
 ## Nombre
 
+El "[Nv 7]" y el afijo van traducibles con respaldo en el idioma de la config, y `esNombreDelMod` reconoce el nombre en cualquier idioma y con el formato de antes de la 0.14: ver [idioma](idioma.md).
+
 `NivelDeMob.nombre(tipo, nivel)` ("Zombi [Nv 7]", sin la vida) = `tipo.getDescription().copy().append(" [Nv N]")`, con color por **quintos de `nivelMaximo`** (`nivel × 5 / nivelMaximo`: gris, verde, azul, violeta, dorado; con 100, dorado desde el 80). Es relativo para que, si se cambia `nivelMaximo`, los colores sigan repartidos en todo el rango y no queden todos dorados. La descripción es *translatable*: cada cliente la ve en su idioma, sin mod.
 
 - **`nombreSiempreVisible` es `false` por defecto.** Un nombre siempre visible se dibuja a través de las paredes y funciona como un rayos X de mobs en las cuevas. Con `false` aparece al mirar el mob.
@@ -143,3 +145,4 @@ Los slimes se dividen con `convertTo(…, TRIGGERED, …)` desde `AbstractCubeMo
 - [Eventos y afijos](eventos.md)
 - [Minecraft 26.x sin ofuscar](../general/minecraft-26-sin-ofuscar.md)
 - [Probar en el juego](../general/probar-en-el-juego.md)
+- [Idioma](idioma.md): el nombre traducible y cómo se reconoce en otro idioma.

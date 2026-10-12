@@ -166,8 +166,8 @@ public final class JefeDeZona {
 
 		jugador.setAttached(ULTIMO, level.getGameTime());
 		level.playSound(null, pos, SoundEvents.WITHER_AMBIENT, SoundSource.HOSTILE, 4.0f, 0.6f);
-		Eventos.anunciar(jugador, Component.literal("Jefe de zona").withStyle(ChatFormatting.DARK_PURPLE),
-				Component.literal("Apareció cerca: ").append(NivelDeMob.nombreSinVida(jefe)));
+		Eventos.anunciar(jugador, Idioma.tr(jugador, "bloodmoonandbosses.jefe.titulo").withStyle(ChatFormatting.DARK_PURPLE),
+				Idioma.tr(jugador, "bloodmoonandbosses.jefe.aparecio", NivelDeMob.nombreSinVida(jefe)));
 		return jefe;
 	}
 
@@ -258,10 +258,11 @@ public final class JefeDeZona {
 		if (!esJefe(muerto) || !(muerto.level() instanceof ServerLevel level)) {
 			return;
 		}
-		Component mensaje = Component.literal("Cayó el jefe de zona: ").append(NivelDeMob.nombreSinVida((Mob) muerto)).withStyle(ChatFormatting.GOLD);
+		Component nombre = NivelDeMob.nombreSinVida((Mob) muerto);
 		int radio = BloodmoonAndBosses.config().jefeDeZona().radioDeBarra();
 		for (Player jugador : level.getEntitiesOfClass(Player.class, muerto.getBoundingBox().inflate(radio), Entity::isAlive)) {
-			jugador.sendSystemMessage(mensaje);
+			ServerPlayer servidor = jugador instanceof ServerPlayer conectado ? conectado : null;
+			jugador.sendSystemMessage(Idioma.tr(servidor, "bloodmoonandbosses.jefe.cayo", nombre).withStyle(ChatFormatting.GOLD));
 		}
 	}
 
@@ -316,7 +317,10 @@ public final class JefeDeZona {
 
 	private static Component nombreDeLaBarra(Mob jefe) {
 		Component nombre = NivelDeMob.nombreSinVida(jefe);
-		return estaFurioso(jefe) ? nombre.copy().append(Component.literal(" · Furia").withStyle(ChatFormatting.RED)) : nombre;
+		// La barra es una para todos los que están cerca: traducible, como el nombre
+		return estaFurioso(jefe)
+				? nombre.copy().append(Component.literal(" · ").append(Idioma.guardado("bloodmoonandbosses.jefe.furia")).withStyle(ChatFormatting.RED))
+				: nombre;
 	}
 
 	private static BossEvent.BossBarColor colorDeLaBarra(Mob jefe) {
@@ -349,7 +353,7 @@ public final class JefeDeZona {
 		}
 		level.playSound(null, jefe.blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 3.0f, 0.8f);
 		level.sendParticles(ParticleTypes.ANGRY_VILLAGER, jefe.getX(), jefe.getY(1) + 0.3, jefe.getZ(), 10, 0.6, 0.4, 0.6, 0);
-		avisar(jefe, level, config, Component.literal("¡El jefe se enfurece!").withStyle(ChatFormatting.RED));
+		avisar(jefe, level, config, "bloodmoonandbosses.jefe.enfurece", ChatFormatting.RED);
 	}
 
 	private static void modificar(Mob jefe, Holder<Attribute> atributo, double valor) {
@@ -386,11 +390,11 @@ public final class JefeDeZona {
 		if (habilidad == Habilidad.ONDA) {
 			level.playSound(null, jefe.blockPosition(), SoundEvents.WARDEN_SONIC_CHARGE, SoundSource.HOSTILE, 2.0f, 1.2f);
 			level.sendParticles(ParticleTypes.CLOUD, jefe.getX(), jefe.getY() + 0.2, jefe.getZ(), 30, config.radioOnda() / 3.0, 0.1, config.radioOnda() / 3.0, 0.02);
-			avisar(jefe, level, config, Component.literal("El jefe prepara una onda de choque: ¡alejate!").withStyle(ChatFormatting.GOLD));
+			avisar(jefe, level, config, "bloodmoonandbosses.jefe.onda", ChatFormatting.GOLD);
 		} else {
 			level.playSound(null, jefe.blockPosition(), SoundEvents.BREEZE_INHALE, SoundSource.HOSTILE, 3.0f, 0.6f);
 			level.sendParticles(ParticleTypes.REVERSE_PORTAL, jefe.getX(), jefe.getY(0.5), jefe.getZ(), 40, 1.0, 1.0, 1.0, 0.1);
-			avisar(jefe, level, config, Component.literal("El jefe te va a atraer: ¡agarrate!").withStyle(ChatFormatting.GOLD));
+			avisar(jefe, level, config, "bloodmoonandbosses.jefe.tiron", ChatFormatting.GOLD);
 		}
 		Eventos.programar(level, TICKS_DE_AVISO, () -> {
 			if (jefe.isAlive() && !jefe.isRemoved() && jefe.level() == level) {
@@ -465,9 +469,9 @@ public final class JefeDeZona {
 	}
 
 	/** En la barra de acción de los que ven la barra del jefe: el título taparía la pelea. */
-	private static void avisar(Mob jefe, ServerLevel level, Configuracion.JefeDeZona config, Component mensaje) {
+	private static void avisar(Mob jefe, ServerLevel level, Configuracion.JefeDeZona config, String clave, ChatFormatting color) {
 		for (ServerPlayer jugador : jugadoresEntre(jefe, 0, config.radioDeBarra())) {
-			jugador.sendSystemMessage(mensaje, true);
+			jugador.sendSystemMessage(Idioma.tr(jugador, clave).withStyle(color), true);
 		}
 	}
 

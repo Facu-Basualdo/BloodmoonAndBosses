@@ -19,6 +19,7 @@ import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -72,19 +73,19 @@ public final class ComandoBloodmoonAndBosses {
 		long dias = NivelDeZona.dias(level);
 		int porTiempo = NivelDeZona.porTiempo(dias, config);
 		int nivel = Math.min(porDistancia + porTiempo + LunaDeSangre.nivelesExtra(level), config.nivelMaximo());
-		String texto = "Los mobs de esta zona aparecen con nivel " + nivel;
+		String idioma = Idioma.de(fuente.getPlayer());
+		MutableComponent texto = Idioma.tr(idioma, "bloodmoonandbosses.zona.nivel", nivel);
 		if (porTiempo > 0) {
-			texto += " (" + porDistancia + " por la distancia y +" + porTiempo + " por los " + dias + " días del mundo)";
+			texto.append(Idioma.tr(idioma, "bloodmoonandbosses.zona.detalle", porDistancia, porTiempo, dias));
 		}
 		if (config.chanceDeCampeon() > 0 && config.nivelesDeCampeon() > 0) {
-			texto += ". Uno de cada " + Math.round(1 / config.chanceDeCampeon()) + " es un campeón con +" + config.nivelesDeCampeon();
+			texto.append(Idioma.tr(idioma, "bloodmoonandbosses.zona.campeon", Math.round(1 / config.chanceDeCampeon()), config.nivelesDeCampeon()));
 		}
 		int porLuna = LunaDeSangre.nivelesExtra(level);
 		if (porLuna > 0) {
-			texto += ". Hay luna de sangre: los que aparecen esta noche suman +" + porLuna;
+			texto.append(Idioma.tr(idioma, "bloodmoonandbosses.zona.luna", porLuna));
 		}
-		String mensaje = texto;
-		fuente.sendSuccess(() -> Component.literal(mensaje), false);
+		fuente.sendSuccess(() -> texto, false);
 		return nivel;
 	}
 
@@ -94,7 +95,7 @@ public final class ComandoBloodmoonAndBosses {
 		int nivel = IntegerArgumentType.getInteger(ctx, "nivel");
 		@Nullable Afijo afijo = idAfijo == null ? null : Afijo.porId(idAfijo);
 		if (idAfijo != null && afijo == null) {
-			fuente.sendFailure(Component.literal("No existe el afijo " + idAfijo));
+			fuente.sendFailure(Idioma.tr(fuente, "bloodmoonandbosses.comando.afijo_desconocido", idAfijo));
 			return 0;
 		}
 
@@ -104,51 +105,52 @@ public final class ComandoBloodmoonAndBosses {
 			if (entidad != null) {
 				entidad.discard();
 			}
-			fuente.sendFailure(Component.literal("Esa entidad no puede tener nivel"));
+			fuente.sendFailure(Idioma.tr(fuente, "bloodmoonandbosses.comando.sin_nivel"));
 			return 0;
 		}
 		NivelDeMob.aparecer(mob, nivel, afijo);
-		fuente.sendSuccess(() -> Component.literal("Apareció ").append(mob.getDisplayName()), true);
+		fuente.sendSuccess(() -> Idioma.tr(fuente, "bloodmoonandbosses.comando.aparecio", mob.getDisplayName()), true);
 		return 1;
 	}
 
 	private static int estampida(CommandContext<CommandSourceStack> ctx, ServerPlayer jugador) {
-		@Nullable String error = Estampida.empezar(jugador, BloodmoonAndBosses.config().estampida());
+		Idioma.@Nullable Mensaje error = Estampida.empezar(jugador, BloodmoonAndBosses.config().estampida());
+		String idioma = Idioma.de(ctx.getSource().getPlayer());
 		if (error != null) {
-			ctx.getSource().sendFailure(Component.literal("No empezó la estampida: " + error));
+			ctx.getSource().sendFailure(Idioma.tr(idioma, "bloodmoonandbosses.comando.estampida_fallida", error.en(idioma)));
 			return 0;
 		}
-		ctx.getSource().sendSuccess(() -> Component.literal("Empezó una estampida contra ").append(jugador.getName()), true);
+		ctx.getSource().sendSuccess(() -> Idioma.tr(idioma, "bloodmoonandbosses.comando.estampida", jugador.getName()), true);
 		return 1;
 	}
 
 	private static int jefe(CommandContext<CommandSourceStack> ctx, ServerPlayer jugador) {
 		Mob jefe = JefeDeZona.aparecer(jugador, BloodmoonAndBosses.config().jefeDeZona(), 16, 24);
 		if (jefe == null) {
-			ctx.getSource().sendFailure(Component.literal("No hay lugar cerca de ").append(jugador.getName()).append(" para un jefe (o el tag de esta dimensión está vacío)"));
+			ctx.getSource().sendFailure(Idioma.tr(ctx.getSource(), "bloodmoonandbosses.comando.jefe_sin_lugar", jugador.getName()));
 			return 0;
 		}
-		ctx.getSource().sendSuccess(() -> Component.literal("Apareció ").append(NivelDeMob.nombreSinVida(jefe)), true);
+		ctx.getSource().sendSuccess(() -> Idioma.tr(ctx.getSource(), "bloodmoonandbosses.comando.aparecio", NivelDeMob.nombreSinVida(jefe)), true);
 		return 1;
 	}
 
 	private static int lunaDeSangre(CommandContext<CommandSourceStack> ctx) {
 		if (!LunaDeSangre.empezar(ctx.getSource().getServer().overworld())) {
-			ctx.getSource().sendFailure(Component.literal("La luna de sangre sólo puede empezar de noche (probá /time set night)"));
+			ctx.getSource().sendFailure(Idioma.tr(ctx.getSource(), "bloodmoonandbosses.comando.luna_de_dia"));
 			return 0;
 		}
-		ctx.getSource().sendSuccess(() -> Component.literal("Empezó la luna de sangre: dura hasta que amanezca"), true);
+		ctx.getSource().sendSuccess(() -> Idioma.tr(ctx.getSource(), "bloodmoonandbosses.comando.luna"), true);
 		return 1;
 	}
 
 	private static int recargar(CommandContext<CommandSourceStack> ctx) {
 		@Nullable String error = BloodmoonAndBosses.cargarConfiguracion();
 		if (error != null) {
-			ctx.getSource().sendFailure(Component.literal("No se pudo leer la configuración, sigue la anterior: " + error));
+			ctx.getSource().sendFailure(Idioma.tr(ctx.getSource(), "bloodmoonandbosses.comando.recarga_fallida", error));
 			return 0;
 		}
 		// Las estadísticas y el equipo se ponen al aparecer: los mobs que ya están no cambian
-		ctx.getSource().sendSuccess(() -> Component.literal("Configuración recargada. Los mobs que ya estaban conservan sus estadísticas y su equipo"), true);
+		ctx.getSource().sendSuccess(() -> Idioma.tr(ctx.getSource(), "bloodmoonandbosses.comando.recargada"), true);
 		return 1;
 	}
 

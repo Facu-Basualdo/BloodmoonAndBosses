@@ -37,6 +37,7 @@ El mismo tema en distintas áreas usa el mismo nombre de archivo (`claude/mod/ni
 
 | Feature | Mod | Tests |
 |---|---|---|
+| Idioma: por jugador y traducible con respaldo; nombres reconocidos en cualquier idioma | [idioma](claude/mod/idioma.md) | [niveles](claude/tests/niveles.md) |
 | Niveles (cuándo se asignan, fórmula, tiempo y campeones, estadísticas, nombre y vida en el nombre, conversiones) | [niveles](claude/mod/niveles.md) | [niveles](claude/tests/niveles.md) |
 | Botín y experiencia (tiradas extra, tags `sin_tiradas_extra` y `tiradas_extra_por_chance`, botín raro, experiencia por nivel) | [botin](claude/mod/botin.md) | [botin](claude/tests/botin.md) |
 | Equipo (armadura por rango, encantamientos, chance de soltar, tags `usan_equipo` y `equipo_valioso`) | [equipo](claude/mod/equipo.md) | [equipo](claude/tests/equipo.md) |

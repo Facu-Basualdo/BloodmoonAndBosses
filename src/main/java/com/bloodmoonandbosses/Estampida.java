@@ -69,7 +69,8 @@ public final class Estampida {
 		this.total = mobs.size();
 		this.nivel = nivel;
 		this.fin = fin;
-		this.barra = new ServerBossEvent(UUID.randomUUID(), Component.literal("Estampida").withStyle(ChatFormatting.RED),
+		// La ve sólo el jugador al que persigue: va en su idioma
+		this.barra = new ServerBossEvent(UUID.randomUUID(), Idioma.tr(jugador, "bloodmoonandbosses.estampida.barra").withStyle(ChatFormatting.RED),
 				BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.PROGRESS);
 		barra.addPlayer(jugador);
 	}
@@ -113,16 +114,16 @@ public final class Estampida {
 	 * Sin sorteo ni espera (es lo que usa /bloodmoon evento). Devuelve el motivo si no pudo empezar. Al aire
 	 * libre aparecen sobre la superficie; bajo techo, a la altura del jugador.
 	 */
-	public static @Nullable String empezar(ServerPlayer jugador, Configuracion.Estampida config) {
+	public static Idioma.@Nullable Mensaje empezar(ServerPlayer jugador, Configuracion.Estampida config) {
 		if (activa(jugador)) {
-			return "ya hay una estampida contra " + jugador.getName().getString();
+			return new Idioma.Mensaje("bloodmoonandbosses.estampida.ya_hay", jugador.getName().getString());
 		}
 		if (!(jugador.level() instanceof ServerLevel level)) {
-			return "el jugador no está en un mundo del servidor";
+			return new Idioma.Mensaje("bloodmoonandbosses.estampida.sin_mundo");
 		}
 		Optional<HolderSet.Named<EntityType<?>>> tipos = level.registryAccess().lookupOrThrow(Registries.ENTITY_TYPE).get(TIPOS);
 		if (tipos.isEmpty() || tipos.get().size() == 0) {
-			return "el tag " + TIPOS.location() + " está vacío";
+			return new Idioma.Mensaje("bloodmoonandbosses.estampida.tag_vacio", TIPOS.location().toString());
 		}
 
 		RandomSource random = level.getRandom();
@@ -150,7 +151,7 @@ public final class Estampida {
 		// Con la mitad de la horda ya no es una estampida, y al lado de un precipicio o en el agua puede no entrar
 		if (mobs.size() * 2 < cantidad) {
 			mobs.forEach(Entity::discard);
-			return "no hay lugar alrededor de " + jugador.getName().getString() + " para la estampida";
+			return new Idioma.Mensaje("bloodmoonandbosses.estampida.sin_lugar", jugador.getName().getString());
 		}
 
 		Estampida estampida = new Estampida(jugador, level, mobs, nivelZona, level.getGameTime() + config.segundosMaximos() * 20L);
@@ -158,8 +159,8 @@ public final class Estampida {
 		jugador.setAttached(ULTIMA, level.getGameTime());
 		// Desde donde vienen: el cuerno se oye de lejos y marca la dirección
 		level.playSound(null, mobs.getFirst().blockPosition(), SoundEvents.RAID_HORN.value(), SoundSource.HOSTILE, 64.0f, 1.0f);
-		Eventos.anunciar(jugador, Component.literal("¡Estampida!").withStyle(ChatFormatting.RED),
-				Component.literal(mobs.size() + " mobs vienen hacia vos").withStyle(ChatFormatting.GOLD));
+		Eventos.anunciar(jugador, Idioma.tr(jugador, "bloodmoonandbosses.estampida.titulo").withStyle(ChatFormatting.RED),
+				Idioma.tr(jugador, "bloodmoonandbosses.estampida.subtitulo", mobs.size()).withStyle(ChatFormatting.GOLD));
 		return null;
 	}
 
@@ -207,7 +208,7 @@ public final class Estampida {
 		boolean sigueAhi = jugador.isAlive() && !jugador.isRemoved() && jugador.level() == level
 				&& level.getServer().getPlayerList().getPlayer(jugador.getUUID()) == jugador;
 		if (!sigueAhi) {
-			terminar(jugador.isDeadOrDying() ? "La estampida te pasó por encima" : null);
+			terminar(jugador.isDeadOrDying() ? new Idioma.Mensaje("bloodmoonandbosses.estampida.perdiste") : null);
 			return;
 		}
 		if (mobs.isEmpty()) {
@@ -215,12 +216,12 @@ public final class Estampida {
 			if (muertos * 2 >= total) {
 				premiar();
 			} else {
-				terminar("La estampida se dispersó");
+				terminar(new Idioma.Mensaje("bloodmoonandbosses.estampida.dispersa"));
 			}
 			return;
 		}
 		if (level.getGameTime() >= fin) {
-			terminar("La estampida se dispersó");
+			terminar(new Idioma.Mensaje("bloodmoonandbosses.estampida.dispersa"));
 			return;
 		}
 		for (Mob mob : mobs) {
@@ -236,19 +237,19 @@ public final class Estampida {
 		// El jugador como origen: las tablas son de tipo entity y no tienen condiciones sobre quién murió
 		jugador.dropFromLootTable(level, level.damageSources().generic(), true, botin.tabla(), item -> Eventos.darAlJugador(jugador, item));
 		level.playSound(null, jugador.blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1.0f, 1.0f);
-		Eventos.anunciar(jugador, Component.literal("¡Frenaste la estampida!").withStyle(ChatFormatting.GOLD),
-				Component.literal("Te llevás un premio").withStyle(ChatFormatting.YELLOW));
+		Eventos.anunciar(jugador, Idioma.tr(jugador, "bloodmoonandbosses.estampida.ganaste").withStyle(ChatFormatting.GOLD),
+				Idioma.tr(jugador, "bloodmoonandbosses.estampida.premio").withStyle(ChatFormatting.YELLOW));
 		terminar(null);
 	}
 
-	private void terminar(@Nullable String mensaje) {
+	private void terminar(Idioma.@Nullable Mensaje mensaje) {
 		ACTIVAS.remove(jugador.getUUID());
 		barra.removeAllPlayers();
 		for (Mob mob : mobs) {
 			calmar(mob);
 		}
 		if (mensaje != null && !jugador.isRemoved()) {
-			jugador.sendSystemMessage(Component.literal(mensaje).withStyle(ChatFormatting.GRAY), true);
+			jugador.sendSystemMessage(mensaje.en(Idioma.de(jugador)).withStyle(ChatFormatting.GRAY), true);
 		}
 	}
 

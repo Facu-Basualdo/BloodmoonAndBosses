@@ -138,3 +138,4 @@ Todo corre en `actualizarTodos` (cada segundo), sólo para los jefes seguidos.
 - [Botín y experiencia](botin.md)
 - [Configuración](configuracion.md)
 - [Tests: eventos](../tests/eventos.md)
+- [Idioma](idioma.md): títulos y avisos por jugador; la barra de la luna, traducible.

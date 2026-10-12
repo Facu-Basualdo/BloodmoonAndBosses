@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import com.mojang.authlib.GameProfile;
@@ -17,6 +19,7 @@ import com.bloodmoonandbosses.BotinPorNivel;
 import com.bloodmoonandbosses.Configuracion;
 import com.bloodmoonandbosses.EquipoPorNivel;
 import com.bloodmoonandbosses.Estampida;
+import com.bloodmoonandbosses.Idioma;
 import com.bloodmoonandbosses.JefeDeZona;
 import com.bloodmoonandbosses.LunaDeSangre;
 import com.bloodmoonandbosses.MigracionDeId;
@@ -27,6 +30,7 @@ import com.bloodmoonandbosses.mixin.CreeperAccessor;
 
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -131,6 +135,50 @@ public class BloodmoonAndBossesGameTest {
 	}
 
 	@GameTest
+	public void textosEnLosDosIdiomas(GameTestHelper helper) {
+		Set<String> ingles = Idioma.claves(Idioma.INGLES);
+		Set<String> espanol = Idioma.claves(Idioma.ESPANOL);
+		Set<String> soloIngles = new HashSet<>(ingles);
+		soloIngles.removeAll(espanol);
+		Set<String> soloEspanol = new HashSet<>(espanol);
+		soloEspanol.removeAll(ingles);
+		helper.assertTrue(ingles.size() > 40, Component.literal("Se leyó el archivo en inglés (" + ingles.size() + " claves)"));
+		helper.assertTrue(soloIngles.isEmpty() && soloEspanol.isEmpty(),
+				Component.literal("Los dos idiomas tienen las mismas claves (sólo en inglés: " + soloIngles + ", sólo en español: " + soloEspanol + ")"));
+		for (Afijo afijo : Afijo.values()) {
+			helper.assertTrue(ingles.contains("bloodmoonandbosses.afijo." + afijo.getSerializedName()), Component.literal("Falta el nombre de " + afijo));
+		}
+		helper.assertTrue(Idioma.resolver("es_MX").equals(Idioma.ESPANOL) && Idioma.resolver("en_gb").equals(Idioma.INGLES), Component.literal("Variantes de idioma"));
+		helper.succeed();
+	}
+
+	/**
+	 * Un mob que apareció con otro idioma en la config, o con una versión anterior (el nombre era texto fijo en
+	 * español), sigue teniendo el nombre del mod: si no, parecería bautizado por un jugador y la vida dejaría de seguirlo.
+	 */
+	@GameTest
+	public void reconoceNombresDeOtroIdiomaYViejos(GameTestHelper helper) {
+		Zombie zombie = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		NivelDeMob.aplicar(zombie, 20);
+		Component tipo = EntityTypes.ZOMBIE.getDescription();
+		// Nivel 20 de 100: el segundo quinto, verde
+		Component viejo = tipo.copy().append(" [Nv 20]").withStyle(ChatFormatting.GREEN);
+		zombie.setCustomName(Component.empty().append(viejo).append(" ❤ 52/52"));
+		helper.assertTrue(NivelDeMob.esNombreDelMod(zombie), Component.literal("Reconoce el nombre de antes de la 0.14"));
+		zombie.setHealth(30);
+		helper.assertTrue(zombie.getCustomName().getString().endsWith(nivel(20) + " ❤ 30/52"),
+				Component.literal("Y lo actualiza al formato nuevo: " + zombie.getCustomName().getString()));
+
+		Component enEspanol = tipo.copy().append(" ").append(Idioma.guardado(Idioma.ESPANOL, "bloodmoonandbosses.nombre.nivel", 20)).withStyle(ChatFormatting.GREEN);
+		zombie.setCustomName(enEspanol);
+		helper.assertTrue(NivelDeMob.esNombreDelMod(zombie), Component.literal("Reconoce un nombre armado con la config en español"));
+		zombie.setCustomName(Component.literal("Pepe"));
+		helper.assertFalse(NivelDeMob.esNombreDelMod(zombie), Component.literal("Un name tag no es del mod"));
+		zombie.discard();
+		helper.succeed();
+	}
+
+	@GameTest
 	public void aplicarNivel(GameTestHelper helper) {
 		Zombie zombie = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
 		helper.assertFalse(zombie.hasAttached(NivelDeMob.NIVEL), Component.literal("COMMAND no escala solo"));
@@ -141,7 +189,7 @@ public class BloodmoonAndBossesGameTest {
 		assertCerca(helper, 52, zombie.getHealth(), "Aparece con la vida llena");
 		helper.assertValueEqual(1, zombie.getAttribute(Attributes.MAX_HEALTH).getModifiers().size(), "Aplicar dos veces no apila modificadores");
 		helper.assertValueEqual(20, NivelDeMob.nivel(zombie), "Nivel guardado en el attachment");
-		helper.assertTrue(zombie.getCustomName().getString().contains("[Nv 20]"), Component.literal("El nombre lleva el nivel: " + zombie.getCustomName().getString()));
+		helper.assertTrue(zombie.getCustomName().getString().contains(nivel(20)), Component.literal("El nombre lleva el nivel: " + zombie.getCustomName().getString()));
 		helper.assertFalse(zombie.isCustomNameVisible(), Component.literal("Por defecto el nombre sólo se ve al mirar el mob"));
 		helper.assertTrue(NivelDeMob.esNombreDelMod(zombie), Component.literal("El nombre es el del mod"));
 		helper.assertFalse(zombie.isPersistenceRequired(), Component.literal("El nombre puesto por el mod no evita el despawn"));
@@ -163,7 +211,7 @@ public class BloodmoonAndBossesGameTest {
 		ServerLevel level = helper.getLevel();
 		Zombie zombie = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(zombie, 20);
-		assertTerminaEn(helper, zombie, "[Nv 20] ❤ 52/52");
+		assertTerminaEn(helper, zombie, nivel(20) + " ❤ 52/52");
 		helper.assertTrue(NivelDeMob.esNombreDelMod(zombie), Component.literal("Con la vida, el nombre sigue siendo del mod"));
 
 		zombie.setHealth(30.4f);
@@ -186,7 +234,7 @@ public class BloodmoonAndBossesGameTest {
 		recargado.setCustomName(NivelDeMob.nombre(EntityTypes.ZOMBIE, 20));
 		helper.assertTrue(NivelDeMob.esNombreDelMod(recargado), Component.literal("El nombre sin la vida también es del mod"));
 		recargado.setHealth(10);
-		assertTerminaEn(helper, recargado, "[Nv 20] ❤ 10/52");
+		assertTerminaEn(helper, recargado, nivel(20) + " ❤ 10/52");
 
 		recargado.setCustomName(Component.literal("Pepe"));
 		recargado.setHealth(5);
@@ -491,7 +539,7 @@ public class BloodmoonAndBossesGameTest {
 		ServerLevel level = helper.getLevel();
 		Zombie veloz = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aparecer(veloz, 20, Afijo.VELOZ);
-		helper.assertTrue(veloz.getCustomName().getString().contains("[Nv 20] [Veloz]"), Component.literal("El afijo va en el nombre: " + veloz.getCustomName().getString()));
+		helper.assertTrue(veloz.getCustomName().getString().contains(nivel(20) + afijo(Afijo.VELOZ)), Component.literal("El afijo va en el nombre: " + veloz.getCustomName().getString()));
 		helper.assertTrue(NivelDeMob.esNombreDelMod(veloz), Component.literal("Con el afijo, el nombre sigue siendo del mod"));
 		AttributeModifier velocidad = veloz.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(BloodmoonAndBosses.id("afijo"));
 		helper.assertTrue(velocidad != null, Component.literal("El veloz tiene su modificador de velocidad"));
@@ -500,7 +548,7 @@ public class BloodmoonAndBossesGameTest {
 		Mob ahogado = veloz.convertTo(EntityTypes.DROWNED, ConversionParams.single(veloz, true, true), m -> {
 		});
 		helper.assertValueEqual(Afijo.VELOZ, Afijo.de(ahogado), "El afijo pasa en la conversión");
-		helper.assertTrue(ahogado.getCustomName().getString().contains("[Veloz]"), Component.literal("Y sigue en el nombre: " + ahogado.getCustomName().getString()));
+		helper.assertTrue(ahogado.getCustomName().getString().contains(afijo(Afijo.VELOZ).trim()), Component.literal("Y sigue en el nombre: " + ahogado.getCustomName().getString()));
 		helper.assertTrue(ahogado.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(BloodmoonAndBosses.id("afijo")) != null, Component.literal("Y el modificador también"));
 
 		helper.assertFalse(Afijo.posibles(spawn(helper, EntityTypes.CREEPER, EntitySpawnReason.COMMAND)).contains(Afijo.VAMPIRO), Component.literal("Un creeper no puede ser vampiro"));
@@ -715,7 +763,7 @@ public class BloodmoonAndBossesGameTest {
 		helper.assertValueEqual(config.escoltasFuria(), escoltas, "Llama otra tanda de escoltas");
 		ServerBossEvent barra = JefeDeZona.barra(jefe);
 		helper.assertValueEqual(BossEvent.BossBarColor.RED, barra.getColor(), "La barra se pone roja");
-		helper.assertTrue(barra.getName().getString().contains("Furia"), Component.literal("Y lo dice: " + barra.getName().getString()));
+		helper.assertTrue(barra.getName().getString().contains(Idioma.guardado("bloodmoonandbosses.jefe.furia").getString()), Component.literal("Y lo dice: " + barra.getName().getString()));
 
 		JefeDeZona.actualizarTodos();
 		helper.assertValueEqual(escoltas, level.getEntitiesOfClass(Zombie.class, alrededor, z -> z != jefe).size() - antes, "Se enfurece una sola vez");
@@ -866,7 +914,7 @@ public class BloodmoonAndBossesGameTest {
 		helper.assertValueEqual(4, Estampida.cuantos(50, config), "Cuántos mobs trae");
 		helper.assertValueEqual(16, Estampida.cuantos(50, new Configuracion.Estampida(true, 1, 0, 0, 6, 1, 16, 2, 4, 0.25, 60)), "Topea en mobsMaximos");
 
-		String error = Estampida.empezar(jugador, config);
+		Idioma.Mensaje error = Estampida.empezar(jugador, config);
 		helper.assertTrue(error == null, Component.literal("La estampida empieza: " + error));
 		helper.assertTrue(Estampida.activa(jugador), Component.literal("Queda activa"));
 		helper.assertTrue(Estampida.empezar(jugador, config) != null, Component.literal("No puede haber dos contra el mismo jugador"));
@@ -890,7 +938,7 @@ public class BloodmoonAndBossesGameTest {
 		helper.assertFalse(jugador.getInventory().isEmpty(), Component.literal("Y el jugador recibe el premio en el inventario"));
 
 		jugador.getInventory().clearContent();
-		String otra = Estampida.empezar(jugador, config);
+		Idioma.Mensaje otra = Estampida.empezar(jugador, config);
 		helper.assertTrue(otra == null, Component.literal("Otra estampida: " + otra));
 		for (Mob mob : Estampida.mobs(jugador)) {
 			mob.discard();
@@ -1142,6 +1190,16 @@ public class BloodmoonAndBossesGameTest {
 		level.getServer().getPlayerList().placeNewPlayer(conexion, jugador, cookie);
 		jugador.setGameMode(GameType.SURVIVAL);
 		return jugador;
+	}
+
+	/** "[Lv 20]" o "[Nv 20]", según el idioma de la config del servidor de prueba. */
+	private static String nivel(int nivel) {
+		return Idioma.guardado("bloodmoonandbosses.nombre.nivel", nivel).getString();
+	}
+
+	/** " [Swift]" o " [Veloz]". */
+	private static String afijo(Afijo afijo) {
+		return afijo.etiqueta().getString();
 	}
 
 	private static void assertTerminaEn(GameTestHelper helper, Mob mob, String esperado) {

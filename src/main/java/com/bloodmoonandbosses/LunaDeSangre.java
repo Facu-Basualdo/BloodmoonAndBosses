@@ -79,8 +79,8 @@ public final class LunaDeSangre {
 		overworld.setAttached(NOCHE_ACTIVA, dia);
 		overworld.setAttached(NOCHE_SORTEADA, dia);
 		for (ServerPlayer jugador : overworld.players()) {
-			Eventos.anunciar(jugador, Component.literal("Luna de sangre").withStyle(ChatFormatting.DARK_RED),
-					Component.literal("Esta noche los mobs son más fuertes").withStyle(ChatFormatting.RED));
+			Eventos.anunciar(jugador, Idioma.tr(jugador, "bloodmoonandbosses.luna.titulo").withStyle(ChatFormatting.DARK_RED),
+					Idioma.tr(jugador, "bloodmoonandbosses.luna.subtitulo").withStyle(ChatFormatting.RED));
 			overworld.playSound(null, jugador.blockPosition(), SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 0.5f, 0.6f);
 		}
 		mostrarBarra(overworld);
@@ -94,13 +94,14 @@ public final class LunaDeSangre {
 			barra = null;
 		}
 		for (ServerPlayer jugador : overworld.players()) {
-			jugador.sendSystemMessage(Component.literal("Amanece: terminó la luna de sangre").withStyle(ChatFormatting.GRAY), true);
+			jugador.sendSystemMessage(Idioma.tr(jugador, "bloodmoonandbosses.luna.fin").withStyle(ChatFormatting.GRAY), true);
 		}
 	}
 
 	private static void mostrarBarra(ServerLevel overworld) {
 		if (barra == null) {
-			barra = new ServerBossEvent(UUID.randomUUID(), Component.literal("Luna de sangre").withStyle(ChatFormatting.DARK_RED),
+			// Una barra para todos: traducible, con respaldo en el idioma de la config
+			barra = new ServerBossEvent(UUID.randomUUID(), Idioma.guardado("bloodmoonandbosses.luna.titulo").withStyle(ChatFormatting.DARK_RED),
 					BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_10);
 		}
 		barra.setProgress(1 - NivelDeZona.avanceDeLaNoche(overworld));

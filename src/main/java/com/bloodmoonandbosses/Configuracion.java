@@ -36,7 +36,8 @@ public record Configuracion(
 		Afijos afijos,
 		Estampida estampida,
 		LunaDeSangre lunaDeSangre,
-		JefeDeZona jefeDeZona) {
+		JefeDeZona jefeDeZona,
+		String idioma) {
 
 	/*
 	 * Hasta el nivel 100 (a unos 10.000 bloques) y pensados junto con Hero's Forge: cada escala llega a su
@@ -95,7 +96,10 @@ public record Configuracion(
 			// Con 1 % por minuto, alrededor de un jefe cada hora y media de juego por jugador. A media vida se enfurece; cada
 			// 10 segundos usa una habilidad, que avisa un segundo antes para que se pueda esquivar. El contorno se ve a
 			// través de las paredes, pero el jefe ya se anuncia y tiene barra: no delata nada que no se sepa
-			new JefeDeZona(true, 0.01, 2, 15, 20, 3.0, 3, 48, 60, 0.5, 0.25, 0.3, 2, 10, 6, 1.0, 1.5, 24, true));
+			new JefeDeZona(true, 0.01, 2, 15, 20, 3.0, 3, 48, 60, 0.5, 0.25, 0.3, 2, 10, 6, 1.0, 1.5, 24, true),
+			// El de los nombres de los mobs y la barra de la luna para quien no tiene el mod en el cliente, y el de la
+			// consola: en el chat y los títulos, cada jugador ve el de su cliente (ver Idioma)
+			Idioma.INGLES);
 
 	public Configuracion conVariacion(int variacion) {
 		return new Configuracion(bloquesPorNivel, nivelMaximo, extraNether, extraEnd, variacion, diasPorNivelExtra,
@@ -103,7 +107,7 @@ public record Configuracion(
 				nivelRadioCreeper, radioCreeperExtra, chanceArmaduraExtra, nivelesPorMaterialDeArmadura,
 				cascoParaLosQueSeQueman, poderDeEncantamiento, chanceSoltarEquipo, nivelesPorTiradaExtra,
 				tiradasExtraMaximas, chanceTiradaExtra, botinRaro, botinEpico, botinLegendario, experienciaPorNivel,
-				afijos, estampida, lunaDeSangre, jefeDeZona);
+				afijos, estampida, lunaDeSangre, jefeDeZona, idioma);
 	}
 
 	public Configuracion conExtras(int diasPorNivelExtra, int nivelesPorTiempoMaximos, double chanceDeCampeon, int nivelesDeCampeon) {
@@ -113,7 +117,7 @@ public record Configuracion(
 				nivelRadioCreeper, radioCreeperExtra, chanceArmaduraExtra, nivelesPorMaterialDeArmadura,
 				cascoParaLosQueSeQueman, poderDeEncantamiento, chanceSoltarEquipo, nivelesPorTiradaExtra,
 				tiradasExtraMaximas, chanceTiradaExtra, botinRaro, botinEpico, botinLegendario, experienciaPorNivel,
-				afijos, estampida, lunaDeSangre, jefeDeZona);
+				afijos, estampida, lunaDeSangre, jefeDeZona, idioma);
 	}
 
 	/** Los valores que harían dividir por cero o dejarían un mob sin nivel: mejor rechazar el archivo que arrancar así. */
@@ -156,6 +160,7 @@ public record Configuracion(
 		exigir(jefeDeZona.segundosEntreHabilidades() >= 1, "jefeDeZona.segundosEntreHabilidades tiene que ser 1 o más");
 		exigir(jefeDeZona.radioOnda() >= 1 && jefeDeZona.radioTiron() >= jefeDeZona.radioOnda(),
 				"jefeDeZona.radioTiron tiene que ser mayor o igual que radioOnda, y los dos 1 o más");
+		exigir(Idioma.DISPONIBLES.contains(idioma), "idioma tiene que ser " + String.join(" o ", Idioma.DISPONIBLES));
 	}
 
 	private static void exigir(boolean condicion, String mensaje) {
