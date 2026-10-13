@@ -138,7 +138,7 @@ En el primer arranque se crea **`config/bloodmoonandbosses.json`** con todos los
 ## Funciona con
 
 - **Hero's Forge:** los valores por defecto están balanceados contra sus estadísticas. Con el equipo y los puntos que se esperan en cada zona, un zombi se mata en 5 o 6 golpes en todo el mundo.
-- **Mythic Loot:** los mobs con nivel sueltan armas y armaduras con afijos según su nivel, y los jefes de zona sueltan siempre una épica o mejor.
+- **Mythic Loot:** los mobs con nivel sueltan armas y armaduras con afijos según su nivel, y los jefes de zona sueltan siempre una épica o mejor (a veces con un afijo propio de su especie: un jefe zombi da "del Festín", un enderman "del Vacío"…).
 - **Soul Link:** no se tocan.
 
 ## Requisitos e instalación
