@@ -62,7 +62,7 @@ Cerca de la base el juego se siente casi como vanilla; a varios miles de bloques
 
 ### Eventos y afijos
 
-Ninguno necesita el mod en el cliente: usan la barra de jefe, los títulos y los sonidos de vanilla.
+Ninguno necesita el mod en el cliente: usan la barra de jefe, los títulos y los sonidos de vanilla. Con el mod también en el cliente, la luna de sangre además se ve (ver abajo).
 
 - **Afijos de campeón:** cada campeón tiene uno al azar, y lo conserva si se convierte (un zombi que se ahoga sigue siendo veloz). **Cada afijo suelta sus partículas** cada medio segundo, así se reconoce de lejos o en una cueva antes de leer el nombre.
 
@@ -79,6 +79,7 @@ Ninguno necesita el mod en el cliente: usan la barra de jefe, los títulos y los
 
 - **Estampida:** de noche, si estás al aire libre en el overworld, en una zona de nivel 10 o más, hay un 3 % por minuto de que suene un cuerno a lo lejos y entre 6 y 16 mobs de la zona (más cuanto más alto el nivel) carguen contra vos, todos desde el mismo lado, más rápido de lo normal. Uno es el líder: un campeón con afijo. Una barra roja muestra cuántos quedan. **Si los jugadores matan al menos la mitad, te llevás una tirada de botín raro** (la épica desde el nivel 50, la legendaria desde el 80) directo al inventario. Si te morís, se dispersan o pasan 3 minutos, termina sin premio; los que se queman al amanecer no cuentan. Después hay 3 días de juego de respiro. Los mobs salen del tag `bloodmoonandbosses:estampida` (zombi, esqueleto, araña).
 - **Luna de sangre:** las noches de luna llena hay un 50 % de que la luna sea de sangre (en promedio una cada 16 días). Aparece un título rojo y una barra que se vacía hasta el amanecer. Esa noche los mobs que aparecen en el overworld tienen **+10 niveles** (y por eso más loot), y la mitad de los que aparecen solos vienen con un compañero igual. `/bloodmoon zona` lo avisa. Dormir la saltea, como cualquier noche.
+  - **Con el mod en tu cliente:** la luna se pone roja y más grande, y el cielo, la niebla y las nubes se tiñen de rojo; el color entra y sale de a poco. Sin el mod en el cliente la luna de sangre funciona igual, sólo que el cielo queda como siempre.
 - **Jefe de zona:** en cualquier dimensión, en zonas de nivel 15 o más, hay un 1 % por minuto (con 2 días de juego de espera) de que aparezca un jefe a 16–24 bloques, a tu altura: 20 niveles más que la zona, el triple de vida, un afijo y 3 escoltas. Tiene una barra violeta que ven los jugadores a menos de 48 bloques. **Muerto por un jugador suelta siempre una tirada de botín raro**, como mínimo la épica, además de su loot normal. Si nadie se le acerca durante un minuto, se va.
   - **Tamaño:** es un 40 % más grande que uno común, así que se reconoce entre sus escoltas aunque no veas el nombre. Aparece sólo donde entra con ese tamaño, y no pasa por túneles de 2 de alto ni por puertas. Se cambia con `escala` en la config.
   - **Contorno:** brilla con un contorno violeta, como el de la flecha espectral, que se ve incluso a través de las paredes: no se confunde con sus escoltas ni con los mobs comunes. Se apaga con `contorno` en la config.
@@ -149,6 +150,7 @@ Minecraft Java 26.3, [Fabric Loader](https://fabricmc.net/use/) 0.19.5 o más nu
 
 - **Servidor:** copiá `bloodmoonandbosses-<versión>.jar` y Fabric API a `mods/`. Los jugadores no necesitan nada: el nombre con el nivel y la vida lo ve cualquier cliente.
 - **Singleplayer o LAN:** en el cliente del que abre el mundo, junto con Fabric API.
+- **Opcional en el cliente:** para ver la luna de sangre en el cielo. Un cliente sin el mod puede entrar igual.
 - **Opcional en el cliente, con Jade:** para ver la vida de los mobs desde lejos (ver [Funciona con](#funciona-con)).
 
 ### Actualizar desde una versión anterior a la 0.11.0

@@ -2,7 +2,7 @@
 
 **El id es `bloodmoonandbosses` desde la 0.11.0 (antes `mobspoderosos`)**, y el comando es `/bloodmoon`. Lo guardado con el id viejo (el nivel de cada mob, la config, la luna) se pasa solo: ver [migración del id](claude/mod/migracion-de-id.md). No lo vuelvas a cambiar sin una migración. Además, **Mythic Loot lee por id `bloodmoonandbosses:nivel`, `bloodmoonandbosses:jefe` y `bloodmoonandbosses:afijo`** (sin depender de las clases de este mod): cambiarles el id o el tipo de valor lo rompe.
 
-Mod de Fabric para **Minecraft Java 26.3** que hace aparecer a los mobs hostiles con **niveles**: cuanto más lejos del spawn del mundo y más días tiene el mundo, más vida, daño y armadura tienen, y mejor loot dan; además, algunos aparecen como campeones con niveles de más. El nivel y la vida se ven en el nombre ("Zombi [Nv 7] ❤ 34/40"). Java 25, Gradle 9.7 + Fabric Loom 1.18, Fabric Loader 0.19.5, Fabric API 0.162.0+26.3. Toda la lógica corre en el servidor: los jugadores no necesitan instalar nada.
+Mod de Fabric para **Minecraft Java 26.3** que hace aparecer a los mobs hostiles con **niveles**: cuanto más lejos del spawn del mundo y más días tiene el mundo, más vida, daño y armadura tienen, y mejor loot dan; además, algunos aparecen como campeones con niveles de más. El nivel y la vida se ven en el nombre ("Zombi [Nv 7] ❤ 34/40"). Java 25, Gradle 9.7 + Fabric Loom 1.18, Fabric Loader 0.19.5, Fabric API 0.162.0+26.3. Toda la lógica corre en el servidor: los jugadores no necesitan instalar nada. Con el mod también en el cliente, la luna de sangre se ve en el cielo (`src/client`, opcional).
 
 ## Cómo obtener contexto
 
@@ -22,7 +22,7 @@ El mismo tema en distintas áreas usa el mismo nombre de archivo (`claude/mod/ni
 
 | Área | Carpeta | Stack | Índice |
 |---|---|---|---|
-| Mod | `src/main/` | Java 25 · Fabric API · Mixins (SpongePowered + MixinExtras) · nombres oficiales de Mojang | [claude/mod/INDICE.md](claude/mod/INDICE.md) |
+| Mod | `src/main/` y `src/client/` (sólo cliente) | Java 25 · Fabric API · Mixins (SpongePowered + MixinExtras) · nombres oficiales de Mojang | [claude/mod/INDICE.md](claude/mod/INDICE.md) |
 | Tests | `src/gametest/` | Fabric GameTest API · servidor sin ventana | [claude/tests/INDICE.md](claude/tests/INDICE.md) |
 
 ## Notas transversales
@@ -44,13 +44,14 @@ El mismo tema en distintas áreas usa el mismo nombre de archivo (`claude/mod/ni
 | Configuración (`config/bloodmoonandbosses.json`, `/bloodmoon recargar`) | [configuracion](claude/mod/configuracion.md) | [configuracion](claude/tests/configuracion.md) |
 | Migración del id `mobspoderosos` → `bloodmoonandbosses` (0.11.0) | [migracion-de-id](claude/mod/migracion-de-id.md) | [niveles](claude/tests/niveles.md) |
 | Eventos y afijos (8 afijos de campeón, estampida, luna de sangre, jefe de zona con furia y habilidades, `/bloodmoon evento`) | [eventos](claude/mod/eventos.md) | [eventos](claude/tests/eventos.md) |
+| Cielo de la luna de sangre (opcional en el cliente: paquete del servidor, mixins de cielo y luna) | [cliente](claude/mod/cliente.md) | [cliente](claude/tests/cliente.md) |
 | Jade (opcional en el cliente: los mobs se ven hasta 48 bloques) | [jade](claude/mod/jade.md) | — (sólo cliente: se prueba a mano) |
 
 ## Reglas de workflow
 
 - **Después de cada feature corré `/docs`** para actualizar las notas según el diff, y `node scripts/verificar-docs.mjs` tiene que dar OK.
 - **Si la feature se nota en el juego, actualizá el `README.md`**: es lo que lee quien instala el mod, y `/docs` sólo toca `claude/`.
-- **Antes de dar algo por terminado corré `gradlew runGameTest`**: compila no alcanza, los mixins recién se aplican en runtime.
+- **Antes de dar algo por terminado corré `gradlew runGameTest`**: compila no alcanza, los mixins recién se aplican en runtime. Si tocaste `src/client`, también `gradlew runClientGameTest` (abre una ventana unos 30 segundos).
 - **Con cada cambio que se pueda notar en el juego, subí `version` en `gradle.properties`**: minor (`0.1.0` → `0.2.0`) para una feature nueva, patch (`0.1.0` → `0.1.1`) para un arreglo.
 - **No commitees ni pushees salvo que te lo pidan.**
 - Mensajes, comentarios y docs en **español rioplatense** (vos), como el resto del proyecto.

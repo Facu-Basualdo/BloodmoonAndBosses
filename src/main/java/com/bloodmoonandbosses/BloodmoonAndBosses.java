@@ -11,6 +11,8 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 
 import net.minecraft.resources.Identifier;
 
@@ -34,6 +36,10 @@ public class BloodmoonAndBosses implements ModInitializer {
 		ServerLivingEntityEvents.MOB_CONVERSION.register((viejo, nuevo, params) -> NivelDeMob.alConvertir(viejo, nuevo));
 		CommandRegistrationCallback.EVENT.register((dispatcher, contexto, seleccion) -> ComandoBloodmoonAndBosses.registrar(dispatcher, contexto));
 		Eventos.registrar();
+
+		// Para el cliente con el mod (cielo rojo en luna de sangre). Registrarlo no molesta a un cliente vanilla: no se le manda
+		PayloadTypeRegistry.clientboundPlay().register(PaqueteLunaDeSangre.TYPE, PaqueteLunaDeSangre.CODEC);
+		ServerPlayConnectionEvents.JOIN.register((conexion, enviador, servidor) -> LunaDeSangre.alConectarse(conexion.getPlayer()));
 	}
 
 	public static Configuracion config() {

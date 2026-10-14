@@ -19,12 +19,19 @@
 		"main": [
 			"com.bloodmoonandbosses.BloodmoonAndBosses"
 		],
+		"client": [
+			"com.bloodmoonandbosses.client.BloodmoonAndBossesCliente"
+		],
 		"jade": [
 			"com.bloodmoonandbosses.compat.jade.PluginJade"
 		]
 	},
 	"mixins": [
 		"bloodmoonandbosses.mixins.json",
+		{
+			"config": "bloodmoonandbosses.client.mixins.json",
+			"environment": "client"
+		},
 		{
 			"config": "bloodmoonandbosses.jade.mixins.json",
 			"environment": "client"

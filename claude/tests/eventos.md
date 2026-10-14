@@ -20,7 +20,7 @@
 | `estampida` | `cuantos` y su tope · empieza, no puede haber dos contra el mismo jugador, el primero tiene afijo, todos van contra el jugador con nivel y modificador · muertos por el jugador → termina con premio en el inventario · descartados → termina sin premio · muertos sin jugador (como al amanecer) → sin premio |
 | `jefeDeZona` | `JEFE`, persistente, con afijo, contra el jugador, vida llena · vida = la de uno común del mismo nivel × `multiplicadorDeVida` · barra con el jugador cerca · al descartarlo se deja de seguir y la barra se vacía |
 | `botinDeJefe` | `mejorBotin` en los cuatro casos · 5 devastadores jefe de nivel 19 muertos por un jugador sueltan algo que no es montura |
-| `lunaDeSangre` | `esDeNoche` en los bordes (12999, 13000, 22999, 23000) · `nivelesExtra` con y sin `NOCHE_ACTIVA` · 20 zombis `NATURAL` con luna traen al menos un compañero |
+| `lunaDeSangre` | `esDeNoche` en los bordes (12999, 13000, 22999, 23000) · `nivelesExtra` con y sin `NOCHE_ACTIVA` · `laVe`: un jugador en el overworld sí, en el Nether no · 20 zombis `NATURAL` con luna traen al menos un compañero |
 | `archivoDeConfiguracion` | (en [configuración](configuracion.md)) los eventos aparecen en el archivo y `estampida.distanciaMaxima` menor que la mínima se rechaza |
 
 **No cubre** los sorteos (`sortear`: noche, cielo, espera y chance), la barra de la luna, el abandono del jefe ni los títulos y sonidos: dependen del reloj del mundo y de la config global. Se prueban a mano con `/bloodmoon evento …` (ver [probar en el juego](../general/probar-en-el-juego.md)).

@@ -1071,6 +1071,11 @@ public class BloodmoonAndBossesGameTest {
 		// Todo en el mismo tick y se saca antes de volver: los otros tests no llegan a ver la luna
 		level.setAttached(LunaDeSangre.NOCHE_ACTIVA, NivelDeZona.dias(level));
 		helper.assertValueEqual(BloodmoonAndBosses.config().lunaDeSangre().nivelesExtra(), LunaDeSangre.nivelesExtra(level), "Con luna de sangre suma");
+		ServerPlayer jugador = joinSurvivalPlayer(helper, "astronomo");
+		helper.assertTrue(LunaDeSangre.laVe(jugador), Component.literal("El cliente de un jugador en el overworld la tiene que ver"));
+		jugador.teleportTo(level.getServer().getLevel(Level.NETHER), 0, 64, 0, Set.of(), 0, 0, false);
+		helper.assertFalse(LunaDeSangre.laVe(level.getServer().getPlayerList().getPlayer(jugador.getUUID())), Component.literal("En el Nether no"));
+		level.getServer().getPlayerList().remove(level.getServer().getPlayerList().getPlayer(jugador.getUUID()));
 		// 20 spawns NATURAL al 50 %: que no venga ningún compañero tiene probabilidad 2^-20
 		for (int i = 0; i < 20; i++) {
 			spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.NATURAL);

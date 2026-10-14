@@ -1,0 +1,12 @@
+{
+	"required": true,
+	"package": "com.bloodmoonandbosses.client.mixin",
+	"compatibilityLevel": "JAVA_25",
+	"client": [
+		"EnvironmentAttributeProbeMixin",
+		"SkyRendererMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

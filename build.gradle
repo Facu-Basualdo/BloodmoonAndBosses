@@ -20,9 +20,14 @@ repositories {
 }
 
 loom {
+	// src/client: lo que sólo existe en el cliente (cielo rojo en luna de sangre). Así src/main no puede usar por error
+	// una clase de net.minecraft.client, que en un servidor dedicado no está
+	splitEnvironmentSourceSets()
+
 	mods {
 		"bloodmoonandbosses" {
 			sourceSet sourceSets.main
+			sourceSet sourceSets.client
 		}
 	}
 
@@ -80,7 +85,7 @@ fabricApi {
 		createSourceSet = true
 		modId = "bloodmoonandbosses-test"
 		enableGameTests = true
-		enableClientGameTests = false
+		enableClientGameTests = true
 		eula = true
 	}
 }

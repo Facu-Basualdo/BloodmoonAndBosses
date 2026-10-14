@@ -7,6 +7,9 @@
 	"entrypoints": {
 		"fabric-gametest": [
 			"com.bloodmoonandbosses.test.BloodmoonAndBossesGameTest"
+		],
+		"fabric-client-gametest": [
+			"com.bloodmoonandbosses.test.LunaDeSangreClienteTest"
 		]
 	},
 	"depends": {

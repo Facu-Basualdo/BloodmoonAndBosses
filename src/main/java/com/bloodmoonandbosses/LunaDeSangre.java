@@ -1,5 +1,7 @@
 package com.bloodmoonandbosses;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import com.mojang.serialization.Codec;
@@ -7,10 +9,12 @@ import org.jspecify.annotations.Nullable;
 
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -33,6 +37,8 @@ public final class LunaDeSangre {
 	public static final AttachmentType<Long> NOCHE_SORTEADA = AttachmentRegistry.createPersistent(BloodmoonAndBosses.id("noche_sorteada"), Codec.LONG);
 
 	private static @Nullable ServerBossEvent barra;
+	// Los clientes con el mod a los que se les avisó que ven la luna: así sólo se manda el paquete cuando cambia
+	private static final Set<UUID> AVISADOS = new HashSet<>();
 
 	private LunaDeSangre() {
 	}
@@ -68,6 +74,38 @@ public final class LunaDeSangre {
 		if (activa(overworld)) {
 			mostrarBarra(overworld);
 		}
+		avisarClientes(overworld.getServer());
+	}
+
+	/** Si el cielo de ese jugador tiene que estar rojo: luna de sangre y él en el overworld, que es donde hay luna. */
+	public static boolean laVe(ServerPlayer jugador) {
+		return jugador.level() instanceof ServerLevel level && activa(level);
+	}
+
+	/**
+	 * Comparando con lo último que se le avisó, y no sólo al empezar y terminar: así también se entera el que se conecta,
+	 * el que vuelve del Nether o un /bloodmoon recargar que apague la luna.
+	 */
+	private static void avisarClientes(MinecraftServer servidor) {
+		Set<UUID> conectados = new HashSet<>();
+		for (ServerPlayer jugador : servidor.getPlayerList().getPlayers()) {
+			conectados.add(jugador.getUUID());
+			boolean laVe = laVe(jugador);
+			if (laVe != AVISADOS.contains(jugador.getUUID()) && ServerPlayNetworking.canSend(jugador, PaqueteLunaDeSangre.TYPE)) {
+				ServerPlayNetworking.send(jugador, new PaqueteLunaDeSangre(laVe));
+				if (laVe) {
+					AVISADOS.add(jugador.getUUID());
+				} else {
+					AVISADOS.remove(jugador.getUUID());
+				}
+			}
+		}
+		AVISADOS.retainAll(conectados);
+	}
+
+	/** JOIN: un cliente que se reconecta arranca sin luna, aunque se haya ido y vuelto dentro del mismo segundo. */
+	public static void alConectarse(ServerPlayer jugador) {
+		AVISADOS.remove(jugador.getUUID());
 	}
 
 	/** También para /bloodmoon evento: sólo de noche, porque al amanecer se termina sola. */
@@ -139,5 +177,6 @@ public final class LunaDeSangre {
 
 	public static void limpiar() {
 		barra = null;
+		AVISADOS.clear();
 	}
 }
