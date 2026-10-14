@@ -11,6 +11,7 @@ import com.mojang.serialization.Codec;
 import org.jspecify.annotations.Nullable;
 
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentSyncPredicate;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 
 import net.minecraft.ChatFormatting;
@@ -20,6 +21,7 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
@@ -57,9 +59,12 @@ import net.minecraft.world.scores.TeamColor;
  * están cerca o un tirón que trae a los que pelean de lejos.
  */
 public final class JefeDeZona {
-	public static final AttachmentType<Boolean> JEFE = AttachmentRegistry.createPersistent(BloodmoonAndBosses.id("jefe"), Codec.BOOL);
+	// Sincronizados para el aspecto del jefe en un cliente con el mod (ver Afijo.AFIJO)
+	public static final AttachmentType<Boolean> JEFE = AttachmentRegistry.create(BloodmoonAndBosses.id("jefe"),
+			builder -> builder.persistent(Codec.BOOL).syncWith(ByteBufCodecs.BOOL, AttachmentSyncPredicate.all()));
 	// Persistente: un jefe que se enfureció y vuelve con su chunk no se enfurece de nuevo (ni llama otra tanda de escoltas)
-	public static final AttachmentType<Boolean> FURIA = AttachmentRegistry.createPersistent(BloodmoonAndBosses.id("furia"), Codec.BOOL);
+	public static final AttachmentType<Boolean> FURIA = AttachmentRegistry.create(BloodmoonAndBosses.id("furia"),
+			builder -> builder.persistent(Codec.BOOL).syncWith(ByteBufCodecs.BOOL, AttachmentSyncPredicate.all()));
 	public static final AttachmentType<Long> ULTIMO = AttachmentRegistry.create(BloodmoonAndBosses.id("ultimo_jefe"),
 			builder -> builder.persistent(Codec.LONG).copyOnDeath());
 	public static final TagKey<EntityType<?>> TIPOS_OVERWORLD = tipos("overworld");

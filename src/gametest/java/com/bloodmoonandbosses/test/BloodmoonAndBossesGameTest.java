@@ -1015,6 +1015,10 @@ public class BloodmoonAndBossesGameTest {
 		helper.assertTrue(JefeDeZona.esJefe(jefe), Component.literal("Marcado como jefe"));
 		helper.assertTrue(jefe.isPersistenceRequired(), Component.literal("No desaparece por estar lejos"));
 		helper.assertTrue(Afijo.de(jefe) != null, Component.literal("Tiene afijo"));
+		helper.assertTrue(JefeDeZona.JEFE.isSynced() && JefeDeZona.FURIA.isSynced() && Afijo.AFIJO.isSynced(),
+				Component.literal("Jefe, furia y afijo llegan al cliente con el mod (su aspecto)"));
+		helper.assertTrue(JefeDeZona.JEFE.isPersistent() && JefeDeZona.FURIA.isPersistent() && Afijo.AFIJO.isPersistent(),
+				Component.literal("Y siguen guardándose con el mundo"));
 		helper.assertTrue(jefe.getTarget() == jugador, Component.literal("Va contra el jugador"));
 		assertCerca(helper, jefe.getMaxHealth(), jefe.getHealth(), "Aparece con la vida llena");
 

@@ -1,10 +1,10 @@
-# Cliente: el cielo de la luna de sangre
+# Cliente: luna de sangre y aspecto de jefes y campeones
 
 [← Índice Mod](INDICE.md)
 
 Síntomas que esto evita: **un cliente vanilla no puede entrar al servidor**, **el cielo queda rojo después de la luna (o en otro servidor)**, o **el servidor dedicado no arranca por una clase de `net.minecraft.client`**.
 
-Con el mod también en el cliente, la luna de sangre se ve: la luna roja y 1,5 veces más grande, y el cielo, la niebla, las nubes y la luz del cielo corridos hacia el rojo. **Es opcional:** sin el mod en el cliente todo lo demás anda igual (título, barra, niveles).
+Con el mod también en el cliente, jefes y campeones se tiñen (ver [abajo](#aspecto-de-jefes-y-campeones)) y la luna de sangre se ve: la luna roja y 1,5 veces más grande, y el cielo, la niebla, las nubes y la luz del cielo corridos hacia el rojo. **Es opcional:** sin el mod en el cliente todo lo demás anda igual (título, barra, niveles).
 
 | Pieza | Dónde | Qué hace |
 |---|---|---|
@@ -22,6 +22,22 @@ Con el mod también en el cliente, la luna de sangre se ve: la luna roja y 1,5 v
 - **La luna se pinta multiplicando su color** (`Vector4f(1, 1, 1, alfa)`, recién creado en `renderMoon`): verde y azul bajan, la transparencia (lluvia, día) no se toca.
 - **`splitEnvironmentSourceSets`:** el código de cliente está en `src/client`, así `src/main` no compila si usa una clase de `net.minecraft.client` por error. Lo de Jade sigue en `src/main` (no usa clases de cliente; ver [jade](jade.md)).
 - Los colores no son números de balance: son constantes de `LunaDeSangreCliente`, no van en `Configuracion` (que es del servidor).
+
+## Aspecto de jefes y campeones
+
+El modelo se tiñe: **jefe violeta**, **jefe con furia rojo y latiendo** (una vez por segundo), **campeón del color de su afijo** (el mismo del nombre). El tinte multiplica la textura y arranca en blanco corrido hacia el color (40–65 %), así que la textura se sigue viendo.
+
+| Pieza | Qué hace |
+|---|---|
+| `JefeDeZona.JEFE`, `FURIA` y `Afijo.AFIJO` | Siguen persistentes con el mismo id y codec (los mundos y Mythic Loot no cambian), y además `syncWith(…, AttachmentSyncPredicate.all())`: Fabric se los manda a los jugadores que rastrean al mob |
+| `AspectoDeMobs` | `tinte(mob, edad)`: el color ARGB o `null` para un mob común. El jefe le gana al afijo (el jefe siempre tiene uno) |
+| `LivingEntityRendererMixin` | `@Inject` TAIL en `extractRenderState(LivingEntity, LivingEntityRenderState, float)` guarda el tinte como dato de Fabric (`RenderStateDataKey`); `@ModifyReturnValue` en `getModelTint` lo multiplica (`ARGB.multiply`) |
+
+- **La sincronización de Fabric es segura con clientes vanilla:** sólo manda un attachment a los clientes que en la configuración dijeron que lo conocen (`AttachmentSync.trySync`). Un vanilla no hace esa configuración y no recibe nada; un Fabric sin el mod lo dice y queda un `warn` "Client does not support the syncable attachments" en el log del servidor, nada más.
+- **El afijo viaja por nombre, no por ordinal**, y uno desconocido se lee como veloz: si el decode fallara, Fabric desconectaría al cliente (un cliente con otra versión del mod que no conoce un afijo nuevo).
+- **El estado de dibujo no tiene la entidad** (26.x separa extraer de dibujar): el tinte se calcula en `extractRenderState` y viaja en el estado. Se pone siempre, también `null`: el estado se reusa entre entidades.
+- **Sólo `TropicalFishRenderer` y `WolfRenderer` sobreescriben `getModelTint`**, ninguno hostil: con mixinear `LivingEntityRenderer` alcanza. Las capas (armadura, ojos) no se tiñen.
+- La textura distinta por afijo sería otra cosa (un `RenderLayer` o texturas propias por especie); por ahora es el tinte.
 
 ## Ver también
 

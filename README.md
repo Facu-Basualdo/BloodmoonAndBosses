@@ -64,7 +64,7 @@ Cerca de la base el juego se siente casi como vanilla; a varios miles de bloques
 
 Ninguno necesita el mod en el cliente: usan la barra de jefe, los títulos y los sonidos de vanilla. Con el mod también en el cliente, la luna de sangre además se ve (ver abajo).
 
-- **Afijos de campeón:** cada campeón tiene uno al azar, y lo conserva si se convierte (un zombi que se ahoga sigue siendo veloz). **Cada afijo suelta sus partículas** cada medio segundo, así se reconoce de lejos o en una cueva antes de leer el nombre.
+- **Afijos de campeón:** cada campeón tiene uno al azar, y lo conserva si se convierte (un zombi que se ahoga sigue siendo veloz). **Cada afijo suelta sus partículas** cada medio segundo, así se reconoce de lejos o en una cueva antes de leer el nombre. Con el mod en tu cliente, además el campeón se tiñe del color de su afijo.
 
   | Afijo | Partículas | Qué hace |
   |---|---|---|
@@ -82,6 +82,7 @@ Ninguno necesita el mod en el cliente: usan la barra de jefe, los títulos y los
   - **Con el mod en tu cliente:** la luna se pone roja y más grande, y el cielo, la niebla y las nubes se tiñen de rojo; el color entra y sale de a poco. Sin el mod en el cliente la luna de sangre funciona igual, sólo que el cielo queda como siempre.
 - **Jefe de zona:** en cualquier dimensión, en zonas de nivel 15 o más, hay un 1 % por minuto (con 2 días de juego de espera) de que aparezca un jefe a 16–24 bloques, a tu altura: 20 niveles más que la zona, el triple de vida, un afijo y 3 escoltas. Tiene una barra violeta que ven los jugadores a menos de 48 bloques. **Muerto por un jugador suelta siempre una tirada de botín raro**, como mínimo la épica, además de su loot normal. Si nadie se le acerca durante un minuto, se va.
   - **Tamaño:** es un 40 % más grande que uno común, así que se reconoce entre sus escoltas aunque no veas el nombre. Aparece sólo donde entra con ese tamaño, y no pasa por túneles de 2 de alto ni por puertas. Se cambia con `escala` en la config.
+  - **Con el mod en tu cliente:** además se tiñe de violeta, y con furia de rojo, latiendo.
   - **Contorno:** brilla con un contorno violeta, como el de la flecha espectral, que se ve incluso a través de las paredes: no se confunde con sus escoltas ni con los mobs comunes. Se apaga con `contorno` en la config.
   - **Furia:** cuando le queda la mitad de la vida, ruge, corre un 25 % más, pega un 30 % más y llama 2 escoltas más. La barra y el contorno se ponen rojos.
   - **Habilidades:** cada 10 segundos usa una, y la avisa un segundo antes con un sonido y un mensaje: una **onda de choque** que lastima (como un golpe suyo) y empuja lejos a los que están a menos de 6 bloques, o un **tirón** que trae hacia él a los que pelean desde lejos (de 6 a 24 bloques) y los frena un momento. Pelear pegado o de lejos todo el tiempo no sirve. Los jefes salen de los tags `bloodmoonandbosses:jefe_de_zona/overworld` (zombi, esqueleto, vindicador, bruja), `…/nether` (esqueleto del Wither, piglin bruto, blaze) y `…/end` (enderman).
@@ -150,7 +151,7 @@ Minecraft Java 26.3, [Fabric Loader](https://fabricmc.net/use/) 0.19.5 o más nu
 
 - **Servidor:** copiá `bloodmoonandbosses-<versión>.jar` y Fabric API a `mods/`. Los jugadores no necesitan nada: el nombre con el nivel y la vida lo ve cualquier cliente.
 - **Singleplayer o LAN:** en el cliente del que abre el mundo, junto con Fabric API.
-- **Opcional en el cliente:** para ver la luna de sangre en el cielo. Un cliente sin el mod puede entrar igual.
+- **Opcional en el cliente:** para ver la luna de sangre en el cielo y a jefes y campeones teñidos. Un cliente sin el mod puede entrar igual.
 - **Opcional en el cliente, con Jade:** para ver la vida de los mobs desde lejos (ver [Funciona con](#funciona-con)).
 
 ### Actualizar desde una versión anterior a la 0.11.0

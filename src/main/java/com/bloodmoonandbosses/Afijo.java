@@ -9,6 +9,7 @@ import com.mojang.serialization.Codec;
 import org.jspecify.annotations.Nullable;
 
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentSyncPredicate;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 
 import net.minecraft.ChatFormatting;
@@ -17,6 +18,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
@@ -55,7 +57,15 @@ public enum Afijo implements StringRepresentable {
 	TELETRANSPORTADOR("teletransportador", ChatFormatting.DARK_AQUA, ParticleTypes.PORTAL);
 
 	public static final Codec<Afijo> CODEC = StringRepresentable.fromEnum(Afijo::values);
-	public static final AttachmentType<Afijo> AFIJO = AttachmentRegistry.createPersistent(BloodmoonAndBosses.id("afijo"), CODEC);
+	// Sincronizado para que un cliente con el mod tiña al campeón con el color del afijo; Fabric sólo se lo manda a los
+	// clientes que lo conocen. Por nombre y no por ordinal: un cliente de otra versión que no conoce el afijo lo ve veloz
+	// en vez de desconectarse
+	public static final AttachmentType<Afijo> AFIJO = AttachmentRegistry.create(BloodmoonAndBosses.id("afijo"), builder -> builder
+			.persistent(CODEC)
+			.syncWith(ByteBufCodecs.STRING_UTF8.map(id -> {
+				Afijo afijo = porId(id);
+				return afijo != null ? afijo : VELOZ;
+			}, Afijo::getSerializedName), AttachmentSyncPredicate.all()));
 	// Persistente: si no, guardar y cargar el chunk le devolvería todas las invocaciones
 	public static final AttachmentType<Integer> INVOCACIONES = AttachmentRegistry.createPersistent(BloodmoonAndBosses.id("invocaciones"), Codec.INT);
 	public static final AttachmentType<Long> ULTIMA_INVOCACION = AttachmentRegistry.create(BloodmoonAndBosses.id("ultima_invocacion"));
@@ -79,6 +89,10 @@ public enum Afijo implements StringRepresentable {
 
 	public SimpleParticleType particula() {
 		return particula;
+	}
+
+	public ChatFormatting color() {
+		return color;
 	}
 
 	@Override
