@@ -44,5 +44,8 @@
 	"bloodmoonandbosses.comando.luna_de_dia": "The blood moon can only start at night (try /time set night)",
 	"bloodmoonandbosses.comando.luna": "The blood moon started: it lasts until dawn",
 	"bloodmoonandbosses.comando.recarga_fallida": "Couldn't read the config, keeping the previous one: %s",
-	"bloodmoonandbosses.comando.recargada": "Config reloaded. Mobs that were already around keep their stats and gear"
+	"bloodmoonandbosses.comando.recargada": "Config reloaded. Mobs that were already around keep their stats and gear",
+	"config.jade.plugin_bloodmoonandbosses": "Bloodmoon & Bosses",
+	"config.jade.plugin_bloodmoonandbosses.alcance": "Mob range",
+	"config.jade.plugin_bloodmoonandbosses.alcance_desc": "How far Jade shows mobs, in blocks. 0 leaves Jade's own range"
 }

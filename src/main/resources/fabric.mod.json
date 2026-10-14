@@ -18,15 +18,25 @@
 	"entrypoints": {
 		"main": [
 			"com.bloodmoonandbosses.BloodmoonAndBosses"
+		],
+		"jade": [
+			"com.bloodmoonandbosses.compat.jade.PluginJade"
 		]
 	},
 	"mixins": [
-		"bloodmoonandbosses.mixins.json"
+		"bloodmoonandbosses.mixins.json",
+		{
+			"config": "bloodmoonandbosses.jade.mixins.json",
+			"environment": "client"
+		}
 	],
 	"depends": {
 		"fabricloader": ">=0.19.5",
 		"minecraft": "~26.3",
 		"java": ">=25",
 		"fabric-api": "*"
+	},
+	"suggests": {
+		"jade": "*"
 	}
 }

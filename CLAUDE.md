@@ -44,6 +44,7 @@ El mismo tema en distintas áreas usa el mismo nombre de archivo (`claude/mod/ni
 | Configuración (`config/bloodmoonandbosses.json`, `/bloodmoon recargar`) | [configuracion](claude/mod/configuracion.md) | [configuracion](claude/tests/configuracion.md) |
 | Migración del id `mobspoderosos` → `bloodmoonandbosses` (0.11.0) | [migracion-de-id](claude/mod/migracion-de-id.md) | [niveles](claude/tests/niveles.md) |
 | Eventos y afijos (8 afijos de campeón, estampida, luna de sangre, jefe de zona con furia y habilidades, `/bloodmoon evento`) | [eventos](claude/mod/eventos.md) | [eventos](claude/tests/eventos.md) |
+| Jade (opcional en el cliente: los mobs se ven hasta 48 bloques) | [jade](claude/mod/jade.md) | — (sólo cliente: se prueba a mano) |
 
 ## Reglas de workflow
 
