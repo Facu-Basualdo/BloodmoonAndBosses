@@ -2,7 +2,7 @@
 
 **El id es `bloodmoonandbosses` desde la 0.11.0 (antes `mobspoderosos`)**, y el comando es `/bloodmoon`. Lo guardado con el id viejo (el nivel de cada mob, la config, la luna) se pasa solo: ver [migración del id](claude/mod/migracion-de-id.md). No lo vuelvas a cambiar sin una migración. Además, **Mythic Loot lee por id `bloodmoonandbosses:nivel`, `bloodmoonandbosses:jefe` y `bloodmoonandbosses:afijo`** (sin depender de las clases de este mod): cambiarles el id o el tipo de valor lo rompe.
 
-Mod de Fabric para **Minecraft Java 26.3** que hace aparecer a los mobs hostiles con **niveles**: cuanto más lejos del spawn del mundo y más días tiene el mundo, más vida, daño y armadura tienen, y mejor loot dan; además, algunos aparecen como campeones con niveles de más. El nivel y la vida se ven en el nombre ("Zombi [Nv 7] ❤ 34/40"). Java 25, Gradle 9.7 + Fabric Loom 1.18, Fabric Loader 0.19.5, Fabric API 0.162.0+26.3. Toda la lógica corre en el servidor: los jugadores no necesitan instalar nada. Con el mod también en el cliente, la luna de sangre se ve en el cielo y jefes y campeones se tiñen (`src/client`, opcional).
+Mod de Fabric para **Minecraft Java 26.3** que hace aparecer a los mobs hostiles con **niveles**: cuanto más lejos del spawn del mundo y más días tiene el mundo, más vida, daño y armadura tienen, y mejor loot dan; además, algunos aparecen como campeones con niveles de más. El nivel y la vida se ven en el nombre ("Zombi [Nv 7] ❤ 34/40"). Java 25, Gradle 9.7 + Fabric Loom 1.18, Fabric Loader 0.19.5, Fabric API 0.162.0+26.3. Toda la lógica corre en el servidor: los jugadores no necesitan instalar nada. Con el mod también en el cliente, la luna de sangre se ve en el cielo y jefes y campeones se tiñen, y con Mod Menu la config se edita desde el juego (`src/client`, opcional).
 
 ## Cómo obtener contexto
 
@@ -46,6 +46,7 @@ El mismo tema en distintas áreas usa el mismo nombre de archivo (`claude/mod/ni
 | Eventos y afijos (8 afijos de campeón, estampida, luna de sangre, jefe de zona con furia y habilidades, `/bloodmoon evento`) | [eventos](claude/mod/eventos.md) | [eventos](claude/tests/eventos.md) |
 | Cliente opcional: cielo de la luna de sangre (paquete del servidor, mixins de cielo y luna) y tinte de jefes y campeones (attachments sincronizados) | [cliente](claude/mod/cliente.md) | [cliente](claude/tests/cliente.md) |
 | Jade (opcional en el cliente: los mobs se ven hasta 48 bloques) | [jade](claude/mod/jade.md) | — (sólo cliente: se prueba a mano) |
+| Pantalla de configuración con Mod Menu, opcional (0.19.0) | [pantalla-de-configuracion](claude/mod/pantalla-de-configuracion.md) | [pantalla-de-configuracion](claude/tests/pantalla-de-configuracion.md) |
 
 ## Reglas de workflow
 

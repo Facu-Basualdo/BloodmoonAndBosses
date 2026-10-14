@@ -10,7 +10,8 @@
 		],
 		"fabric-client-gametest": [
 			"com.bloodmoonandbosses.test.LunaDeSangreClienteTest",
-			"com.bloodmoonandbosses.test.AspectoDeMobsClienteTest"
+			"com.bloodmoonandbosses.test.AspectoDeMobsClienteTest",
+			"com.bloodmoonandbosses.test.ConfiguracionClienteTest"
 		]
 	},
 	"depends": {

@@ -52,6 +52,9 @@ dependencies {
 
 	// Jade es opcional: sólo para compilar el plugin (compat/jade). Para probarlo en runClient, poné su jar en run/mods
 	compileOnly "maven.modrinth:jade:${project.jade_version}"
+
+	// Mod Menu también es opcional: sólo para compilar IntegracionConModMenu, que Mod Menu carga si está instalado
+	compileOnly "maven.modrinth:modmenu:${project.modmenu_version}"
 }
 
 processResources {
@@ -92,9 +95,16 @@ fabricApi {
 
 // El servidor de prueba guarda su config en build/run/gameTest y no la pisa: si quedara la de una corrida vieja,
 // los tests correrían con los valores por defecto de antes y no con los de Configuracion.POR_DEFECTO
+// (lo mismo con el cliente de prueba, al que la prueba de la pantalla de configuración le cambia valores)
 def configDePrueba = layout.buildDirectory.dir("run/gameTest/config")
+def configDelClienteDePrueba = layout.buildDirectory.dir("run/clientGameTest/config")
 tasks.matching { it.name == "runGameTest" }.configureEach {
 	doFirst {
 		configDePrueba.get().asFile.deleteDir()
+	}
+}
+tasks.matching { it.name == "runClientGameTest" }.configureEach {
+	doFirst {
+		configDelClienteDePrueba.get().asFile.deleteDir()
 	}
 }

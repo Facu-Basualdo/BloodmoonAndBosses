@@ -24,6 +24,9 @@
 		],
 		"jade": [
 			"com.bloodmoonandbosses.compat.jade.PluginJade"
+		],
+		"modmenu": [
+			"com.bloodmoonandbosses.client.IntegracionConModMenu"
 		]
 	},
 	"mixins": [

@@ -26,3 +26,4 @@ El test `archivoDeConfiguracion` prueba `ArchivoDeConfiguracion.leer` sobre arch
 
 - [Configuración](../mod/configuracion.md)
 - [Tests: niveles](niveles.md)
+- [Tests de la pantalla de configuración](pantalla-de-configuracion.md)

@@ -103,6 +103,8 @@ Ninguno necesita el mod en el cliente: usan la barra de jefe, los títulos y los
 
 En el primer arranque se crea **`config/bloodmoonandbosses.json`** con todos los valores por defecto. Editalo y usá `/bloodmoon recargar`, o reiniciá el servidor.
 
+**Desde el juego, con [Mod Menu](https://modrinth.com/mod/modmenu):** en la lista de mods, el botón de configuración de Bloodmoon & Bosses abre una pantalla con todas estas opciones, con su nombre y una ayuda al pasar el mouse. Al guardar se aplica enseguida, como con `/bloodmoon recargar`. Si un valor no sirve, no se guarda nada y la pantalla dice por qué. Edita el archivo de tu instalación: sirve en singleplayer, en un mundo abierto en LAN desde tu juego y para preparar la config antes de crear un mundo. El de un servidor dedicado se sigue editando en el servidor.
+
 - **Al recargar, los mobs que ya están no cambian:** la vida, el daño, la armadura, el nombre y el equipo se ponen cuando el mob aparece. El loot, los ítems raros y la experiencia se calculan al morir, así que esos cambios valen enseguida.
 - **Los eventos y los afijos también toman los valores nuevos enseguida**, salvo `velocidadVeloz`, que se pone al aparecer.
 - **Si el archivo tiene un error** (JSON mal escrito, o un valor imposible como `bloquesPorNivel: 0`), se queda la configuración que había, el archivo no se toca y el error aparece en el chat y en la consola.
@@ -143,11 +145,12 @@ En el primer arranque se crea **`config/bloodmoonandbosses.json`** con todos los
 - **Hero's Forge:** los valores por defecto están balanceados contra sus estadísticas. Con el equipo y los puntos que se esperan en cada zona, un zombi se mata en 5 o 6 golpes en todo el mundo.
 - **Mythic Loot:** los mobs con nivel sueltan armas y armaduras con afijos según su nivel, y los jefes de zona sueltan siempre una épica o mejor (a veces con un afijo propio de su especie: un jefe zombi da "del Festín", un enderman "del Vacío"…).
 - **Soul Link:** no se tocan.
+- **[Mod Menu](https://modrinth.com/mod/modmenu)** (opcional, en el cliente): la configuración se edita desde el juego. Ver [Configuración](#configuración).
 - **[Jade](https://modrinth.com/mod/jade):** con Jade solo ya ves el nombre con el nivel y la vida al mirar un mob, pero sólo hasta 3 bloques (más los 20 que suma su opción *Reach distance*). **Con Bloodmoon & Bosses también en tu cliente, Jade te muestra los mobs hasta 48 bloques**, siempre que no haya una pared en el medio. El alcance se cambia en *Jade → Configuración de plugins → Bloodmoon & Bosses → Alcance para mobs* (hasta 128; 0 lo deja como Jade). Sólo los mobs: los ítems tirados, los marcos y los otros jugadores siguen con el alcance normal de Jade. Que se vean de tan lejos depende también de la distancia a la que el servidor te manda las entidades. Funciona igual si el servidor no tiene Jade.
 
 ## Requisitos e instalación
 
-Minecraft Java 26.3, [Fabric Loader](https://fabricmc.net/use/) 0.19.5 o más nuevo, [Fabric API](https://modrinth.com/mod/fabric-api) y Java 25. Toda la lógica corre en el servidor.
+Minecraft Java 26.3, [Fabric Loader](https://fabricmc.net/use/) 0.19.5 o más nuevo, [Fabric API](https://modrinth.com/mod/fabric-api) y Java 25. Toda la lógica corre en el servidor; en el cliente, el mod suma la luna de sangre en el cielo, el tinte de jefes y campeones y la pantalla de Mod Menu.
 
 - **Servidor:** copiá `bloodmoonandbosses-<versión>.jar` y Fabric API a `mods/`. Los jugadores no necesitan nada: el nombre con el nivel y la vida lo ve cualquier cliente.
 - **Singleplayer o LAN:** en el cliente del que abre el mundo, junto con Fabric API.
@@ -163,6 +166,7 @@ Hasta la 0.10.0 el id era `mobspoderosos` y el comando `/mobspoderosos` (el mod 
 ```bash
 ./gradlew build          # compila y corre las pruebas; el jar queda en build/libs/
 ./gradlew runGameTest    # sólo las pruebas automáticas, en un servidor sin ventana
+./gradlew runClientGameTest   # el cielo, el tinte y la pantalla de configuración en un cliente de verdad (abre una ventana)
 ```
 
 Pide Java 25: si Gradle no encuentra tu JDK, agregá `org.gradle.java.installations.paths=<ruta a tu JDK 25>` a tu `~/.gradle/gradle.properties`. La documentación técnica está en [CLAUDE.md](CLAUDE.md).

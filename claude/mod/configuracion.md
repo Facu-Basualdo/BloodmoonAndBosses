@@ -72,3 +72,4 @@ El nombre del componente es la clave del JSON: **renombrarlo rompe los archivos 
 - [Botín y experiencia](botin.md)
 - [Eventos y afijos](eventos.md)
 - [Tests: configuración](../tests/configuracion.md)
+- [Pantalla de configuración](pantalla-de-configuracion.md): editar este archivo desde Mod Menu.
