@@ -141,8 +141,10 @@ public final class JefeDeZona {
 			return null;
 		}
 		EntityType<?> tipo = tipos.get().getRandomElement(random).map(Holder::value).orElseThrow();
-		// A la altura del jugador y no en la superficie: en una mina tiene que aparecer en la mina
-		BlockPos pos = Eventos.lugarCerca(level, jugador.blockPosition(), distanciaMinima, distanciaMaxima, null, tipo, false, random);
+		// A la altura del jugador y no en la superficie: en una mina tiene que aparecer en la mina. Con el tamaño de jefe
+		// (siempre tiene afijo): en un túnel de 2 de alto quedaría trabado y asfixiándose
+		float escala = (float) (1 + config.escala() + BloodmoonAndBosses.config().afijos().escala());
+		BlockPos pos = Eventos.lugarCerca(level, jugador.blockPosition(), distanciaMinima, distanciaMaxima, null, tipo, escala, false, random);
 		if (pos == null) {
 			return null;
 		}
@@ -180,7 +182,7 @@ public final class JefeDeZona {
 		return TIPOS_OVERWORLD;
 	}
 
-	/** Un mob con nivel pasa a ser jefe: más vida, persistente y con barra. */
+	/** Un mob con nivel pasa a ser jefe: más vida, más grande, persistente y con barra. */
 	public static void convertir(Mob jefe, Configuracion.JefeDeZona config) {
 		jefe.setAttached(JEFE, true);
 		AttributeInstance vida = jefe.getAttribute(Attributes.MAX_HEALTH);
@@ -188,6 +190,11 @@ public final class JefeDeZona {
 			// MULTIPLIED_TOTAL: multiplica también lo que ya sumó el nivel
 			vida.addOrReplacePermanentModifier(new AttributeModifier(MODIFICADOR, config.multiplicadorDeVida() - 1,
 					AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+		}
+		AttributeInstance escala = jefe.getAttribute(Attributes.SCALE);
+		if (escala != null && config.escala() > 0) {
+			// MULTIPLIED_BASE: se suma a la del afijo en vez de multiplicarla
+			escala.addOrReplacePermanentModifier(new AttributeModifier(MODIFICADOR, config.escala(), AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
 		}
 		jefe.setHealth(jefe.getMaxHealth());
 		// Si no, a más de 128 bloques de un jugador desaparece al instante y la barra queda colgada

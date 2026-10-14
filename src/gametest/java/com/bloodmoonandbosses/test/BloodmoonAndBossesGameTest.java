@@ -19,6 +19,7 @@ import com.bloodmoonandbosses.BotinPorNivel;
 import com.bloodmoonandbosses.Configuracion;
 import com.bloodmoonandbosses.EquipoPorNivel;
 import com.bloodmoonandbosses.Estampida;
+import com.bloodmoonandbosses.Eventos;
 import com.bloodmoonandbosses.Idioma;
 import com.bloodmoonandbosses.JefeDeZona;
 import com.bloodmoonandbosses.LunaDeSangre;
@@ -772,6 +773,45 @@ public class BloodmoonAndBossesGameTest {
 		JefeDeZona.actualizarTodos();
 		level.getServer().getPlayerList().remove(jugador);
 		helper.succeed();
+	}
+
+	@GameTest
+	public void tamanioDelJefe(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		Configuracion config = BloodmoonAndBosses.config();
+		Zombie jefe = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		jefe.setBaby(false);
+		jefe.setAttached(Afijo.AFIJO, Afijo.VELOZ);
+		NivelDeMob.aplicar(jefe, 30);
+		assertCerca(helper, 1 + config.afijos().escala(), jefe.getScale(), "El campeón crece según afijos.escala");
+
+		JefeDeZona.convertir(jefe, config.jefeDeZona());
+		float escala = (float) (1 + config.afijos().escala() + config.jefeDeZona().escala());
+		helper.assertTrue(escala > 1, Component.literal("Por defecto el jefe es más grande"));
+		assertCerca(helper, escala, jefe.getScale(), "El jefe suma su escala a la del afijo");
+		JefeDeZona.convertir(jefe, config.jefeDeZona());
+		assertCerca(helper, escala, jefe.getScale(), "Convertir dos veces no apila");
+
+		// Un túnel de 2 de alto: techo de barreras, para que tampoco sirva pararse arriba
+		ponerPiso(helper);
+		for (int x = 0; x < 8; x++) {
+			for (int z = 0; z < 8; z++) {
+				helper.setBlock(x, 3, z, Blocks.BARRIER);
+			}
+		}
+		BlockPos centro = helper.absolutePos(CENTRO);
+		helper.assertTrue(Eventos.lugarCerca(level, centro, 1, 3, null, EntityTypes.ZOMBIE, false, RandomSource.create(1)) != null,
+				Component.literal("Un zombi común entra"));
+		helper.assertTrue(Eventos.lugarCerca(level, centro, 1, 3, null, EntityTypes.ZOMBIE, escala, false, RandomSource.create(1)) == null,
+				Component.literal("Un jefe no: quedaría trabado y asfixiándose"));
+
+		// Vanilla rehace las dimensiones al tick siguiente de cambiar el atributo (onAttributeUpdated)
+		helper.runAfterDelay(1, () -> {
+			assertCerca(helper, EntityTypes.ZOMBIE.getHeight() * escala, jefe.getBbHeight(), "Y su caja crece con él");
+			jefe.discard();
+			JefeDeZona.actualizarTodos();
+			helper.succeed();
+		});
 	}
 
 	@GameTest

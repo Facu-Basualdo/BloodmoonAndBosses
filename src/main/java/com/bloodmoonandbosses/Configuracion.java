@@ -87,16 +87,18 @@ public record Configuracion(
 			new Rareza(80, 0.05),
 			0.05,
 			// Todos los campeones con afijo: así se distinguen en el nombre. La explosión es la de un creeper común. El
-			// blindado suma media armadura de hierro; el veneno y la lentitud son de nivel II, como las pociones fuertes
-			new Afijos(1.0, 0.3, 0.5, 3.0f, 30, 2, 3, 10, 6.0, 0.5, 5, 2, 3, 2, 0.5, 3, true, 10),
+			// blindado suma media armadura de hierro; el veneno y la lentitud son de nivel II, como las pociones fuertes. Sin
+			// tamaño extra: un zombi o un esqueleto apenas un 3 % más grande ya no entra en un túnel de 2 de alto
+			new Afijos(1.0, 0.3, 0.5, 3.0f, 30, 2, 3, 10, 6.0, 0.5, 5, 2, 3, 2, 0.5, 3, true, 10, 0.0),
 			// Con 3 % por minuto, una noche (unos 7 minutos) tiene ~20 % de estampida; después hay 3 días de respiro
 			new Estampida(true, 0.03, 3, 10, 6, 10, 16, 24, 32, 0.25, 180),
 			// La luna llena es una noche de cada ocho: con 50 %, una luna de sangre cada 16 días en promedio
 			new LunaDeSangre(true, 0.5, 10, 0.5),
 			// Con 1 % por minuto, alrededor de un jefe cada hora y media de juego por jugador. A media vida se enfurece; cada
 			// 10 segundos usa una habilidad, que avisa un segundo antes para que se pueda esquivar. El contorno se ve a
-			// través de las paredes, pero el jefe ya se anuncia y tiene barra: no delata nada que no se sepa
-			new JefeDeZona(true, 0.01, 2, 15, 20, 3.0, 3, 48, 60, 0.5, 0.25, 0.3, 2, 10, 6, 1.0, 1.5, 24, true),
+			// través de las paredes, pero el jefe ya se anuncia y tiene barra: no delata nada que no se sepa. Un 40 % más
+			// grande, para reconocerlo entre sus escoltas; aparece sólo donde entra con ese tamaño
+			new JefeDeZona(true, 0.01, 2, 15, 20, 3.0, 3, 48, 60, 0.5, 0.25, 0.3, 2, 10, 6, 1.0, 1.5, 24, true, 0.4),
 			// El de los nombres de los mobs y la barra de la luna para quien no tiene el mod en el cliente, y el de la
 			// consola: en el chat y los títulos, cada jugador ve el de su cliente (ver Idioma)
 			Idioma.INGLES);
@@ -144,6 +146,7 @@ public record Configuracion(
 		exigir(afijos.chance() >= 0 && afijos.chance() <= 1, "afijos.chance va de 0 a 1");
 		exigir(afijos.chanceTeletransporte() >= 0 && afijos.chanceTeletransporte() <= 1, "afijos.chanceTeletransporte va de 0 a 1");
 		exigir(afijos.ticksEntreParticulas() >= 1, "afijos.ticksEntreParticulas tiene que ser 1 o más");
+		exigir(afijos.escala() >= 0 && jefeDeZona.escala() >= 0, "afijos.escala y jefeDeZona.escala no pueden ser negativas (0 = tamaño normal)");
 		exigir(afijos.nivelVeneno() >= 1 && afijos.nivelCongelante() >= 1, "afijos.nivelVeneno y nivelCongelante tienen que ser 1 o más (1 = nivel I)");
 		exigir(estampida.chancePorMinuto() >= 0 && estampida.chancePorMinuto() <= 1, "estampida.chancePorMinuto va de 0 a 1");
 		exigir(estampida.nivelesPorMobExtra() >= 1, "estampida.nivelesPorMobExtra tiene que ser 1 o más");
@@ -188,12 +191,13 @@ public record Configuracion(
 	 * Rasgos de los campeones. chance: probabilidad de que un campeón tenga uno. velocidadVeloz y curacionVampiro son
 	 * fracciones (0.3 = +30 % de velocidad, 0.5 = se cura la mitad del daño que hace). armaduraBlindado y
 	 * empujeBlindado se suman a los atributos. nivelVeneno y nivelCongelante son el nivel del efecto (2 = II). particulas:
-	 * si los campeones sueltan la partícula de su afijo, cada ticksEntreParticulas.
+	 * si los campeones sueltan la partícula de su afijo, cada ticksEntreParticulas. escala: cuánto más grandes son
+	 * (0.15 = +15 %); el lugar donde aparecen lo elige vanilla con el tamaño normal, así que pueden quedar trabados.
 	 */
 	public record Afijos(double chance, double velocidadVeloz, double curacionVampiro, float potenciaExplosivo, int ticksDeMecha,
 			int refuerzosInvocador, int invocacionesMaximas, int segundosEntreInvocaciones, double armaduraBlindado, double empujeBlindado,
 			int segundosVeneno, int nivelVeneno, int segundosCongelante, int nivelCongelante, double chanceTeletransporte,
-			int segundosEntreTeletransportes, boolean particulas, int ticksEntreParticulas) {
+			int segundosEntreTeletransportes, boolean particulas, int ticksEntreParticulas, double escala) {
 	}
 
 	/** Los días son de juego (20 minutos reales), contados con el gameTime: dormir no los adelanta. */
@@ -207,11 +211,12 @@ public record Configuracion(
 
 	/**
 	 * vidaFuria: con qué fracción de la vida se enfurece (0 = nunca). velocidadFuria y danioFuria son fracciones que se
-	 * suman. danioOnda es en golpes del jefe (1.0 = lo que pega con la mano); fuerzaOnda, cuánto empuja.
+	 * suman. danioOnda es en golpes del jefe (1.0 = lo que pega con la mano); fuerzaOnda, cuánto empuja. escala: cuánto
+	 * más grande es (0.4 = +40 %), sumado a la escala del afijo que tenga.
 	 */
 	public record JefeDeZona(boolean activo, double chancePorMinuto, int diasEntreJefes, int nivelMinimo, int nivelesExtra,
 			double multiplicadorDeVida, int escoltas, int radioDeBarra, int segundosAbandonado, double vidaFuria, double velocidadFuria,
 			double danioFuria, int escoltasFuria, int segundosEntreHabilidades, int radioOnda, double danioOnda, double fuerzaOnda,
-			int radioTiron, boolean contorno) {
+			int radioTiron, boolean contorno, double escala) {
 	}
 }

@@ -112,6 +112,12 @@ public final class Eventos {
 	 */
 	public static @Nullable BlockPos lugarCerca(ServerLevel level, BlockPos centro, int min, int max, @Nullable Double angulo,
 			EntityType<?> tipo, boolean superficie, RandomSource random) {
+		return lugarCerca(level, centro, min, max, angulo, tipo, 1, superficie, random);
+	}
+
+	/** Para un mob agrandado: vanilla chequea el lugar con el tamaño normal, y uno más grande quedaría trabado o asfixiado. */
+	public static @Nullable BlockPos lugarCerca(ServerLevel level, BlockPos centro, int min, int max, @Nullable Double angulo,
+			EntityType<?> tipo, float escala, boolean superficie, RandomSource random) {
 		for (int i = 0; i < INTENTOS; i++) {
 			double a = angulo != null ? angulo + (random.nextDouble() - 0.5) * APERTURA : random.nextDouble() * Math.PI * 2;
 			double distancia = min + random.nextDouble() * (max - min);
@@ -122,7 +128,7 @@ public final class Eventos {
 			}
 			if (superficie) {
 				BlockPos pos = new BlockPos(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z), z);
-				if (sirve(level, pos, tipo)) {
+				if (sirve(level, pos, tipo, escala)) {
 					return pos;
 				}
 				continue;
@@ -131,7 +137,7 @@ public final class Eventos {
 				// 0, +1, -1, +2, -2…: primero lo más parecido a la altura del centro
 				int y = centro.getY() + (dy % 2 == 0 ? dy / 2 : -(dy + 1) / 2);
 				BlockPos pos = new BlockPos(x, y, z);
-				if (sirve(level, pos, tipo)) {
+				if (sirve(level, pos, tipo, escala)) {
 					return pos;
 				}
 			}
@@ -139,9 +145,11 @@ public final class Eventos {
 		return null;
 	}
 
-	private static boolean sirve(ServerLevel level, BlockPos pos, EntityType<?> tipo) {
-		return SpawnPlacements.isSpawnPositionOk(tipo, level, pos)
-				&& level.noCollision(tipo.getSpawnAABB(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5));
+	private static boolean sirve(ServerLevel level, BlockPos pos, EntityType<?> tipo, float escala) {
+		double x = pos.getX() + 0.5;
+		double z = pos.getZ() + 0.5;
+		return SpawnPlacements.isSpawnPositionOk(tipo, level, pos) && level.noCollision(tipo.getSpawnAABB(x, pos.getY(), z))
+				&& (escala <= 1 || level.noCollision(tipo.getDimensions().scale(escala).makeBoundingBox(x, pos.getY(), z)));
 	}
 
 	/** Un título en el centro de la pantalla: lo muestra cualquier cliente, con o sin el mod. */

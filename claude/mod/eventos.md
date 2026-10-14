@@ -35,13 +35,14 @@ Todo es del lado del servidor: barra de jefe (`ServerBossEvent`), títulos (`Cli
 | Afijo | Dónde | Detalle |
 |---|---|---|
 | Veloz | `Afijo.aplicarModificadores`, llamado desde `aplicarEstadisticas` | Modificador `bloodmoonandbosses:afijo` en `MOVEMENT_SPEED`. Desde ahí, las conversiones lo rehacen solas |
+| (todos) | `Afijo.aplicarModificadores` | `bloodmoonandbosses:afijo` en `SCALE` (`ADD_MULTIPLIED_BASE`) con `afijos.escala`, **por defecto 0**: un zombi o un esqueleto (1,95 y 1,99 de alto) apenas un 3 % más grande ya no entra en un túnel de 2, y el lugar del campeón natural lo elige vanilla con el tamaño normal |
 | Vampiro | `ServerLivingEntityEvents.AFTER_DAMAGE` | `source.getEntity()` y no `getDirectEntity()`: en una flecha es el esqueleto. Cura `danioRecibido × curacionVampiro`. No le toca al creeper |
 | Explosivo | `AFTER_DEATH` + `Eventos.programar` | La explosión va `ticksDeMecha` después, con el sonido de la mecha. `ExplosionInteraction.NONE`: no rompe bloques |
 | Invocador | `AFTER_DAMAGE` sobre la víctima | `INVOCACIONES` es persistente (si no, guardar y cargar el chunk le devolvería todas). `ULTIMA_INVOCACION` no lo es: la espera se reinicia, y no importa. Tag `no_invocan` (vex: sin evocador no desaparece nunca) |
 | Blindado | `Afijo.aplicarModificadores` | `bloodmoonandbosses:afijo` en `ARMOR` (`armaduraBlindado`) y `KNOCKBACK_RESISTANCE` (`empujeBlindado`), `ADD_VALUE`. `modificar` con 0 **saca** el modificador: cada afijo pone los suyos y saca los de los otros |
 | Venenoso | `AFTER_DAMAGE` sobre el atacante | `POISON` de `nivelVeneno` (1 = I, el amplificador es `nivel − 1`) por `segundosVeneno`, con el atacante como fuente. Con `getEntity()`, también un esqueleto con flechas o un creeper con su explosión |
 | Congelante | `AFTER_DAMAGE` sobre el atacante | `SLOWNESS` como el veneno, más `setTicksFrozen` para la escarcha de la nieve polvo en pantalla. **Por debajo de `getTicksRequiredToFreeze()`** (140): con el máximo, vanilla lastima por frío. Fuera de la nieve baja 2 por tick, así que `segundosCongelante × 40` dura esos segundos |
-| Teletransportador | `AFTER_DAMAGE` sobre la víctima | Con `chanceTeletransporte` y una espera de `segundosEntreTeletransportes` (`ULTIMO_TELETRANSPORTE`, en memoria), salta a 2–4 bloques **del que le pegó** con `lugarCerca` y lo toma de objetivo: alejarse o tirarle flechas no alcanza. Sin un atacante vivo (lava, caída) no salta |
+| Teletransportador | `AFTER_DAMAGE` sobre la víctima | Con `chanceTeletransporte` y una espera de `segundosEntreTeletransportes` (`ULTIMO_TELETRANSPORTE`, en memoria), salta a 2–4 bloques **del que le pegó** con `lugarCerca` y lo toma de objetivo: alejarse o tirarle flechas no alcanza. Sin un atacante vivo (lava, caída) no salta. Busca lugar con `mob.getScale()`: un jefe teletransportador no cae en un túnel donde no entra |
 
 ### Partículas
 
@@ -70,6 +71,7 @@ Todo es del lado del servidor: barra de jefe (`ServerBossEvent`), títulos (`Cli
 `Eventos.lugarCerca(level, centro, min, max, angulo, tipo, superficie, random)` prueba 12 puntos de un anillo. Con `angulo`, todos dentro de un abanico de 60° (la estampida llega de un lado).
 
 - **`superficie`**: el `MOTION_BLOCKING_NO_LEAVES` del heightmap. Si no, busca un piso a ±8 de la altura del centro (cuevas, minas).
+- **Con `escala` (el overload de 9 parámetros) también tiene que entrar la caja agrandada** (`tipo.getDimensions().scale(escala).makeBoundingBox`): `isSpawnPositionOk` y `getSpawnAABB` usan el tamaño normal, y un mob con `SCALE` más grande quedaría trabado o asfixiándose. El de 8 parámetros es con escala 1.
 - **Un lugar sirve si `SpawnPlacements.isSpawnPositionOk` y `noCollision(tipo.getSpawnAABB(...))`.** `isSpawnPositionOk` es la regla de vanilla: **no deja aparecer sobre barreras ni vidrio**, ni a un zombi en el agua. Por eso los tests ponen un piso de piedra (ver [tests: eventos](../tests/eventos.md)).
 - Sólo chunks cargados (`isLoaded`).
 
@@ -99,6 +101,7 @@ Todo es del lado del servidor: barra de jefe (`ServerBossEvent`), títulos (`Cli
 
 - **`setPersistenceRequired`:** si no, a más de 128 bloques del jugador desaparece al instante. A cambio, **se va solo** si nadie está a menos de `radioDeBarra` durante `segundosAbandonado` (`discard`). Las escoltas son mobs comunes.
 - **Vida:** un modificador `bloodmoonandbosses:jefe` con `ADD_MULTIPLIED_TOTAL` (multiplica también lo que sumó el nivel), y `setHealth(getMaxHealth())` después.
+- **Tamaño:** `bloodmoonandbosses:jefe` en `SCALE` con `ADD_MULTIPLIED_BASE` y `jefeDeZona.escala` (0,4): se **suma** a la del afijo (el jefe siempre tiene uno), así que mide `1 + jefeDeZona.escala + afijos.escala`. Lo ve cualquier cliente vanilla. **`aparecer` busca lugar con ese tamaño**; las escoltas, con el normal. Vanilla rehace las dimensiones (`refreshDimensions`) un tick después de cambiar el atributo. Un `/bloodmoon recargar` no cambia el de los jefes que ya están: el modificador es permanente. **Más grande no pasa por túneles de 2 ni puertas:** el pathfinding no lo lleva, pero el tirón saca de ahí a los que pelean de lejos.
 - **Aparece a la altura del jugador** (`superficie = false`): en una mina tiene que aparecer en la mina. Tipos por dimensión: tags `jefe_de_zona/overworld`, `nether` y `end`.
 - **No aparece si ya hay un jefe seguido a menos de 128 bloques** del jugador.
 - **El botín asegurado va en el mismo `@WrapOperation` que el botín raro** (`BotinPorNivel.soltarBotinDeJefe`), así que respeta `mobDrops` y exige que lo haya matado un jugador. Ver [botín](botin.md).

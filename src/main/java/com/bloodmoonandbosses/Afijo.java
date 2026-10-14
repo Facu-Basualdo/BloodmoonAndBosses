@@ -150,6 +150,7 @@ public enum Afijo implements StringRepresentable {
 		modificar(mob, Attributes.MOVEMENT_SPEED, afijo == VELOZ ? config.velocidadVeloz() : 0, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
 		modificar(mob, Attributes.ARMOR, afijo == BLINDADO ? config.armaduraBlindado() : 0, AttributeModifier.Operation.ADD_VALUE);
 		modificar(mob, Attributes.KNOCKBACK_RESISTANCE, afijo == BLINDADO ? config.empujeBlindado() : 0, AttributeModifier.Operation.ADD_VALUE);
+		modificar(mob, Attributes.SCALE, afijo != null ? config.escala() : 0, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
 	}
 
 	/** Con 0 lo saca: un mob que cambió de afijo (o lo perdió) no se queda con el modificador del anterior. */
@@ -214,7 +215,8 @@ public enum Afijo implements StringRepresentable {
 		if (enemigo.level() != level) {
 			return;
 		}
-		BlockPos destino = Eventos.lugarCerca(level, enemigo.blockPosition(), 2, 4, null, mob.getType(), false, random);
+		// Con su tamaño: un jefe teletransportador no puede caer en un túnel donde no entra
+		BlockPos destino = Eventos.lugarCerca(level, enemigo.blockPosition(), 2, 4, null, mob.getType(), mob.getScale(), false, random);
 		if (destino == null) {
 			return;
 		}
