@@ -1,5 +1,7 @@
 plugins {
 	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+	// Sube el jar a CurseForge: gradlew publishMods (ver abajo)
+	id 'me.modmuss50.mod-publish-plugin' version '2.2.1'
 }
 
 repositories {
@@ -106,5 +108,38 @@ tasks.matching { it.name == "runGameTest" }.configureEach {
 tasks.matching { it.name == "runClientGameTest" }.configureEach {
 	doFirst {
 		configDelClienteDePrueba.get().asFile.deleteDir()
+	}
+}
+
+// Publicación en CurseForge: gradlew publishMods sube el jar de la versión de gradle.properties, con la sección
+// "## <versión>" de CHANGELOG.md como changelog (si falta, no sube nada). El token sale de la variable de entorno
+// CURSEFORGE_TOKEN o de curseforgeToken en ~/.gradle/gradle.properties, nunca de este repo. Sin token corre en
+// seco: no sube nada y deja en build/publishMods lo que habría mandado.
+def tokenDeCurseForge = providers.environmentVariable("CURSEFORGE_TOKEN").orElse(providers.gradleProperty("curseforgeToken"))
+def versionDelMod = project.version.toString()
+
+publishMods {
+	file = jar.archiveFile
+	displayName = "Bloodmoon & Bosses ${versionDelMod}"
+	version = versionDelMod
+	changelog = providers.fileContents(layout.projectDirectory.file("CHANGELOG.md")).asText.map { texto ->
+		def seccion = texto.split(/(?m)^## /).find { it.readLines()[0]?.trim() == versionDelMod }
+		if (seccion == null) {
+			throw new GradleException("CHANGELOG.md no tiene la sección ## ${versionDelMod}")
+		}
+		seccion.readLines().drop(1).join("\n").trim()
+	}
+	type = STABLE
+	modLoaders.add("fabric")
+	dryRun = tokenDeCurseForge.map { false }.orElse(true)
+
+	curseforge {
+		projectId = "1740373"
+		accessToken = tokenDeCurseForge
+		minecraftVersions.add(project.minecraft_version)
+		client = true
+		server = true
+		requires("fabric-api")
+		optional("modmenu", "jade")
 	}
 }

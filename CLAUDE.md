@@ -54,6 +54,7 @@ El mismo tema en distintas áreas usa el mismo nombre de archivo (`claude/mod/ni
 - **Si la feature se nota en el juego, actualizá el `README.md`**: es lo que lee quien instala el mod, y `/docs` sólo toca `claude/`.
 - **Antes de dar algo por terminado corré `gradlew runGameTest`**: compila no alcanza, los mixins recién se aplican en runtime. Si tocaste `src/client`, también `gradlew runClientGameTest` (abre una ventana unos 30 segundos).
 - **Con cada cambio que se pueda notar en el juego, subí `version` en `gradle.properties`**: minor (`0.1.0` → `0.2.0`) para una feature nueva, patch (`0.1.0` → `0.1.1`) para un arreglo.
+- **Con cada versión nueva, agregá su sección `## <versión>` en `CHANGELOG.md`**, en inglés y pensada para quien juega: es el changelog que `gradlew publishMods` sube a CurseForge, y sin ella la publicación falla. Subir es sólo `gradlew publishMods` con el token de CurseForge en `~/.gradle/gradle.properties` (`curseforgeToken`) o en `CURSEFORGE_TOKEN`; sin token corre en seco y no sube nada. Publicá sólo si te lo piden.
 - **No commitees ni pushees salvo que te lo pidan.**
 - Mensajes, comentarios y docs en **español rioplatense** (vos), como el resto del proyecto.
 
