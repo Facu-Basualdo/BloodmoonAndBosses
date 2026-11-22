@@ -135,7 +135,7 @@ public enum Afijo implements StringRepresentable {
 			if (afijo == VAMPIRO && mob instanceof Creeper) {
 				continue;
 			}
-			if (afijo == INVOCADOR && mob.is(NO_INVOCAN)) {
+			if (afijo == INVOCADOR && mob.getType().is(NO_INVOCAN)) {
 				continue;
 			}
 			posibles.add(afijo);

@@ -17,7 +17,7 @@ public class LunaDeSangreClienteTest implements FabricClientGameTest {
 	@Override
 	public void runTest(ClientGameTestContext context) {
 		try (TestSingleplayerContext mundo = context.worldBuilder().create()) {
-			mundo.getConnection().waitForChunksRender();
+			mundo.getClientWorld().waitForChunksRender();
 			mundo.getServer().runCommand("weather clear");
 			// Medianoche (la luna está arriba de todo) del día 1: el mundo nuevo arranca con luna llena, y el sorteo de la
 			// noche podría darle una luna de sangre antes de la foto de la noche común

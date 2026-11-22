@@ -16,7 +16,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.illager.Vindicator;
 
@@ -28,7 +28,7 @@ public class AspectoDeMobsClienteTest implements FabricClientGameTest {
 	@Override
 	public void runTest(ClientGameTestContext context) {
 		try (TestSingleplayerContext mundo = context.worldBuilder().create()) {
-			mundo.getConnection().waitForChunksRender();
+			mundo.getClientWorld().waitForChunksRender();
 			mundo.getServer().runCommand("difficulty normal");
 			mundo.getServer().runCommand("time set 6000");
 			mundo.getServer().runCommand("weather clear");
@@ -81,7 +81,7 @@ public class AspectoDeMobsClienteTest implements FabricClientGameTest {
 	}
 
 	private static Mob poner(ServerLevel level, BlockPos pos) {
-		Mob mob = NivelDeMob.invocarConNivel(EntityTypes.VINDICATOR, level, pos, EntitySpawnReason.EVENT, 20, false);
+		Mob mob = NivelDeMob.invocarConNivel(EntityType.VINDICATOR, level, pos, EntitySpawnReason.EVENT, 20, false);
 		mob.setNoAi(true);
 		mob.snapTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 180, 0);
 		mob.setYHeadRot(180);

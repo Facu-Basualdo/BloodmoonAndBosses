@@ -5,7 +5,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 import com.mojang.serialization.Codec;
 import org.jspecify.annotations.Nullable;
@@ -48,7 +47,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
-import net.minecraft.world.scores.TeamColor;
 
 /**
  * Un mob mucho más fuerte que aparece cerca de un jugador, con escoltas y barra de jefe. No depende de memoria: el
@@ -211,7 +209,7 @@ public final class JefeDeZona {
 		if (SEGUIDOS.containsKey(jefe) || !(jefe.level() instanceof ServerLevel level)) {
 			return;
 		}
-		ServerBossEvent barra = new ServerBossEvent(UUID.randomUUID(), nombreDeLaBarra(jefe), colorDeLaBarra(jefe), BossEvent.BossBarOverlay.NOTCHED_10);
+		ServerBossEvent barra = new ServerBossEvent(nombreDeLaBarra(jefe), colorDeLaBarra(jefe), BossEvent.BossBarOverlay.NOTCHED_10);
 		long ahora = level.getGameTime();
 		SEGUIDOS.put(jefe, new Seguido(barra, ahora, ahora + BloodmoonAndBosses.config().jefeDeZona().segundosEntreHabilidades() * 20L));
 		resaltar(jefe, BloodmoonAndBosses.config().jefeDeZona().contorno());
@@ -233,18 +231,18 @@ public final class JefeDeZona {
 			}
 			return;
 		}
-		PlayerTeam equipo = estaFurioso(jefe) ? equipo(scoreboard, EQUIPO_FURIA, TeamColor.RED) : equipo(scoreboard, EQUIPO, TeamColor.DARK_PURPLE);
+		PlayerTeam equipo = estaFurioso(jefe) ? equipo(scoreboard, EQUIPO_FURIA, ChatFormatting.RED) : equipo(scoreboard, EQUIPO, ChatFormatting.DARK_PURPLE);
 		// Sólo si cambia: cada alta en un equipo se les manda a todos los jugadores
 		if (actual != equipo) {
 			scoreboard.addPlayerToTeam(nombre, equipo);
 		}
 	}
 
-	private static PlayerTeam equipo(Scoreboard scoreboard, String nombre, TeamColor color) {
+	private static PlayerTeam equipo(Scoreboard scoreboard, String nombre, ChatFormatting color) {
 		PlayerTeam equipo = scoreboard.getPlayerTeam(nombre);
 		if (equipo == null) {
 			equipo = scoreboard.addPlayerTeam(nombre);
-			equipo.setColor(Optional.of(color));
+			equipo.setColor(color);
 		}
 		return equipo;
 	}
@@ -274,7 +272,7 @@ public final class JefeDeZona {
 		int radio = BloodmoonAndBosses.config().jefeDeZona().radioDeBarra();
 		for (Player jugador : level.getEntitiesOfClass(Player.class, muerto.getBoundingBox().inflate(radio), Entity::isAlive)) {
 			ServerPlayer servidor = jugador instanceof ServerPlayer conectado ? conectado : null;
-			jugador.sendSystemMessage(Idioma.tr(servidor, "bloodmoonandbosses.jefe.cayo", nombre).withStyle(ChatFormatting.GOLD));
+			jugador.displayClientMessage(Idioma.tr(servidor, "bloodmoonandbosses.jefe.cayo", nombre).withStyle(ChatFormatting.GOLD), false);
 		}
 	}
 

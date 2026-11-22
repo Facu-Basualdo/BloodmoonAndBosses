@@ -2,7 +2,18 @@
 
 **El id es `bloodmoonandbosses` desde la 0.11.0 (antes `mobspoderosos`)**, y el comando es `/bloodmoon`. Lo guardado con el id viejo (el nivel de cada mob, la config, la luna) se pasa solo: ver [migración del id](claude/mod/migracion-de-id.md). No lo vuelvas a cambiar sin una migración. Además, **Mythic Loot lee por id `bloodmoonandbosses:nivel`, `bloodmoonandbosses:jefe` y `bloodmoonandbosses:afijo`** (sin depender de las clases de este mod): cambiarles el id o el tipo de valor lo rompe.
 
-Mod de Fabric para **Minecraft Java 26.3** que hace aparecer a los mobs hostiles con **niveles**: cuanto más lejos del spawn del mundo y más días tiene el mundo, más vida, daño y armadura tienen, y mejor loot dan; además, algunos aparecen como campeones con niveles de más. El nivel y la vida se ven en el nombre ("Zombi [Nv 7] ❤ 34/40"). Java 25, Gradle 9.7 + Fabric Loom 1.18, Fabric Loader 0.19.5, Fabric API 0.162.0+26.3. Toda la lógica corre en el servidor: los jugadores no necesitan instalar nada. Con el mod también en el cliente, la luna de sangre se ve en el cielo y jefes y campeones se tiñen, y con Mod Menu la config se edita desde el juego (`src/client`, opcional).
+Mod de Fabric para **Minecraft Java 1.21.11** (backport de la rama `main`, que es 26.3) que hace aparecer a los mobs hostiles con **niveles**: cuanto más lejos del spawn del mundo y más días tiene el mundo, más vida, daño y armadura tienen, y mejor loot dan; además, algunos aparecen como campeones con niveles de más. El nivel y la vida se ven en el nombre ("Zombi [Nv 7] ❤ 34/40"). Java 21 (Gradle corre con el 25), Gradle 9.7 + Fabric Loom Remap 1.18.4 con los mappings oficiales de Mojang, Fabric Loader 0.18.4, Fabric API 0.141.6+1.21.11. Toda la lógica corre en el servidor: los jugadores no necesitan instalar nada. Con el mod también en el cliente, la luna de sangre se ve en el cielo y jefes y campeones se tiñen, y con Mod Menu la config se edita desde el juego (`src/client`, opcional).
+
+## Diferencias con 26.3 (rama `main`)
+
+Para portar un cambio de `main`, aplicalo, compilá y corré `runGameTest`. Lo que cambia en esta rama:
+
+- **Build:** `net.fabricmc.fabric-loom-remap` con `mappings loom.officialMojangMappings()` (1.21.11 viene ofuscado), dependencias con `modImplementation`/`modCompileOnly`, Java 21 y `compatibilityLevel` `JAVA_21` en los mixins. Gradle sigue corriendo con el JDK 25.
+- **Renombres de 26.x:** `ContainerInput` → `ClickType`, `PayloadTypeRegistry.playS2C()/playC2S()`, `EntityType` en vez de `EntityTypes`, `Minecraft.screen`/`setScreen` en vez de `gui`, `GuiGraphics`/`render…` en vez de `GuiGraphicsExtractor`/`extract…`, `KeyBindingHelper`, `InputConstants.Type.KEYSYM`, `Items.GRAY_STAINED_GLASS_PANE` y similares.
+- **SavedData:** el id es un `String` que se usa de nombre de archivo (`data/<mod>_<nombre>.dat`) y el almacenamiento es el del overworld. La migración de datos de mundo del id viejo se sacó: ningún mundo de 1.21.x se guardó con él.
+- **Gametests de cliente:** la API de 1.21.11 no espera paquetes (`waitForClientboundPackets`): se esperan unos ticks.
+- **Tags de entidad:** `mob.getType().is(tag)` en vez de `mob.is(tag)`. `ServerBossEvent` sin UUID, `PlayerTeam.setColor(ChatFormatting)`, hora con `getDayTime()`.
+- **Cliente:** la luna se agranda en el `Matrix4fStack.scale(20, 1, 20)` y se tiñe en `DynamicUniforms.writeTransform`; el tinte de mobs va en `extractRenderState`. Jade 21 sin `ConfigIcon`.
 
 ## Cómo obtener contexto
 

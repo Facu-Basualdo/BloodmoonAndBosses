@@ -55,18 +55,17 @@ import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Creeper;
-import net.minecraft.world.entity.monster.cubemob.Slime;
+import net.minecraft.world.entity.monster.Slime;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
-import net.minecraft.world.scores.TeamColor;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -159,9 +158,9 @@ public class BloodmoonAndBossesGameTest {
 	 */
 	@GameTest
 	public void reconoceNombresDeOtroIdiomaYViejos(GameTestHelper helper) {
-		Zombie zombie = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie zombie = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(zombie, 20);
-		Component tipo = EntityTypes.ZOMBIE.getDescription();
+		Component tipo = EntityType.ZOMBIE.getDescription();
 		// Nivel 20 de 100: el segundo quinto, verde
 		Component viejo = tipo.copy().append(" [Nv 20]").withStyle(ChatFormatting.GREEN);
 		zombie.setCustomName(Component.empty().append(viejo).append(" ❤ 52/52"));
@@ -181,7 +180,7 @@ public class BloodmoonAndBossesGameTest {
 
 	@GameTest
 	public void aplicarNivel(GameTestHelper helper) {
-		Zombie zombie = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie zombie = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		helper.assertFalse(zombie.hasAttached(NivelDeMob.NIVEL), Component.literal("COMMAND no escala solo"));
 
 		NivelDeMob.aplicar(zombie, 20);
@@ -210,7 +209,7 @@ public class BloodmoonAndBossesGameTest {
 	@GameTest
 	public void vidaEnElNombre(GameTestHelper helper) {
 		ServerLevel level = helper.getLevel();
-		Zombie zombie = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie zombie = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(zombie, 20);
 		assertTerminaEn(helper, zombie, nivel(20) + " ❤ 52/52");
 		helper.assertTrue(NivelDeMob.esNombreDelMod(zombie), Component.literal("Con la vida, el nombre sigue siendo del mod"));
@@ -220,7 +219,7 @@ public class BloodmoonAndBossesGameTest {
 		zombie.setHealth(0.3f);
 		assertTerminaEn(helper, zombie, "❤ 1/52");
 
-		Zombie golpeado = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie golpeado = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(golpeado, 20);
 		golpeado.hurtServer(level, level.damageSources().generic(), 10);
 		helper.assertTrue(golpeado.getHealth() < 52, Component.literal("El golpe le sacó vida"));
@@ -232,7 +231,7 @@ public class BloodmoonAndBossesGameTest {
 		assertTerminaEn(helper, recargado, "❤ 1/52");
 
 		// Un mob de antes de la 0.8.0 tiene el nombre sin la vida: se reconoce y la vida aparece al primer cambio
-		recargado.setCustomName(NivelDeMob.nombre(EntityTypes.ZOMBIE, 20));
+		recargado.setCustomName(NivelDeMob.nombre(EntityType.ZOMBIE, 20));
 		helper.assertTrue(NivelDeMob.esNombreDelMod(recargado), Component.literal("El nombre sin la vida también es del mod"));
 		recargado.setHealth(10);
 		assertTerminaEn(helper, recargado, nivel(20) + " ❤ 10/52");
@@ -245,8 +244,8 @@ public class BloodmoonAndBossesGameTest {
 
 	@GameTest
 	public void creeper(GameTestHelper helper) {
-		Creeper debil = spawn(helper, EntityTypes.CREEPER, EntitySpawnReason.COMMAND);
-		Creeper fuerte = spawn(helper, EntityTypes.CREEPER, EntitySpawnReason.COMMAND);
+		Creeper debil = spawn(helper, EntityType.CREEPER, EntitySpawnReason.COMMAND);
+		Creeper fuerte = spawn(helper, EntityType.CREEPER, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(debil, 59);
 		NivelDeMob.aplicar(fuerte, 60);
 		helper.assertValueEqual(3, ((CreeperAccessor) debil).bloodmoonandbosses$getExplosionRadius(), "Radio de un creeper de nivel 59");
@@ -256,13 +255,13 @@ public class BloodmoonAndBossesGameTest {
 
 	@GameTest
 	public void motivosDeSpawn(GameTestHelper helper) {
-		helper.assertTrue(spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.NATURAL).hasAttached(NivelDeMob.NIVEL), Component.literal("NATURAL escala"));
-		helper.assertTrue(spawn(helper, EntityTypes.SKELETON, EntitySpawnReason.JOCKEY).hasAttached(NivelDeMob.NIVEL), Component.literal("JOCKEY escala (el jinete de la araña)"));
-		helper.assertFalse(spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.SPAWNER).hasAttached(NivelDeMob.NIVEL), Component.literal("SPAWNER no escala"));
-		helper.assertFalse(spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.SPAWN_ITEM_USE).hasAttached(NivelDeMob.NIVEL), Component.literal("Los huevos no escalan"));
-		helper.assertFalse(spawn(helper, EntityTypes.ELDER_GUARDIAN, EntitySpawnReason.STRUCTURE).hasAttached(NivelDeMob.NIVEL), Component.literal("Los jefes (tag sin_nivel) no escalan"));
+		helper.assertTrue(spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.NATURAL).hasAttached(NivelDeMob.NIVEL), Component.literal("NATURAL escala"));
+		helper.assertTrue(spawn(helper, EntityType.SKELETON, EntitySpawnReason.JOCKEY).hasAttached(NivelDeMob.NIVEL), Component.literal("JOCKEY escala (el jinete de la araña)"));
+		helper.assertFalse(spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.SPAWNER).hasAttached(NivelDeMob.NIVEL), Component.literal("SPAWNER no escala"));
+		helper.assertFalse(spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.SPAWN_ITEM_USE).hasAttached(NivelDeMob.NIVEL), Component.literal("Los huevos no escalan"));
+		helper.assertFalse(spawn(helper, EntityType.ELDER_GUARDIAN, EntitySpawnReason.STRUCTURE).hasAttached(NivelDeMob.NIVEL), Component.literal("Los jefes (tag sin_nivel) no escalan"));
 
-		Villager aldeano = spawn(helper, EntityTypes.VILLAGER, EntitySpawnReason.NATURAL);
+		Villager aldeano = spawn(helper, EntityType.VILLAGER, EntitySpawnReason.NATURAL);
 		helper.assertFalse(aldeano.hasAttached(NivelDeMob.NIVEL), Component.literal("Los mobs que no son hostiles no escalan"));
 		helper.assertFalse(aldeano.hasAttached(NivelDeMob.PENDIENTE), Component.literal("Al cargar se borra PENDIENTE aunque no escale"));
 		helper.succeed();
@@ -274,7 +273,7 @@ public class BloodmoonAndBossesGameTest {
 		BlockPos pos = helper.absolutePos(DENTRO);
 
 		// Así pasa un mob de STRUCTURE por el ProtoChunk: finalizeSpawn, a NBT, y recreado desde el NBT
-		Zombie enGeneracion = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.STRUCTURE);
+		Zombie enGeneracion = EntityType.ZOMBIE.create(level, EntitySpawnReason.STRUCTURE);
 		enGeneracion.snapTo(pos, 0, 0);
 		enGeneracion.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), EntitySpawnReason.STRUCTURE, null);
 		helper.assertTrue(enGeneracion.hasAttached(NivelDeMob.PENDIENTE), Component.literal("finalizeSpawn con STRUCTURE marca PENDIENTE"));
@@ -294,30 +293,30 @@ public class BloodmoonAndBossesGameTest {
 
 	@GameTest
 	public void conversiones(GameTestHelper helper) {
-		Zombie zombie = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie zombie = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(zombie, 7);
-		Mob ahogado = zombie.convertTo(EntityTypes.DROWNED, ConversionParams.single(zombie, true, true), m -> {
+		Mob ahogado = zombie.convertTo(EntityType.DROWNED, ConversionParams.single(zombie, true, true), m -> {
 		});
 		helper.assertValueEqual(7, NivelDeMob.nivel(ahogado), "El ahogado conserva el nivel del zombi");
 		helper.assertTrue(NivelDeMob.esNombreDelMod(ahogado), Component.literal("Y su nombre es el de ahogado: " + ahogado.getCustomName().getString()));
 		assertCerca(helper, 31.2, ahogado.getMaxHealth(), "Con las estadísticas de nivel 7");
 
-		Zombie bautizado = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie bautizado = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(bautizado, 9);
 		bautizado.setCustomName(Component.literal("Pepe"));
-		Mob bautizadoAhogado = bautizado.convertTo(EntityTypes.DROWNED, ConversionParams.single(bautizado, true, true), m -> {
+		Mob bautizadoAhogado = bautizado.convertTo(EntityType.DROWNED, ConversionParams.single(bautizado, true, true), m -> {
 		});
 		helper.assertValueEqual("Pepe", bautizadoAhogado.getCustomName().getString(), "No se pisa el name tag de un jugador");
 		helper.assertValueEqual(9, NivelDeMob.nivel(bautizadoAhogado), "Pero el nivel sí pasa");
 
-		Mob aldeanoZombi = spawn(helper, EntityTypes.ZOMBIE_VILLAGER, EntitySpawnReason.COMMAND);
+		Mob aldeanoZombi = spawn(helper, EntityType.ZOMBIE_VILLAGER, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(aldeanoZombi, 12);
-		Mob curado = aldeanoZombi.convertTo(EntityTypes.VILLAGER, ConversionParams.single(aldeanoZombi, true, true), m -> {
+		Mob curado = aldeanoZombi.convertTo(EntityType.VILLAGER, ConversionParams.single(aldeanoZombi, true, true), m -> {
 		});
 		helper.assertFalse(curado.hasAttached(NivelDeMob.NIVEL), Component.literal("El aldeano curado no tiene nivel"));
 		helper.assertTrue(curado.getCustomName() == null, Component.literal("Ni el nombre de aldeano zombi"));
 
-		Slime slime = spawn(helper, EntityTypes.SLIME, EntitySpawnReason.COMMAND);
+		Slime slime = spawn(helper, EntityType.SLIME, EntitySpawnReason.COMMAND);
 		slime.setSize(2, true);
 		NivelDeMob.aplicar(slime, 5);
 		slime.setHealth(0);
@@ -338,10 +337,10 @@ public class BloodmoonAndBossesGameTest {
 		helper.assertValueEqual(6, BotinPorNivel.tiradasExtra(96), "Tiradas extra en nivel 96");
 		helper.assertValueEqual(6, BotinPorNivel.tiradasExtra(200), "Las tiradas extra topean en 6");
 
-		helper.assertValueEqual(1.0, chanceConNivel(helper, EntityTypes.ZOMBIE, 25), "Las tiradas extra de un zombi son seguras");
-		helper.assertValueEqual(0.0, chanceConNivel(helper, EntityTypes.WITHER_SKELETON, 25), "El esqueleto del Wither (sin_tiradas_extra) no tiene");
-		assertCerca(helper, 0.1, chanceConNivel(helper, EntityTypes.EVOKER, 20), "Chance de cada tirada extra de un evocador de nivel 20");
-		assertCerca(helper, 0.5, chanceConNivel(helper, EntityTypes.EVOKER, 100), "La chance del evocador topea en 50 %");
+		helper.assertValueEqual(1.0, chanceConNivel(helper, EntityType.ZOMBIE, 25), "Las tiradas extra de un zombi son seguras");
+		helper.assertValueEqual(0.0, chanceConNivel(helper, EntityType.WITHER_SKELETON, 25), "El esqueleto del Wither (sin_tiradas_extra) no tiene");
+		assertCerca(helper, 0.1, chanceConNivel(helper, EntityType.EVOKER, 20), "Chance de cada tirada extra de un evocador de nivel 20");
+		assertCerca(helper, 0.5, chanceConNivel(helper, EntityType.EVOKER, 100), "La chance del evocador topea en 50 %");
 		helper.succeed();
 	}
 
@@ -351,22 +350,22 @@ public class BloodmoonAndBossesGameTest {
 		ServerPlayer jugador = joinSurvivalPlayer(helper, "cazador");
 
 		// El devastador siempre suelta una montura: cada tirada extra es una montura más
-		Mob devastador = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
+		Mob devastador = spawn(helper, EntityType.RAVAGER, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(devastador, 48);
 		helper.assertValueEqual(4, matarYContar(helper, devastador, level.damageSources().playerAttack(jugador), Items.SADDLE), "Un devastador de nivel 48 muerto por un jugador suelta 1 + 3 monturas");
 
-		Mob lejano = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
+		Mob lejano = spawn(helper, EntityType.RAVAGER, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(lejano, 100);
 		helper.assertValueEqual(7, matarYContar(helper, lejano, level.damageSources().playerAttack(jugador), Items.SADDLE), "Un devastador de nivel 100 suelta 1 + 6 monturas");
 
-		Mob sinJugador = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
+		Mob sinJugador = spawn(helper, EntityType.RAVAGER, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(sinJugador, 30);
 		helper.assertValueEqual(1, matarYContar(helper, sinJugador, level.damageSources().genericKill(), Items.SADDLE), "Sin jugador no hay tiradas extra");
 
 		// 20 evocadores de nivel 100: 120 tiradas extra al 50 %. Que salgan todas o ninguna tiene probabilidad 2^-120
 		int totems = 0;
 		for (int i = 0; i < 20; i++) {
-			Mob evocador = spawn(helper, EntityTypes.EVOKER, EntitySpawnReason.COMMAND);
+			Mob evocador = spawn(helper, EntityType.EVOKER, EntitySpawnReason.COMMAND);
 			NivelDeMob.aplicar(evocador, 100);
 			totems += matarYContar(helper, evocador, level.damageSources().playerAttack(jugador), Items.TOTEM_OF_UNDYING);
 		}
@@ -380,8 +379,8 @@ public class BloodmoonAndBossesGameTest {
 	public void experiencia(GameTestHelper helper) {
 		ServerLevel level = helper.getLevel();
 		// El creeper no tiene equipo: su experiencia base es siempre 5, sin el extra al azar por cada pieza
-		Creeper comun = spawn(helper, EntityTypes.CREEPER, EntitySpawnReason.COMMAND);
-		Creeper conNivel = spawn(helper, EntityTypes.CREEPER, EntitySpawnReason.COMMAND);
+		Creeper comun = spawn(helper, EntityType.CREEPER, EntitySpawnReason.COMMAND);
+		Creeper conNivel = spawn(helper, EntityType.CREEPER, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(conNivel, 20);
 		helper.assertValueEqual(5, comun.getExperienceReward(level, null), "Experiencia de un creeper sin nivel");
 		helper.assertValueEqual(10, conNivel.getExperienceReward(level, null), "Experiencia de un creeper de nivel 20 (5 × 2)");
@@ -409,7 +408,7 @@ public class BloodmoonAndBossesGameTest {
 		int piezasZombi = 0;
 		int cascosPiglin = 0;
 		for (int i = 0; i < 20; i++) {
-			Zombie zombie = sinArmadura(spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND));
+			Zombie zombie = sinArmadura(spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND));
 			EquipoPorNivel.equipar(zombie, 100);
 			helper.assertTrue(zombie.getItemBySlot(EquipmentSlot.HEAD).isEmpty(), Component.literal("Los que se queman al sol no reciben casco"));
 			for (EquipmentSlot slot : new EquipmentSlot[] {EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
@@ -422,7 +421,7 @@ public class BloodmoonAndBossesGameTest {
 			}
 			zombie.discard();
 
-			Mob piglin = sinArmadura(spawn(helper, EntityTypes.PIGLIN, EntitySpawnReason.COMMAND));
+			Mob piglin = sinArmadura(spawn(helper, EntityType.PIGLIN, EntitySpawnReason.COMMAND));
 			EquipoPorNivel.equipar(piglin, 100);
 			if (!piglin.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
 				cascosPiglin++;
@@ -432,7 +431,7 @@ public class BloodmoonAndBossesGameTest {
 		helper.assertTrue(piezasZombi > 0, Component.literal("Los zombis de nivel 100 reciben armadura"));
 		helper.assertTrue(cascosPiglin > 0, Component.literal("Los que no se queman sí pueden recibir casco"));
 
-		Mob vindicador = sinArmadura(spawn(helper, EntityTypes.VINDICATOR, EntitySpawnReason.COMMAND));
+		Mob vindicador = sinArmadura(spawn(helper, EntityType.VINDICATOR, EntitySpawnReason.COMMAND));
 		for (int i = 0; i < 10; i++) {
 			EquipoPorNivel.equipar(vindicador, 100);
 		}
@@ -471,12 +470,12 @@ public class BloodmoonAndBossesGameTest {
 		EquipoPorNivel.equipar(yaEncantado, 50);
 		helper.assertValueEqual(1, yaEncantado.getMainHandItem().getEnchantments().size(), "Lo que encantó vanilla no se vuelve a encantar");
 
-		Mob vex = spawn(helper, EntityTypes.VEX, EntitySpawnReason.COMMAND);
+		Mob vex = spawn(helper, EntityType.VEX, EntitySpawnReason.COMMAND);
 		EquipoPorNivel.equipar(vex, 50);
 		helper.assertValueEqual(0.0f, vex.getDropChances().byEquipment(EquipmentSlot.MAINHAND), "Lo que vanilla no suelta nunca (la espada del vex) sigue sin soltarse");
 
 		// Por el camino real (ENTITY_LOAD): el esqueleto siempre lleva arco. Los tests corren al lado del spawn, así que el nivel es bajo
-		Mob esqueleto = spawn(helper, EntityTypes.SKELETON, EntitySpawnReason.NATURAL);
+		Mob esqueleto = spawn(helper, EntityType.SKELETON, EntitySpawnReason.NATURAL);
 		int nivel = NivelDeMob.nivel(esqueleto);
 		helper.assertTrue(nivel >= 1, Component.literal("El esqueleto aparece con nivel"));
 		assertCerca(helper, Math.min(0.085 + 0.002 * nivel, 0.25), esqueleto.getDropChances().byEquipment(EquipmentSlot.MAINHAND), "Al aparecer también se le ajusta el equipo");
@@ -499,7 +498,7 @@ public class BloodmoonAndBossesGameTest {
 		for (BotinPorNivel.Botin botin : BotinPorNivel.Botin.values()) {
 			helper.assertTrue(level.getServer().reloadableRegistries().getLootTable(botin.tabla()) != LootTable.EMPTY, Component.literal("La tabla " + botin.tabla().identifier() + " cargó"));
 			for (int i = 0; i < 10; i++) {
-				Mob mob = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
+				Mob mob = spawn(helper, EntityType.RAVAGER, EntitySpawnReason.COMMAND);
 				mob.dropFromLootTable(level, golpe, true, botin.tabla());
 				helper.assertTrue(contarSoltadosMenos(helper, mob, Items.SADDLE) > 0, Component.literal("La tabla " + botin.tabla().identifier() + " siempre da algo"));
 				mob.discard();
@@ -508,7 +507,7 @@ public class BloodmoonAndBossesGameTest {
 
 		// El devastador sólo suelta monturas: cualquier otra cosa es botín raro
 		for (int i = 0; i < 40; i++) {
-			Mob bajo = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
+			Mob bajo = spawn(helper, EntityType.RAVAGER, EntitySpawnReason.COMMAND);
 			NivelDeMob.aplicar(bajo, 19);
 			bajo.hurtServer(level, golpe, 100_000);
 			helper.assertValueEqual(0, contarSoltadosMenos(helper, bajo, Items.SADDLE), "Antes del nivel 20 no hay botín raro");
@@ -516,7 +515,7 @@ public class BloodmoonAndBossesGameTest {
 		// 40 devastadores de nivel 100 con 15 %, 10 % y 5 %: que no salga nada tiene probabilidad ~3 en un millón
 		int raros = 0;
 		for (int i = 0; i < 40; i++) {
-			Mob alto = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
+			Mob alto = spawn(helper, EntityType.RAVAGER, EntitySpawnReason.COMMAND);
 			NivelDeMob.aplicar(alto, 100);
 			alto.hurtServer(level, golpe, 100_000);
 			raros += contarSoltadosMenos(helper, alto, Items.SADDLE);
@@ -525,7 +524,7 @@ public class BloodmoonAndBossesGameTest {
 
 		// Sin jugador no hay botín raro, igual que no hay tiradas extra
 		for (int i = 0; i < 40; i++) {
-			Mob sinJugador = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
+			Mob sinJugador = spawn(helper, EntityType.RAVAGER, EntitySpawnReason.COMMAND);
 			NivelDeMob.aplicar(sinJugador, 100);
 			sinJugador.hurtServer(level, level.damageSources().genericKill(), 100_000);
 			helper.assertValueEqual(0, contarSoltadosMenos(helper, sinJugador, Items.SADDLE), "Muerto sin jugador no suelta botín raro");
@@ -538,7 +537,7 @@ public class BloodmoonAndBossesGameTest {
 	@GameTest
 	public void afijos(GameTestHelper helper) {
 		ServerLevel level = helper.getLevel();
-		Zombie veloz = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie veloz = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aparecer(veloz, 20, Afijo.VELOZ);
 		helper.assertTrue(veloz.getCustomName().getString().contains(nivel(20) + afijo(Afijo.VELOZ)), Component.literal("El afijo va en el nombre: " + veloz.getCustomName().getString()));
 		helper.assertTrue(NivelDeMob.esNombreDelMod(veloz), Component.literal("Con el afijo, el nombre sigue siendo del mod"));
@@ -546,27 +545,27 @@ public class BloodmoonAndBossesGameTest {
 		helper.assertTrue(velocidad != null, Component.literal("El veloz tiene su modificador de velocidad"));
 		assertCerca(helper, 0.3, velocidad.amount(), "El veloz corre un 30 % más");
 
-		Mob ahogado = veloz.convertTo(EntityTypes.DROWNED, ConversionParams.single(veloz, true, true), m -> {
+		Mob ahogado = veloz.convertTo(EntityType.DROWNED, ConversionParams.single(veloz, true, true), m -> {
 		});
 		helper.assertValueEqual(Afijo.VELOZ, Afijo.de(ahogado), "El afijo pasa en la conversión");
 		helper.assertTrue(ahogado.getCustomName().getString().contains(afijo(Afijo.VELOZ).trim()), Component.literal("Y sigue en el nombre: " + ahogado.getCustomName().getString()));
 		helper.assertTrue(ahogado.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(BloodmoonAndBosses.id("afijo")) != null, Component.literal("Y el modificador también"));
 
-		helper.assertFalse(Afijo.posibles(spawn(helper, EntityTypes.CREEPER, EntitySpawnReason.COMMAND)).contains(Afijo.VAMPIRO), Component.literal("Un creeper no puede ser vampiro"));
-		helper.assertFalse(Afijo.posibles(spawn(helper, EntityTypes.VEX, EntitySpawnReason.COMMAND)).contains(Afijo.INVOCADOR), Component.literal("Un vex (tag no_invocan) no puede ser invocador"));
+		helper.assertFalse(Afijo.posibles(spawn(helper, EntityType.CREEPER, EntitySpawnReason.COMMAND)).contains(Afijo.VAMPIRO), Component.literal("Un creeper no puede ser vampiro"));
+		helper.assertFalse(Afijo.posibles(spawn(helper, EntityType.VEX, EntitySpawnReason.COMMAND)).contains(Afijo.INVOCADOR), Component.literal("Un vex (tag no_invocan) no puede ser invocador"));
 		helper.assertTrue(Afijo.paraCampeon(ahogado, RandomSource.create(42)) != null, Component.literal("Con chance 1, todo campeón tiene afijo"));
 
-		Zombie vampiro = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie vampiro = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aparecer(vampiro, 20, Afijo.VAMPIRO);
 		vampiro.setHealth(10);
-		Mob victima = spawn(helper, EntityTypes.VILLAGER, EntitySpawnReason.COMMAND);
+		Mob victima = spawn(helper, EntityType.VILLAGER, EntitySpawnReason.COMMAND);
 		victima.hurtServer(level, level.damageSources().mobAttack(vampiro), 8);
 		helper.assertTrue(vampiro.getHealth() > 10, Component.literal("El vampiro se cura con lo que pega (tiene " + vampiro.getHealth() + ")"));
 
-		Zombie comun = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie comun = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(comun, 20);
 		comun.setHealth(10);
-		Mob otraVictima = spawn(helper, EntityTypes.VILLAGER, EntitySpawnReason.COMMAND);
+		Mob otraVictima = spawn(helper, EntityType.VILLAGER, EntitySpawnReason.COMMAND);
 		otraVictima.hurtServer(level, level.damageSources().mobAttack(comun), 8);
 		assertCerca(helper, 10, comun.getHealth(), "Sin el afijo no se cura");
 		helper.succeed();
@@ -579,7 +578,7 @@ public class BloodmoonAndBossesGameTest {
 	@GameTest
 	public void unMobDelIdViejoConservaSuNivel(GameTestHelper helper) {
 		ServerLevel level = helper.getLevel();
-		Zombie viejo = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie viejo = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		viejo.setAttached(MigracionDeId.<Integer>attachmentViejo("nivel"), 30);
 		viejo.setAttached(MigracionDeId.<Afijo>attachmentViejo("afijo"), Afijo.VELOZ);
 		viejo.setAttached(MigracionDeId.<Boolean>attachmentViejo("jefe"), true);
@@ -620,7 +619,7 @@ public class BloodmoonAndBossesGameTest {
 		ServerLevel level = helper.getLevel();
 		Configuracion.Afijos config = BloodmoonAndBosses.config().afijos();
 
-		Zombie blindado = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie blindado = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aparecer(blindado, 20, Afijo.BLINDADO);
 		AttributeModifier armadura = blindado.getAttribute(Attributes.ARMOR).getModifier(BloodmoonAndBosses.id("afijo"));
 		helper.assertTrue(armadura != null, Component.literal("El blindado tiene armadura extra"));
@@ -630,24 +629,24 @@ public class BloodmoonAndBossesGameTest {
 		helper.assertTrue(blindado.getAttribute(Attributes.MOVEMENT_SPEED).getModifier(BloodmoonAndBosses.id("afijo")) == null,
 				Component.literal("El blindado no corre más: el modificador de velocidad es sólo del veloz"));
 
-		Zombie venenoso = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie venenoso = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aparecer(venenoso, 20, Afijo.VENENOSO);
-		Mob envenenado = spawn(helper, EntityTypes.VILLAGER, EntitySpawnReason.COMMAND);
+		Mob envenenado = spawn(helper, EntityType.VILLAGER, EntitySpawnReason.COMMAND);
 		envenenado.hurtServer(level, level.damageSources().mobAttack(venenoso), 2);
 		MobEffectInstance veneno = envenenado.getEffect(MobEffects.POISON);
 		helper.assertTrue(veneno != null, Component.literal("El golpe del venenoso envenena"));
 		helper.assertValueEqual(config.nivelVeneno() - 1, veneno.getAmplifier(), "Veneno del nivel de la config");
 
-		Zombie congelante = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie congelante = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aparecer(congelante, 20, Afijo.CONGELANTE);
-		Mob congelado = spawn(helper, EntityTypes.VILLAGER, EntitySpawnReason.COMMAND);
+		Mob congelado = spawn(helper, EntityType.VILLAGER, EntitySpawnReason.COMMAND);
 		congelado.hurtServer(level, level.damageSources().mobAttack(congelante), 2);
 		helper.assertTrue(congelado.hasEffect(MobEffects.SLOWNESS), Component.literal("El golpe del congelante da lentitud"));
 		helper.assertTrue(congelado.getTicksFrozen() > 0, Component.literal("Y escarcha, para que se vea"));
 		helper.assertTrue(congelado.getTicksFrozen() < congelado.getTicksRequiredToFreeze(), Component.literal("Pero no tanta como para lastimar por frío"));
 
-		Mob sano = spawn(helper, EntityTypes.VILLAGER, EntitySpawnReason.COMMAND);
-		Zombie comun = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Mob sano = spawn(helper, EntityType.VILLAGER, EntitySpawnReason.COMMAND);
+		Zombie comun = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(comun, 20);
 		sano.hurtServer(level, level.damageSources().mobAttack(comun), 2);
 		helper.assertFalse(sano.hasEffect(MobEffects.POISON) || sano.hasEffect(MobEffects.SLOWNESS), Component.literal("Sin afijo, el golpe no da efectos"));
@@ -665,11 +664,11 @@ public class BloodmoonAndBossesGameTest {
 		BlockPos centro = helper.absolutePos(CENTRO);
 		jugador.snapTo(centro.getX() + 0.5, centro.getY(), centro.getZ() + 0.5, 0, 0);
 
-		Zombie explosivo = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie explosivo = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aparecer(explosivo, 20, Afijo.EXPLOSIVO);
-		Zombie comun = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie comun = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(comun, 20);
-		Zombie invisible = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie invisible = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aparecer(invisible, 20, Afijo.VELOZ);
 		invisible.setInvisible(true);
 
@@ -691,9 +690,9 @@ public class BloodmoonAndBossesGameTest {
 	public void afijoTeletransportador(GameTestHelper helper) {
 		ServerLevel level = helper.getLevel();
 		ponerPiso(helper);
-		Zombie teletransportador = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie teletransportador = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aparecer(teletransportador, 20, Afijo.TELETRANSPORTADOR);
-		Mob atacante = spawn(helper, EntityTypes.VILLAGER, EntitySpawnReason.COMMAND);
+		Mob atacante = spawn(helper, EntityType.VILLAGER, EntitySpawnReason.COMMAND);
 		atacante.snapTo(helper.absolutePos(CENTRO), 0, 0);
 
 		// Se llama directo a lo que corre en AFTER_DAMAGE: con hurtServer, después del primer golpe el mob queda
@@ -718,7 +717,7 @@ public class BloodmoonAndBossesGameTest {
 	/** Vanilla no llama a setHealth cuando la vida máxima sube: lo cubre el mixin en onAttributeUpdated, que corre en el tick del mob. */
 	@GameTest
 	public void vidaMaximaQueSubeEnElNombre(GameTestHelper helper) {
-		Zombie zombie = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie zombie = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(zombie, 20);
 		helper.runAfterDelay(1, () -> {
 			// Sólo el máximo: mientras espera, el zombi se puede quemar al sol y perder vida
@@ -742,7 +741,7 @@ public class BloodmoonAndBossesGameTest {
 		jugador.snapTo(centro.getX() + 0.5, centro.getY(), centro.getZ() + 0.5, 0, 0);
 		Configuracion.JefeDeZona config = BloodmoonAndBosses.config().jefeDeZona();
 
-		Zombie jefe = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie jefe = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(jefe, 30);
 		JefeDeZona.convertir(jefe, config);
 		jefe.setTarget(jugador);
@@ -779,7 +778,7 @@ public class BloodmoonAndBossesGameTest {
 	public void tamanioDelJefe(GameTestHelper helper) {
 		ServerLevel level = helper.getLevel();
 		Configuracion config = BloodmoonAndBosses.config();
-		Zombie jefe = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie jefe = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		jefe.setBaby(false);
 		jefe.setAttached(Afijo.AFIJO, Afijo.VELOZ);
 		NivelDeMob.aplicar(jefe, 30);
@@ -800,14 +799,14 @@ public class BloodmoonAndBossesGameTest {
 			}
 		}
 		BlockPos centro = helper.absolutePos(CENTRO);
-		helper.assertTrue(Eventos.lugarCerca(level, centro, 1, 3, null, EntityTypes.ZOMBIE, false, RandomSource.create(1)) != null,
+		helper.assertTrue(Eventos.lugarCerca(level, centro, 1, 3, null, EntityType.ZOMBIE, false, RandomSource.create(1)) != null,
 				Component.literal("Un zombi común entra"));
-		helper.assertTrue(Eventos.lugarCerca(level, centro, 1, 3, null, EntityTypes.ZOMBIE, escala, false, RandomSource.create(1)) == null,
+		helper.assertTrue(Eventos.lugarCerca(level, centro, 1, 3, null, EntityType.ZOMBIE, escala, false, RandomSource.create(1)) == null,
 				Component.literal("Un jefe no: quedaría trabado y asfixiándose"));
 
 		// Vanilla rehace las dimensiones al tick siguiente de cambiar el atributo (onAttributeUpdated)
 		helper.runAfterDelay(1, () -> {
-			assertCerca(helper, EntityTypes.ZOMBIE.getHeight() * escala, jefe.getBbHeight(), "Y su caja crece con él");
+			assertCerca(helper, EntityType.ZOMBIE.getHeight() * escala, jefe.getBbHeight(), "Y su caja crece con él");
 			jefe.discard();
 			JefeDeZona.actualizarTodos();
 			helper.succeed();
@@ -819,7 +818,7 @@ public class BloodmoonAndBossesGameTest {
 		ServerLevel level = helper.getLevel();
 		Scoreboard scoreboard = level.getScoreboard();
 		Configuracion.JefeDeZona config = BloodmoonAndBosses.config().jefeDeZona();
-		Zombie jefe = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie jefe = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(jefe, 30);
 		String nombre = jefe.getScoreboardName();
 		helper.assertFalse(jefe.hasGlowingTag(), Component.literal("Un mob común no brilla"));
@@ -828,13 +827,13 @@ public class BloodmoonAndBossesGameTest {
 		helper.assertTrue(jefe.hasGlowingTag(), Component.literal("El jefe tiene contorno"));
 		PlayerTeam equipo = scoreboard.getPlayersTeam(nombre);
 		helper.assertTrue(equipo != null && equipo.getName().equals(JefeDeZona.EQUIPO), Component.literal("Está en el equipo del jefe"));
-		helper.assertValueEqual(Optional.of(TeamColor.DARK_PURPLE), equipo.getColor(), "Violeta, como la barra");
+		helper.assertValueEqual(ChatFormatting.DARK_PURPLE, equipo.getColor(), "Violeta, como la barra");
 
 		JefeDeZona.enfurecer(jefe, config);
 		JefeDeZona.actualizarTodos();
 		PlayerTeam furia = scoreboard.getPlayersTeam(nombre);
 		helper.assertTrue(furia != null && furia.getName().equals(JefeDeZona.EQUIPO_FURIA), Component.literal("Con furia cambia de equipo"));
-		helper.assertValueEqual(Optional.of(TeamColor.RED), furia.getColor(), "Rojo, como la barra");
+		helper.assertValueEqual(ChatFormatting.RED, furia.getColor(), "Rojo, como la barra");
 
 		JefeDeZona.resaltar(jefe, false);
 		helper.assertFalse(jefe.hasGlowingTag(), Component.literal("Con contorno en false no brilla"));
@@ -851,7 +850,7 @@ public class BloodmoonAndBossesGameTest {
 	public void habilidadesDelJefe(GameTestHelper helper) {
 		ServerLevel level = helper.getLevel();
 		Configuracion.JefeDeZona config = BloodmoonAndBosses.config().jefeDeZona();
-		Zombie jefe = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie jefe = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aplicar(jefe, 30);
 		JefeDeZona.convertir(jefe, config);
 		helper.assertTrue(JefeDeZona.elegirHabilidad(jefe, config, RandomSource.create(1)) == null, Component.literal("Sin nadie a tiro no hace nada"));
@@ -890,7 +889,7 @@ public class BloodmoonAndBossesGameTest {
 	public void afijoInvocador(GameTestHelper helper) {
 		ServerLevel level = helper.getLevel();
 		ponerPiso(helper);
-		Zombie invocador = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie invocador = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aparecer(invocador, 30, Afijo.INVOCADOR);
 		invocador.hurtServer(level, level.damageSources().generic(), 1);
 		List<Zombie> refuerzos = level.getEntitiesOfClass(Zombie.class, invocador.getBoundingBox().inflate(5), z -> z != invocador);
@@ -911,9 +910,9 @@ public class BloodmoonAndBossesGameTest {
 	@GameTest(maxTicks = 60)
 	public void afijoExplosivo(GameTestHelper helper) {
 		ServerLevel level = helper.getLevel();
-		Zombie explosivo = spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND);
+		Zombie explosivo = spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND);
 		NivelDeMob.aparecer(explosivo, 20, Afijo.EXPLOSIVO);
-		Mob victima = spawn(helper, EntityTypes.VILLAGER, EntitySpawnReason.COMMAND);
+		Mob victima = spawn(helper, EntityType.VILLAGER, EntitySpawnReason.COMMAND);
 		float vida = victima.getHealth();
 		explosivo.hurtServer(level, level.damageSources().genericKill(), 100_000);
 		assertCerca(helper, vida, victima.getHealth(), "Al morir no explota enseguida");
@@ -927,16 +926,16 @@ public class BloodmoonAndBossesGameTest {
 	public void invocarConNivel(GameTestHelper helper) {
 		ServerLevel level = helper.getLevel();
 		BlockPos pos = helper.absolutePos(DENTRO);
-		Mob mob = NivelDeMob.invocarConNivel(EntityTypes.ZOMBIE, level, pos, EntitySpawnReason.EVENT, 37, false);
+		Mob mob = NivelDeMob.invocarConNivel(EntityType.ZOMBIE, level, pos, EntitySpawnReason.EVENT, 37, false);
 		helper.assertValueEqual(37, NivelDeMob.nivel(mob), "Aparece con el nivel dado, sin el de la zona");
 		helper.assertFalse(mob.hasAttached(NivelDeMob.PENDIENTE), Component.literal("No queda pendiente aunque EVENT escale"));
 		helper.assertTrue(Afijo.de(mob) == null, Component.literal("Sin afijo"));
 		helper.assertTrue(level.getEntity(mob.getUUID()) == mob, Component.literal("Está en el mundo"));
 
-		Mob conAfijo = NivelDeMob.invocarConNivel(EntityTypes.ZOMBIE, level, pos, EntitySpawnReason.EVENT, 500, true);
+		Mob conAfijo = NivelDeMob.invocarConNivel(EntityType.ZOMBIE, level, pos, EntitySpawnReason.EVENT, 500, true);
 		helper.assertValueEqual(100, NivelDeMob.nivel(conAfijo), "El nivel se corta en el máximo");
 		helper.assertTrue(Afijo.de(conAfijo) != null, Component.literal("Con afijo"));
-		helper.assertTrue(NivelDeMob.invocarConNivel(EntityTypes.VILLAGER, level, pos, EntitySpawnReason.EVENT, 10, false) == null,
+		helper.assertTrue(NivelDeMob.invocarConNivel(EntityType.VILLAGER, level, pos, EntitySpawnReason.EVENT, 10, false) == null,
 				Component.literal("Un aldeano no puede tener nivel"));
 		helper.succeed();
 	}
@@ -1050,7 +1049,7 @@ public class BloodmoonAndBossesGameTest {
 		ServerPlayer jugador = joinSurvivalPlayer(helper, "verdugo");
 		// El devastador sólo suelta monturas: cualquier otra cosa es del jefe. Nivel 19: sin botín raro común
 		for (int i = 0; i < 5; i++) {
-			Mob jefe = spawn(helper, EntityTypes.RAVAGER, EntitySpawnReason.COMMAND);
+			Mob jefe = spawn(helper, EntityType.RAVAGER, EntitySpawnReason.COMMAND);
 			NivelDeMob.aplicar(jefe, 19);
 			JefeDeZona.convertir(jefe, BloodmoonAndBosses.config().jefeDeZona());
 			jefe.hurtServer(level, level.damageSources().playerAttack(jugador), 100_000);
@@ -1082,7 +1081,7 @@ public class BloodmoonAndBossesGameTest {
 		level.getServer().getPlayerList().remove(level.getServer().getPlayerList().getPlayer(jugador.getUUID()));
 		// 20 spawns NATURAL al 50 %: que no venga ningún compañero tiene probabilidad 2^-20
 		for (int i = 0; i < 20; i++) {
-			spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.NATURAL);
+			spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.NATURAL);
 		}
 		level.removeAttached(LunaDeSangre.NOCHE_ACTIVA);
 		helper.assertValueEqual(0, LunaDeSangre.nivelesExtra(level), "Al terminar deja de sumar");
@@ -1163,7 +1162,7 @@ public class BloodmoonAndBossesGameTest {
 
 	/** Un zombi sin armadura y con el arma dada, con la chance de soltarla de vanilla. */
 	private static Zombie conArma(GameTestHelper helper, Item arma) {
-		Zombie zombie = sinArmadura(spawn(helper, EntityTypes.ZOMBIE, EntitySpawnReason.COMMAND));
+		Zombie zombie = sinArmadura(spawn(helper, EntityType.ZOMBIE, EntitySpawnReason.COMMAND));
 		zombie.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(arma));
 		zombie.setDropChance(EquipmentSlot.MAINHAND, 0.085f);
 		return zombie;
@@ -1219,7 +1218,7 @@ public class BloodmoonAndBossesGameTest {
 		datos.remove("UUID");
 		original.discard();
 
-		Zombie copia = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.LOAD);
+		Zombie copia = EntityType.ZOMBIE.create(level, EntitySpawnReason.LOAD);
 		copia.load(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), datos));
 		copia.snapTo(pos, 0, 0);
 		level.addFreshEntity(copia);

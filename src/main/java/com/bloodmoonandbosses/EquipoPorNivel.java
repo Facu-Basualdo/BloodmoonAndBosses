@@ -50,7 +50,7 @@ public final class EquipoPorNivel {
 	public static void equipar(Mob mob, int nivel) {
 		Configuracion config = BloodmoonAndBosses.config();
 		RandomSource random = mob.getRandom();
-		if (mob.is(USAN_EQUIPO)) {
+		if (mob.getType().is(USAN_EQUIPO)) {
 			ponerArmadura(mob, nivel, config, random);
 		}
 		encantar(mob, nivel, config, random);
@@ -66,7 +66,7 @@ public final class EquipoPorNivel {
 	private static void ponerArmadura(Mob mob, int nivel, Configuracion config, RandomSource random) {
 		Material material = material(nivel, random);
 		double chance = config.chanceArmaduraExtra().en(nivel);
-		boolean sinCasco = mob.is(EntityTypeTags.BURN_IN_DAYLIGHT) && !config.cascoParaLosQueSeQueman();
+		boolean sinCasco = mob.getType().is(EntityTypeTags.BURN_IN_DAYLIGHT) && !config.cascoParaLosQueSeQueman();
 		for (EquipmentSlot slot : ARMADURA) {
 			// Lo que puso vanilla no se toca: tampoco el casco de un zombi
 			if ((slot == EquipmentSlot.HEAD && sinCasco) || !mob.getItemBySlot(slot).isEmpty()) {

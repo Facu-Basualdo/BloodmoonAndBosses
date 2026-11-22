@@ -70,7 +70,7 @@ public final class Estampida {
 		this.nivel = nivel;
 		this.fin = fin;
 		// La ve sólo el jugador al que persigue: va en su idioma
-		this.barra = new ServerBossEvent(UUID.randomUUID(), Idioma.tr(jugador, "bloodmoonandbosses.estampida.barra").withStyle(ChatFormatting.RED),
+		this.barra = new ServerBossEvent(Idioma.tr(jugador, "bloodmoonandbosses.estampida.barra").withStyle(ChatFormatting.RED),
 				BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.PROGRESS);
 		barra.addPlayer(jugador);
 	}

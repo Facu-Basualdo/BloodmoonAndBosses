@@ -2,7 +2,9 @@
 
 <p align="center"><img src="src/main/resources/assets/bloodmoonandbosses/icon.png" alt="Bloodmoon & Bosses" width="256"></p>
 
-Mod de Fabric para **Minecraft Java 26.3** en el que los mobs hostiles aparecen con **niveles**. Cuanto más lejos del spawn del mundo y cuanto más viejo es el mundo, más nivel tienen: más vida, más daño, más armadura y más velocidad, y aparecen con mejor equipo encantado. El nivel y la vida se ven en el nombre del mob: **"Zombi [Nv 7] ❤ 34/40"**. Los mobs de más nivel también sueltan más loot, ítems raros y más experiencia.
+Mod de Fabric para **Minecraft Java 1.21.11** (también hay versión para 26.3) en el que los mobs hostiles aparecen con **niveles**. Cuanto más lejos del spawn del mundo y cuanto más viejo es el mundo, más nivel tienen: más vida, más daño, más armadura y más velocidad, y aparecen con mejor equipo encantado. El nivel y la vida se ven en el nombre del mob: **"Zombi [Nv 7] ❤ 34/40"**. Los mobs de más nivel también sueltan más loot, ítems raros y más experiencia.
+
+> **Esta es la rama `mc/1.21.11`**, un backport de la versión de 26.3 (rama `main`). La lógica es la misma; los cambios de cada versión de Minecraft están en el CLAUDE.md de esta rama.
 
 Cerca de la base el juego se siente casi como vanilla; a varios miles de bloques, salir a explorar es otra cosa.
 
@@ -150,7 +152,7 @@ En el primer arranque se crea **`config/bloodmoonandbosses.json`** con todos los
 
 ## Requisitos e instalación
 
-Minecraft Java 26.3, [Fabric Loader](https://fabricmc.net/use/) 0.19.5 o más nuevo, [Fabric API](https://modrinth.com/mod/fabric-api) y Java 25. Toda la lógica corre en el servidor; en el cliente, el mod suma la luna de sangre en el cielo, el tinte de jefes y campeones y la pantalla de Mod Menu.
+Minecraft Java 1.21.11, [Fabric Loader](https://fabricmc.net/use/) 0.16.0 o más nuevo, [Fabric API](https://modrinth.com/mod/fabric-api) y Java 21. Toda la lógica corre en el servidor; en el cliente, el mod suma la luna de sangre en el cielo, el tinte de jefes y campeones y la pantalla de Mod Menu.
 
 - **Servidor:** copiá `bloodmoonandbosses-<versión>.jar` y Fabric API a `mods/`. Los jugadores no necesitan nada: el nombre con el nivel y la vida lo ve cualquier cliente.
 - **Singleplayer o LAN:** en el cliente del que abre el mundo, junto con Fabric API.
@@ -169,7 +171,7 @@ Hasta la 0.10.0 el id era `mobspoderosos` y el comando `/mobspoderosos` (el mod 
 ./gradlew runClientGameTest   # el cielo, el tinte y la pantalla de configuración en un cliente de verdad (abre una ventana)
 ```
 
-Pide Java 25: si Gradle no encuentra tu JDK, agregá `org.gradle.java.installations.paths=<ruta a tu JDK 25>` a tu `~/.gradle/gradle.properties`. La documentación técnica está en [CLAUDE.md](CLAUDE.md).
+Gradle corre con Java 25 (como la rama de 26.3) y compila para Java 21: si no encuentra tu JDK, agregá `org.gradle.java.installations.paths=<ruta a tu JDK 25>` a tu `~/.gradle/gradle.properties`. La documentación técnica está en [CLAUDE.md](CLAUDE.md).
 
 ## Licencia
 

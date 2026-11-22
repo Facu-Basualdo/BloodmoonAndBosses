@@ -38,7 +38,7 @@ public class BloodmoonAndBosses implements ModInitializer {
 		Eventos.registrar();
 
 		// Para el cliente con el mod (cielo rojo en luna de sangre). Registrarlo no molesta a un cliente vanilla: no se le manda
-		PayloadTypeRegistry.clientboundPlay().register(PaqueteLunaDeSangre.TYPE, PaqueteLunaDeSangre.CODEC);
+		PayloadTypeRegistry.playS2C().register(PaqueteLunaDeSangre.TYPE, PaqueteLunaDeSangre.CODEC);
 		ServerPlayConnectionEvents.JOIN.register((conexion, enviador, servidor) -> LunaDeSangre.alConectarse(conexion.getPlayer()));
 	}
 

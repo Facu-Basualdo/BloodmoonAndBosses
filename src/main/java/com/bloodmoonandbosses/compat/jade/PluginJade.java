@@ -6,7 +6,6 @@ import snownee.jade.api.EntityAccessor;
 import snownee.jade.api.IWailaClientRegistration;
 import snownee.jade.api.IWailaPlugin;
 import snownee.jade.api.WailaPlugin;
-import snownee.jade.api.config.ConfigIcon;
 import snownee.jade.api.config.IWailaConfig;
 
 import net.minecraft.resources.Identifier;
@@ -25,7 +24,7 @@ public class PluginJade implements IWailaPlugin {
 
 	@Override
 	public void registerClient(IWailaClientRegistration registration) {
-		registration.addConfig(ALCANCE, ConfigIcon.none(), ALCANCE_POR_DEFECTO, 0, ALCANCE_MAXIMO, true);
+		registration.addConfig(ALCANCE, ALCANCE_POR_DEFECTO, 0, ALCANCE_MAXIMO, true);
 		registration.addRayTraceCallback(PluginJade::sinOtrasEntidadesLejos);
 	}
 

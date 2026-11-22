@@ -58,7 +58,7 @@ public final class NivelDeMob {
 	}
 
 	public static boolean puedeTenerNivel(Mob mob) {
-		return mob instanceof Enemy && !mob.is(SIN_NIVEL);
+		return mob instanceof Enemy && !mob.getType().is(SIN_NIVEL);
 	}
 
 	public static int nivel(Entity entity) {

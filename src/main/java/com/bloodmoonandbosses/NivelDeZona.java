@@ -32,12 +32,12 @@ public final class NivelDeZona {
 	 * jugador en F3: avanza al dormir, y {@code /time set} lo puede atrasar.
 	 */
 	public static long dias(ServerLevel level) {
-		return level.getOverworldClockTime() / SharedConstants.TICKS_PER_GAME_DAY;
+		return level.getDayTime() / SharedConstants.TICKS_PER_GAME_DAY;
 	}
 
 	/** Con el reloj y no con isDarkOutside, que también da true en una tormenta de día. */
 	public static boolean esDeNoche(ServerLevel level) {
-		return esDeNoche(level.getOverworldClockTime());
+		return esDeNoche(level.getDayTime());
 	}
 
 	public static boolean esDeNoche(long reloj) {
@@ -47,7 +47,7 @@ public final class NivelDeZona {
 
 	/** Cuánto de la noche ya pasó, de 0 a 1: la barra de la luna de sangre se vacía con esto. */
 	public static float avanceDeLaNoche(ServerLevel level) {
-		long hora = level.getOverworldClockTime() % SharedConstants.TICKS_PER_GAME_DAY;
+		long hora = level.getDayTime() % SharedConstants.TICKS_PER_GAME_DAY;
 		return Mth.clamp((hora - EMPIEZA_LA_NOCHE) / (float) (TERMINA_LA_NOCHE - EMPIEZA_LA_NOCHE), 0, 1);
 	}
 

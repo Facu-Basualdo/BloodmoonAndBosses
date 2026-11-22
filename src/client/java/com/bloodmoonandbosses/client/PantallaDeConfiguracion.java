@@ -420,11 +420,11 @@ public abstract class PantallaDeConfiguracion extends Screen {
 	private void terminar(List<Component> rechazado) {
 		guardando = false;
 		// Si se cerró mientras el servidor recargaba, no hay que volver a abrir nada
-		if (minecraft.gui.screen() != this) {
+		if (minecraft.screen != this) {
 			return;
 		}
 		if (rechazado.isEmpty()) {
-			minecraft.gui.setScreen(anterior);
+			minecraft.setScreen(anterior);
 			return;
 		}
 		problemas = rechazado;
@@ -433,7 +433,7 @@ public abstract class PantallaDeConfiguracion extends Screen {
 
 	@Override
 	public void onClose() {
-		minecraft.gui.setScreen(anterior);
+		minecraft.setScreen(anterior);
 	}
 
 	private MutableComponent tr(String clave, Object... args) {

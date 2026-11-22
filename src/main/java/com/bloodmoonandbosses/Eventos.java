@@ -18,7 +18,6 @@ import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Prediction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.EntityType;
@@ -161,7 +160,7 @@ public final class Eventos {
 
 	/** Al inventario, y lo que no entra, al piso a los pies del jugador. */
 	public static void darAlJugador(ServerPlayer jugador, ItemStack item) {
-		jugador.getInventory().placeItemBackInInventory(item, Prediction.SERVER_ONLY);
+		jugador.getInventory().placeItemBackInInventory(item);
 	}
 
 	private record Tarea(ServerLevel level, int cuando, Runnable accion) {

@@ -139,7 +139,7 @@ public final class LunaDeSangre {
 	private static void mostrarBarra(ServerLevel overworld) {
 		if (barra == null) {
 			// Una barra para todos: traducible, con respaldo en el idioma de la config
-			barra = new ServerBossEvent(UUID.randomUUID(), Idioma.guardado("bloodmoonandbosses.luna.titulo").withStyle(ChatFormatting.DARK_RED),
+			barra = new ServerBossEvent(Idioma.guardado("bloodmoonandbosses.luna.titulo").withStyle(ChatFormatting.DARK_RED),
 					BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_10);
 		}
 		barra.setProgress(1 - NivelDeZona.avanceDeLaNoche(overworld));

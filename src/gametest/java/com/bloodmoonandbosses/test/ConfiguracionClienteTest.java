@@ -32,7 +32,7 @@ public class ConfiguracionClienteTest implements FabricClientGameTest {
 		// Los campos se buscan por su nombre en español: el cliente de prueba arranca en inglés
 		context.runOnClient(cliente -> cliente.getLanguageManager().setSelected("es_ar"));
 		try (TestSingleplayerContext mundo = context.worldBuilder().create()) {
-			mundo.getConnection().waitForChunksRender();
+			mundo.getClientWorld().waitForChunksRender();
 			context.getInput().setCursorPos(0, 0);
 
 			context.setScreen(() -> new PantallaDeConfiguracionDeBloodmoon(null));
@@ -41,7 +41,7 @@ public class ConfiguracionClienteTest implements FabricClientGameTest {
 			context.takeScreenshot("configuracion");
 			context.runOnClient(cliente -> campo(cliente, "Bloques por nivel").setValue("80"));
 			context.clickScreenButton("Guardar");
-			context.waitFor(cliente -> cliente.gui.screen() == null);
+			context.waitFor(cliente -> cliente.screen == null);
 			int bloques = mundo.getServer().computeOnServer(servidor -> BloodmoonAndBosses.config().bloquesPorNivel());
 			if (bloques != 80) {
 				throw new AssertionError("Guardar tenía que dejar bloquesPorNivel en 80, quedó " + bloques);
@@ -53,7 +53,7 @@ public class ConfiguracionClienteTest implements FabricClientGameTest {
 			context.runOnClient(cliente -> campo(cliente, "Probabilidad de campeón").setValue("5"));
 			context.clickScreenButton("Guardar");
 			context.waitTicks(10);
-			if (!context.computeOnClient(cliente -> cliente.gui.screen() instanceof PantallaDeConfiguracionDeBloodmoon)) {
+			if (!context.computeOnClient(cliente -> cliente.screen instanceof PantallaDeConfiguracionDeBloodmoon)) {
 				throw new AssertionError("Con un valor rechazado la pantalla tenía que quedar abierta, con el aviso");
 			}
 			context.takeScreenshot("configuracion-rechazada");
@@ -80,7 +80,7 @@ public class ConfiguracionClienteTest implements FabricClientGameTest {
 	/** Los de la lista están adentro del contenedor con scroll, no en la pantalla directamente. */
 	private static EditBox campo(Minecraft cliente, String nombre) {
 		List<EditBox> cajas = new ArrayList<>();
-		for (GuiEventListener hijo : cliente.gui.screen().children()) {
+		for (GuiEventListener hijo : cliente.screen.children()) {
 			recorrer(hijo, cajas);
 		}
 		return cajas.stream()

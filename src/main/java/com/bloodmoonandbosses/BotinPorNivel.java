@@ -29,10 +29,10 @@ public final class BotinPorNivel {
 
 	/** Probabilidad de que salga cada tirada extra: 1 para la mayoría, 0 para sin_tiradas_extra. */
 	public static double chanceTiradaExtra(Mob mob) {
-		if (mob.is(SIN_TIRADAS_EXTRA)) {
+		if (mob.getType().is(SIN_TIRADAS_EXTRA)) {
 			return 0;
 		}
-		if (mob.is(TIRADAS_EXTRA_POR_CHANCE)) {
+		if (mob.getType().is(TIRADAS_EXTRA_POR_CHANCE)) {
 			return BloodmoonAndBosses.config().chanceTiradaExtra().en(NivelDeMob.nivel(mob));
 		}
 		return 1;
