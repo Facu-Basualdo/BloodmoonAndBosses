@@ -1,11 +1,14 @@
 {
 	"required": true,
 	"package": "com.bloodmoonandbosses.mixin",
-	"compatibilityLevel": "JAVA_25",
+	"compatibilityLevel": "JAVA_21",
 	"mixins": [
+		"AgresorAccessor",
+		"ChanceDeSoltarInvoker",
 		"CreeperAccessor",
 		"LivingEntityMixin",
-		"MobMixin"
+		"MobMixin",
+		"SlimeMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

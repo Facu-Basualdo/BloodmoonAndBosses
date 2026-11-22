@@ -5,10 +5,8 @@ import org.jspecify.annotations.Nullable;
 import com.bloodmoonandbosses.Afijo;
 import com.bloodmoonandbosses.JefeDeZona;
 
-import net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey;
-
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.util.ARGB;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -17,8 +15,6 @@ import net.minecraft.world.entity.LivingEntity;
  * (JEFE, FURIA, AFIJO): el cliente no calcula nada, sólo pinta. El tinte multiplica la textura, así que la deja ver.
  */
 public final class AspectoDeMobs {
-	public static final RenderStateDataKey<Integer> TINTE = RenderStateDataKey.create(() -> "bloodmoonandbosses:tinte");
-
 	// Cuánto se corre el blanco hacia el color: poco en los campeones (son muchos), más en el jefe
 	private static final float FUERZA_AFIJO = 0.4f;
 	private static final float FUERZA_JEFE = 0.45f;
@@ -51,9 +47,9 @@ public final class AspectoDeMobs {
 
 	/** El blanco (no tiñe) corrido hacia ese color: con 1 sería el color puro y la textura quedaría tapada. */
 	private static int haciaColor(int rgb, float fuerza) {
-		int r = (int) Mth.lerp(fuerza, 255, ARGB.red(rgb));
-		int g = (int) Mth.lerp(fuerza, 255, ARGB.green(rgb));
-		int b = (int) Mth.lerp(fuerza, 255, ARGB.blue(rgb));
-		return ARGB.color(255, r, g, b);
+		int r = (int) Mth.lerp(fuerza, 255, FastColor.ARGB32.red(rgb));
+		int g = (int) Mth.lerp(fuerza, 255, FastColor.ARGB32.green(rgb));
+		int b = (int) Mth.lerp(fuerza, 255, FastColor.ARGB32.blue(rgb));
+		return FastColor.ARGB32.color(255, r, g, b);
 	}
 }

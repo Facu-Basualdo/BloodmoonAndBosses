@@ -2,7 +2,23 @@
 
 **El id es `bloodmoonandbosses` desde la 0.11.0 (antes `mobspoderosos`)**, y el comando es `/bloodmoon`. Lo guardado con el id viejo (el nivel de cada mob, la config, la luna) se pasa solo: ver [migración del id](claude/mod/migracion-de-id.md). No lo vuelvas a cambiar sin una migración. Además, **Mythic Loot lee por id `bloodmoonandbosses:nivel`, `bloodmoonandbosses:jefe` y `bloodmoonandbosses:afijo`** (sin depender de las clases de este mod): cambiarles el id o el tipo de valor lo rompe.
 
-Mod de Fabric para **Minecraft Java 26.3** que hace aparecer a los mobs hostiles con **niveles**: cuanto más lejos del spawn del mundo y más días tiene el mundo, más vida, daño y armadura tienen, y mejor loot dan; además, algunos aparecen como campeones con niveles de más. El nivel y la vida se ven en el nombre ("Zombi [Nv 7] ❤ 34/40"). Java 25, Gradle 9.7 + Fabric Loom 1.18, Fabric Loader 0.19.5, Fabric API 0.162.0+26.3. Toda la lógica corre en el servidor: los jugadores no necesitan instalar nada. Con el mod también en el cliente, la luna de sangre se ve en el cielo y jefes y campeones se tiñen, y con Mod Menu la config se edita desde el juego (`src/client`, opcional).
+Mod de Fabric para **Minecraft Java 1.21.1** (backport de la rama `main`, que es 26.3) que hace aparecer a los mobs hostiles con **niveles**: cuanto más lejos del spawn del mundo y más días tiene el mundo, más vida, daño y armadura tienen, y mejor loot dan; además, algunos aparecen como campeones con niveles de más. El nivel y la vida se ven en el nombre ("Zombi [Nv 7] ❤ 34/40"). Java 21 (Gradle corre con el 25), Gradle 9.7 + Fabric Loom Remap 1.18.4 con los mappings oficiales de Mojang, Fabric Loader 0.18.4, Fabric API 0.116.18+1.21.1. Toda la lógica corre en el servidor: los jugadores no necesitan instalar nada. Con el mod también en el cliente, la luna de sangre se ve en el cielo y jefes y campeones se tiñen, y con Mod Menu la config se edita desde el juego (`src/client`, opcional).
+
+## Diferencias con 26.3 (rama `main`)
+
+Para portar un cambio de `main`, aplicalo, compilá y corré `runGameTest`. Lo que cambia en esta rama:
+
+- **Build:** `net.fabricmc.fabric-loom-remap` con `mappings loom.officialMojangMappings()` (1.21.1 viene ofuscado), dependencias con `modImplementation`/`modCompileOnly`, Java 21, `compatibilityLevel` `JAVA_21` en los mixins y JSpecify como `compileOnly`. Gradle sigue corriendo con el JDK 25.
+- **Todo lo de la rama `mc/1.21.11`**, más: `ResourceLocation` en vez de `Identifier`, `MobSpawnType` en vez de `EntitySpawnReason`, `hurt` en vez de `hurtServer`, `serverLevel()`, `FastColor.ARGB32` en vez de `ARGB`, los efectos con nombre viejo (`MobEffects.HEAL`), permisos de comandos con `hasPermission(n)`.
+- **SavedData:** sin `SavedDataType`: `SavedData.Factory` y `save(CompoundTag, Provider)` a mano con el mismo codec. Id como nombre de archivo, en el overworld.
+- **Pantalla de configuración:** sin `ScrollableLayout`: `ListaDesplazable` (rueda y barra arrastrable sobre `AbstractContainerWidget`).
+- **Tests:** API vieja de gametest (`FabricGameTest`, `@GameTest(template = EMPTY_STRUCTURE)` de vanilla, mensajes `String`, guardado con `CompoundTag`). Fabric API para 1.21.1 no tiene gametests de cliente: lo del cliente se prueba a mano.
+- **Botín:** `dropFromLootTable` no recibe otra tabla: `TablaDeBotin.soltar` arma los mismos parámetros que vanilla. `AgresorAccessor` lee `lastHurtByPlayer` y `ChanceDeSoltarInvoker`, la chance de soltar cada pieza.
+- **Slimes:** los hijos se crean sin el evento de conversión: `SlimeMixin` les pasa el nivel antes de `addFreshEntity`.
+- **Nombres:** el NBT de 1.21.1 vuelve los números como `Byte`: `Idioma.guardado` guarda los argumentos numéricos como texto para que `esNombreDelMod` los siga reconociendo.
+- **Datos:** `minecraft:parched` (no existe en 1.21.1) va como entrada opcional del tag `usan_equipo`. Sin el tag `burn_in_daylight`: `EquipoPorNivel.seQuemaDeDia`. Luna llena con `getMoonPhase() == 0`.
+- **Cliente:** sin atributos de ambiente: cielo y nubes en `ClientLevel` (`getSkyColor`, `getCloudColor`), niebla en `FogRenderer.setupColor`, luna en `LevelRenderer.renderSky`, tinte en `LivingEntityRenderer.render`. La luz del cielo (que en 26.x tiñe apenas el mundo) no se toca. Jade 15 (`getPlugin()`/`getGeneral()`).
+- **Tests:** `InvulnerabilidadAccessor` (sólo en los tests), como en Hero's Forge.
 
 ## Cómo obtener contexto
 

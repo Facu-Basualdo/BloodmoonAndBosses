@@ -3,16 +3,21 @@ package com.bloodmoonandbosses;
 import java.util.List;
 import java.util.Optional;
 
+import com.bloodmoonandbosses.mixin.ChanceDeSoltarInvoker;
+
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.EnchantmentTags;
-import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.AbstractSkeleton;
+import net.minecraft.world.entity.monster.Husk;
+import net.minecraft.world.entity.monster.Phantom;
+import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -50,7 +55,7 @@ public final class EquipoPorNivel {
 	public static void equipar(Mob mob, int nivel) {
 		Configuracion config = BloodmoonAndBosses.config();
 		RandomSource random = mob.getRandom();
-		if (mob.is(USAN_EQUIPO)) {
+		if (mob.getType().is(USAN_EQUIPO)) {
 			ponerArmadura(mob, nivel, config, random);
 		}
 		encantar(mob, nivel, config, random);
@@ -66,7 +71,7 @@ public final class EquipoPorNivel {
 	private static void ponerArmadura(Mob mob, int nivel, Configuracion config, RandomSource random) {
 		Material material = material(nivel, random);
 		double chance = config.chanceArmaduraExtra().en(nivel);
-		boolean sinCasco = mob.is(EntityTypeTags.BURN_IN_DAYLIGHT) && !config.cascoParaLosQueSeQueman();
+		boolean sinCasco = seQuemaDeDia(mob) && !config.cascoParaLosQueSeQueman();
 		for (EquipmentSlot slot : ARMADURA) {
 			// Lo que puso vanilla no se toca: tampoco el casco de un zombi
 			if ((slot == EquipmentSlot.HEAD && sinCasco) || !mob.getItemBySlot(slot).isEmpty()) {
@@ -97,13 +102,24 @@ public final class EquipoPorNivel {
 		}
 	}
 
+	/**
+	 * En 1.21.1 no está el tag burn_in_daylight: se queman los zombis (menos el husk y los inmunes al fuego, como el
+	 * piglin zombificado), los esqueletos (menos el wither) y los phantoms.
+	 */
+	private static boolean seQuemaDeDia(Mob mob) {
+		if (mob.fireImmune()) {
+			return false;
+		}
+		return (mob instanceof Zombie && !(mob instanceof Husk)) || mob instanceof AbstractSkeleton || mob instanceof Phantom;
+	}
+
 	private static void subirChancesDeSoltar(Mob mob, int nivel, Configuracion config) {
 		for (EquipmentSlot slot : CON_EQUIPO) {
 			ItemStack item = mob.getItemBySlot(slot);
 			if (item.isEmpty() || item.is(EQUIPO_VALIOSO)) {
 				continue;
 			}
-			float actual = mob.getDropChances().byEquipment(slot);
+			float actual = ((ChanceDeSoltarInvoker) mob).bloodmoonandbosses$chanceDeSoltar(slot);
 			// En 0 vanilla no lo suelta nunca a propósito (la espada del vex): subirlo regalaría ese ítem
 			if (actual <= 0) {
 				continue;

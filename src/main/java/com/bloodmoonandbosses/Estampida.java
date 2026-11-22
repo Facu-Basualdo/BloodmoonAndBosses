@@ -10,6 +10,8 @@ import java.util.UUID;
 import com.mojang.serialization.Codec;
 import org.jspecify.annotations.Nullable;
 
+import com.bloodmoonandbosses.mixin.AgresorAccessor;
+
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 
@@ -19,7 +21,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,7 +31,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -49,7 +51,7 @@ public final class Estampida {
 			builder -> builder.persistent(Codec.LONG).copyOnDeath());
 
 	// Transitorios: no se guardan con el mob, así que si el servidor se reinicia vuelve a su velocidad normal
-	private static final Identifier MODIFICADOR = BloodmoonAndBosses.id("estampida");
+	private static final ResourceLocation MODIFICADOR = BloodmoonAndBosses.id("estampida");
 	private static final Map<UUID, Estampida> ACTIVAS = new HashMap<>();
 
 	private final ServerPlayer jugador;
@@ -70,7 +72,7 @@ public final class Estampida {
 		this.nivel = nivel;
 		this.fin = fin;
 		// La ve sólo el jugador al que persigue: va en su idioma
-		this.barra = new ServerBossEvent(UUID.randomUUID(), Idioma.tr(jugador, "bloodmoonandbosses.estampida.barra").withStyle(ChatFormatting.RED),
+		this.barra = new ServerBossEvent(Idioma.tr(jugador, "bloodmoonandbosses.estampida.barra").withStyle(ChatFormatting.RED),
 				BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.PROGRESS);
 		barra.addPlayer(jugador);
 	}
@@ -142,7 +144,7 @@ public final class Estampida {
 			// El primero es el líder: un campeón con afijo
 			boolean lider = mobs.isEmpty();
 			int nivel = NivelDeZona.calcular(level, pos, random) + (lider ? BloodmoonAndBosses.config().nivelesDeCampeon() : 0);
-			Mob mob = NivelDeMob.invocarConNivel(tipo, level, pos, EntitySpawnReason.EVENT, nivel, lider);
+			Mob mob = NivelDeMob.invocarConNivel(tipo, level, pos, MobSpawnType.EVENT, nivel, lider);
 			if (mob != null) {
 				cargar(mob, jugador, config);
 				mobs.add(mob);
@@ -199,7 +201,7 @@ public final class Estampida {
 				return false;
 			}
 			// Sólo los que mató un jugador: al amanecer los zombis y esqueletos se queman solos
-			if (mob.getRemovalReason() == Entity.RemovalReason.KILLED && mob.getLastHurtByPlayer() != null) {
+			if (mob.getRemovalReason() == Entity.RemovalReason.KILLED && ((AgresorAccessor) mob).bloodmoonandbosses$ultimoJugador() != null) {
 				muertos++;
 			}
 			return true;
@@ -235,7 +237,7 @@ public final class Estampida {
 	private void premiar() {
 		BotinPorNivel.Botin botin = BotinPorNivel.mejorBotin(nivel, BotinPorNivel.Botin.RARO);
 		// El jugador como origen: las tablas son de tipo entity y no tienen condiciones sobre quién murió
-		jugador.dropFromLootTable(level, level.damageSources().generic(), true, botin.tabla(), item -> Eventos.darAlJugador(jugador, item));
+		TablaDeBotin.soltar(jugador, level, level.damageSources().generic(), true, botin.tabla(), item -> Eventos.darAlJugador(jugador, item));
 		level.playSound(null, jugador.blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1.0f, 1.0f);
 		Eventos.anunciar(jugador, Idioma.tr(jugador, "bloodmoonandbosses.estampida.ganaste").withStyle(ChatFormatting.GOLD),
 				Idioma.tr(jugador, "bloodmoonandbosses.estampida.premio").withStyle(ChatFormatting.YELLOW));

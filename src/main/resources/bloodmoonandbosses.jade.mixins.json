@@ -2,7 +2,7 @@
 	"required": true,
 	"package": "com.bloodmoonandbosses.mixin.jade",
 	"plugin": "com.bloodmoonandbosses.compat.jade.MixinsDeJade",
-	"compatibilityLevel": "JAVA_25",
+	"compatibilityLevel": "JAVA_21",
 	"client": [
 		"RayTracingMixin"
 	],

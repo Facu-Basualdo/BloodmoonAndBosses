@@ -21,11 +21,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.BossEvent;
-import net.minecraft.world.attribute.EnvironmentAttributes;
-import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.MoonPhase;
 
 /**
  * Algunas noches de luna llena los mobs que aparecen tienen más nivel y vienen de a dos. Sólo en el overworld, que
@@ -52,7 +50,8 @@ public final class LunaDeSangre {
 	}
 
 	public static boolean esLunaLlena(ServerLevel level) {
-		return level.environmentAttributes().getDimensionValue(EnvironmentAttributes.MOON_PHASE) == MoonPhase.FULL_MOON;
+		// En 1.21.1 la fase 0 es la luna llena
+		return level.getMoonPhase() == 0;
 	}
 
 	/** Cada segundo. La noche se sortea una sola vez, al empezar: así dormir o reconectarse no da otra tirada. */
@@ -139,7 +138,7 @@ public final class LunaDeSangre {
 	private static void mostrarBarra(ServerLevel overworld) {
 		if (barra == null) {
 			// Una barra para todos: traducible, con respaldo en el idioma de la config
-			barra = new ServerBossEvent(UUID.randomUUID(), Idioma.guardado("bloodmoonandbosses.luna.titulo").withStyle(ChatFormatting.DARK_RED),
+			barra = new ServerBossEvent(Idioma.guardado("bloodmoonandbosses.luna.titulo").withStyle(ChatFormatting.DARK_RED),
 					BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_10);
 		}
 		barra.setProgress(1 - NivelDeZona.avanceDeLaNoche(overworld));
@@ -170,7 +169,7 @@ public final class LunaDeSangre {
 			}
 			BlockPos pos = Eventos.lugarCerca(level, mob.blockPosition(), 1, 3, null, mob.getType(), false, mob.getRandom());
 			if (pos != null) {
-				NivelDeMob.invocarConNivel(mob.getType(), level, pos, EntitySpawnReason.EVENT, nivel, false);
+				NivelDeMob.invocarConNivel(mob.getType(), level, pos, MobSpawnType.EVENT, nivel, false);
 			}
 		});
 	}

@@ -29,10 +29,10 @@ public final class BotinPorNivel {
 
 	/** Probabilidad de que salga cada tirada extra: 1 para la mayoría, 0 para sin_tiradas_extra. */
 	public static double chanceTiradaExtra(Mob mob) {
-		if (mob.is(SIN_TIRADAS_EXTRA)) {
+		if (mob.getType().is(SIN_TIRADAS_EXTRA)) {
 			return 0;
 		}
-		if (mob.is(TIRADAS_EXTRA_POR_CHANCE)) {
+		if (mob.getType().is(TIRADAS_EXTRA_POR_CHANCE)) {
 			return BloodmoonAndBosses.config().chanceTiradaExtra().en(NivelDeMob.nivel(mob));
 		}
 		return 1;
@@ -45,13 +45,11 @@ public final class BotinPorNivel {
 		if (tiradas == 0 || chance <= 0) {
 			return;
 		}
-		mob.getLootTable().ifPresent(tabla -> {
-			for (int i = 0; i < tiradas; i++) {
-				if (chance >= 1 || mob.getRandom().nextDouble() < chance) {
-					mob.dropFromLootTable(level, source, true, tabla);
-				}
+		for (int i = 0; i < tiradas; i++) {
+			if (chance >= 1 || mob.getRandom().nextDouble() < chance) {
+				TablaDeBotin.soltar(mob, level, source, true, mob.getLootTable(), mob::spawnAtLocation);
 			}
-		});
+		}
 	}
 
 	/** Las tablas raras que le tocan a un mob de ese nivel: cada una se sortea por separado. */
@@ -72,7 +70,7 @@ public final class BotinPorNivel {
 	public static void soltarBotinRaro(Mob mob, ServerLevel level, DamageSource source) {
 		for (Botin botin : botinesRaros(NivelDeMob.nivel(mob))) {
 			if (mob.getRandom().nextDouble() < botin.rareza().chance()) {
-				mob.dropFromLootTable(level, source, true, botin.tabla());
+				TablaDeBotin.soltar(mob, level, source, true, botin.tabla(), mob::spawnAtLocation);
 			}
 		}
 	}
@@ -91,7 +89,7 @@ public final class BotinPorNivel {
 	/** Un jefe de zona siempre suelta la mejor tabla que le toca, como mínimo la épica. Además de su botín raro común. */
 	public static void soltarBotinDeJefe(Mob mob, ServerLevel level, DamageSource source) {
 		if (JefeDeZona.esJefe(mob)) {
-			mob.dropFromLootTable(level, source, true, mejorBotin(NivelDeMob.nivel(mob), Botin.EPICO).tabla());
+			TablaDeBotin.soltar(mob, level, source, true, mejorBotin(NivelDeMob.nivel(mob), Botin.EPICO).tabla(), mob::spawnAtLocation);
 		}
 	}
 

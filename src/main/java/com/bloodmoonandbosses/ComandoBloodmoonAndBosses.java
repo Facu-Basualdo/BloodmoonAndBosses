@@ -23,7 +23,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 
@@ -38,9 +38,9 @@ public final class ComandoBloodmoonAndBosses {
 		dispatcher.register(Commands.literal(COMANDO)
 				.then(Commands.literal("zona").executes(ComandoBloodmoonAndBosses::zona))
 				.then(Commands.literal("invocar")
-						.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+						.requires(fuente -> fuente.hasPermission(Commands.LEVEL_GAMEMASTERS))
 						.then(Commands.argument("entidad", ResourceArgument.resource(contexto, Registries.ENTITY_TYPE))
-								.suggests(SuggestionProviders.cast(SuggestionProviders.SUMMONABLE_ENTITIES))
+								.suggests(SuggestionProviders.SUMMONABLE_ENTITIES)
 								.then(Commands.argument("nivel", IntegerArgumentType.integer(1))
 										.executes(ctx -> invocar(ctx, null))
 										.then(Commands.argument("afijo", StringArgumentType.word())
@@ -48,7 +48,7 @@ public final class ComandoBloodmoonAndBosses {
 														Arrays.stream(Afijo.values()).map(Afijo::getSerializedName), sugerencias))
 												.executes(ctx -> invocar(ctx, StringArgumentType.getString(ctx, "afijo")))))))
 				.then(Commands.literal("evento")
-						.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+						.requires(fuente -> fuente.hasPermission(Commands.LEVEL_GAMEMASTERS))
 						.then(Commands.literal("estampida")
 								.executes(ctx -> estampida(ctx, ctx.getSource().getPlayerOrException()))
 								.then(Commands.argument("jugador", EntityArgument.player())
@@ -59,7 +59,7 @@ public final class ComandoBloodmoonAndBosses {
 										.executes(ctx -> jefe(ctx, EntityArgument.getPlayer(ctx, "jugador")))))
 						.then(Commands.literal("luna_de_sangre").executes(ComandoBloodmoonAndBosses::lunaDeSangre)))
 				.then(Commands.literal("recargar")
-						.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+						.requires(fuente -> fuente.hasPermission(Commands.LEVEL_GAMEMASTERS))
 						.executes(ComandoBloodmoonAndBosses::recargar)));
 	}
 
@@ -68,7 +68,7 @@ public final class ComandoBloodmoonAndBosses {
 		// Sin variación: es el nivel "de la zona", el que tendría un mob sin la tirada de ±1
 		Configuracion config = BloodmoonAndBosses.config().conVariacion(0);
 		ServerLevel level = fuente.getLevel();
-		BlockPos spawn = level.getServer().getRespawnData().pos();
+		BlockPos spawn = level.getServer().overworld().getSharedSpawnPos();
 		int porDistancia = NivelDeZona.calcular(level.dimension(), spawn, BlockPos.containing(fuente.getPosition()), config, level.getRandom());
 		long dias = NivelDeZona.dias(level);
 		int porTiempo = NivelDeZona.porTiempo(dias, config);
@@ -100,7 +100,7 @@ public final class ComandoBloodmoonAndBosses {
 		}
 
 		// COMMAND no escala solo: vanilla le pone el equipo en finalizeSpawn y el nivel se aplica acá
-		Entity entidad = tipo.spawn(fuente.getLevel(), delante(fuente), EntitySpawnReason.COMMAND);
+		Entity entidad = tipo.spawn(fuente.getLevel(), delante(fuente), MobSpawnType.COMMAND);
 		if (!(entidad instanceof Mob mob) || !NivelDeMob.puedeTenerNivel(mob)) {
 			if (entidad != null) {
 				entidad.discard();

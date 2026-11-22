@@ -14,7 +14,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public class BloodmoonAndBosses implements ModInitializer {
 	public static final String MOD_ID = "bloodmoonandbosses";
@@ -38,7 +38,7 @@ public class BloodmoonAndBosses implements ModInitializer {
 		Eventos.registrar();
 
 		// Para el cliente con el mod (cielo rojo en luna de sangre). Registrarlo no molesta a un cliente vanilla: no se le manda
-		PayloadTypeRegistry.clientboundPlay().register(PaqueteLunaDeSangre.TYPE, PaqueteLunaDeSangre.CODEC);
+		PayloadTypeRegistry.playS2C().register(PaqueteLunaDeSangre.TYPE, PaqueteLunaDeSangre.CODEC);
 		ServerPlayConnectionEvents.JOIN.register((conexion, enviador, servidor) -> LunaDeSangre.alConectarse(conexion.getPlayer()));
 	}
 
@@ -57,7 +57,7 @@ public class BloodmoonAndBosses implements ModInitializer {
 		}
 	}
 
-	public static Identifier id(String path) {
-		return Identifier.fromNamespaceAndPath(MOD_ID, path);
+	public static ResourceLocation id(String path) {
+		return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
 	}
 }

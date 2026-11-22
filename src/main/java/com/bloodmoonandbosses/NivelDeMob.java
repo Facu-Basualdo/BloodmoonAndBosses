@@ -16,12 +16,12 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.PlainTextContents;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -37,7 +37,7 @@ public final class NivelDeMob {
 	public static final AttachmentType<Boolean> PENDIENTE = AttachmentRegistry.createPersistent(BloodmoonAndBosses.id("pendiente"), Codec.BOOL);
 	public static final TagKey<EntityType<?>> SIN_NIVEL = TagKey.create(Registries.ENTITY_TYPE, BloodmoonAndBosses.id("sin_nivel"));
 
-	private static final Identifier MODIFICADOR = BloodmoonAndBosses.id("nivel");
+	private static final ResourceLocation MODIFICADOR = BloodmoonAndBosses.id("nivel");
 	private static final int RADIO_CREEPER_VANILLA = 3;
 
 	private NivelDeMob() {
@@ -49,7 +49,7 @@ public final class NivelDeMob {
 		List.of(Afijo.AFIJO, Afijo.INVOCACIONES, LunaDeSangre.NOCHE_ACTIVA, Estampida.ULTIMA, JefeDeZona.JEFE);
 	}
 
-	public static boolean escala(EntitySpawnReason motivo) {
+	public static boolean escala(MobSpawnType motivo) {
 		return switch (motivo) {
 			case NATURAL, CHUNK_GENERATION, STRUCTURE, PATROL, EVENT, REINFORCEMENT, JOCKEY, MOB_SUMMONED, TRIGGERED -> true;
 			case SPAWNER, TRIAL_SPAWNER -> BloodmoonAndBosses.config().escalarSpawners();
@@ -58,7 +58,7 @@ public final class NivelDeMob {
 	}
 
 	public static boolean puedeTenerNivel(Mob mob) {
-		return mob instanceof Enemy && !mob.is(SIN_NIVEL);
+		return mob instanceof Enemy && !mob.getType().is(SIN_NIVEL);
 	}
 
 	public static int nivel(Entity entity) {
@@ -102,15 +102,15 @@ public final class NivelDeMob {
 	 * Para los mobs que trae un evento: con el equipo de vanilla (finalizeSpawn) y el nivel dado, sin tirar campeón.
 	 * El nivel se pone antes de addFreshEntity, así alCargar sólo le borra PENDIENTE, como en una conversión.
 	 */
-	public static @Nullable Mob invocarConNivel(EntityType<?> tipo, ServerLevel level, BlockPos pos, EntitySpawnReason motivo, int nivel, boolean conAfijo) {
-		if (!(tipo.create(level, motivo) instanceof Mob mob)) {
+	public static @Nullable Mob invocarConNivel(EntityType<?> tipo, ServerLevel level, BlockPos pos, MobSpawnType motivo, int nivel, boolean conAfijo) {
+		if (!(tipo.create(level) instanceof Mob mob)) {
 			return null;
 		}
 		if (!puedeTenerNivel(mob)) {
 			mob.discard();
 			return null;
 		}
-		mob.snapTo(pos, mob.getRandom().nextFloat() * 360, 0);
+		mob.moveTo(pos, mob.getRandom().nextFloat() * 360, 0);
 		mob.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), motivo, null);
 		aparecer(mob, Math.clamp(nivel, 1, BloodmoonAndBosses.config().nivelMaximo()), conAfijo ? Afijo.alAzar(mob, mob.getRandom()) : null);
 		level.addFreshEntityWithPassengers(mob);
@@ -272,7 +272,7 @@ public final class NivelDeMob {
 		if (valor == 0) {
 			instancia.removeModifier(MODIFICADOR);
 		} else {
-			// Mismo Identifier siempre: aplicar dos veces reemplaza, no apila
+			// Mismo ResourceLocation siempre: aplicar dos veces reemplaza, no apila
 			instancia.addOrReplacePermanentModifier(new AttributeModifier(MODIFICADOR, valor, operacion));
 		}
 	}

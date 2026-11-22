@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -48,15 +49,15 @@ abstract class LivingEntityMixin {
 
 	// Tiradas extra y botín raro. Acá y no en AFTER_DEATH: esta llamada ya pasó por shouldDropLoot (gamerule mobDrops, crías), y
 	// matoUnJugador es el mismo criterio que usa vanilla para el loot de "killed_by_player"
-	@WrapOperation(method = "dropAllDeathLoot", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;dropFromLootTable(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;Z)V"))
-	private void bloodmoonandbosses$tiradasExtra(LivingEntity entidad, ServerLevel level, DamageSource source, boolean matoUnJugador, Operation<Void> original) {
+	@WrapOperation(method = "dropAllDeathLoot", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;dropFromLootTable(Lnet/minecraft/world/damagesource/DamageSource;Z)V"))
+	private void bloodmoonandbosses$tiradasExtra(LivingEntity entidad, DamageSource source, boolean matoUnJugador, Operation<Void> original, @Local(argsOnly = true) ServerLevel level) {
 		// Antes que la de vanilla: Mob.dropFromLootTable borra la tabla propia (DeathLootTable) después de usarla
 		if (matoUnJugador && entidad instanceof Mob mob) {
 			BotinPorNivel.soltarTiradasExtra(mob, level, source);
 			BotinPorNivel.soltarBotinRaro(mob, level, source);
 			BotinPorNivel.soltarBotinDeJefe(mob, level, source);
 		}
-		original.call(entidad, level, source, matoUnJugador);
+		original.call(entidad, source, matoUnJugador);
 	}
 
 	// getExperienceReward es final: cubre todas las subclases

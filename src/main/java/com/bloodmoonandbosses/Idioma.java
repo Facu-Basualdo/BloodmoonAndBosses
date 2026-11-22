@@ -126,7 +126,21 @@ public final class Idioma {
 
 	/** Igual, con el respaldo en ese idioma: para reconocer un nombre que se armó con otra config. */
 	public static MutableComponent guardado(String idioma, String clave, Object... args) {
-		return Component.translatableWithFallback(clave, plantilla(idioma, clave), args);
+		return Component.translatableWithFallback(clave, plantilla(idioma, clave), comoTexto(args));
+	}
+
+	/**
+	 * En 1.21.1 el NBT guarda un 20 como byte y al leerlo vuelve un Byte: el nombre cargado ya no sería igual al que
+	 * arma el mod y esNombreDelMod lo tomaría por un name tag. Como texto vuelve igual, y se ve lo mismo.
+	 */
+	private static Object[] comoTexto(Object[] args) {
+		Object[] texto = args.clone();
+		for (int i = 0; i < texto.length; i++) {
+			if (texto[i] instanceof Number numero) {
+				texto[i] = numero.toString();
+			}
+		}
+		return texto;
 	}
 
 	/** Un mensaje que todavía no se tradujo: se arma donde se sabe a quién va (un error que vuelve al comando). */

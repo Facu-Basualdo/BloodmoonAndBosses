@@ -10,7 +10,7 @@ import com.bloodmoonandbosses.LunaDeSangre;
 import com.bloodmoonandbosses.NivelDeMob;
 
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -20,13 +20,13 @@ abstract class MobMixin {
 	// Es el único lugar que conoce el motivo del spawn. Sólo marca: el nivel se aplica en ENTITY_LOAD,
 	// cuando la subclase ya terminó de ponerle el equipo (Zombie lo hace después de llamar a super).
 	@Inject(method = "finalizeSpawn", at = @At("HEAD"))
-	private void bloodmoonandbosses$marcarPendiente(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason motivo,
+	private void bloodmoonandbosses$marcarPendiente(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType motivo,
 			@Nullable SpawnGroupData datos, CallbackInfoReturnable<SpawnGroupData> cir) {
 		if (NivelDeMob.escala(motivo)) {
 			((Mob) (Object) this).setAttached(NivelDeMob.PENDIENTE, true);
 		}
 		// Sólo NATURAL: en una estructura o una patrulla, duplicar los mobs cambiaría la estructura
-		if (motivo == EntitySpawnReason.NATURAL) {
+		if (motivo == MobSpawnType.NATURAL) {
 			LunaDeSangre.alAparecerNatural((Mob) (Object) this, level.getLevel());
 		}
 	}

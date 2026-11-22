@@ -14,7 +14,7 @@ import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 import net.fabricmc.loader.api.FabricLoader;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -110,12 +110,12 @@ public final class MigracionDeId {
 	 */
 	public static boolean renombrarModificadores(LivingEntity viva) {
 		boolean cambio = false;
-		for (var atributo : BuiltInRegistries.ATTRIBUTE.listElements().toList()) {
+		for (var atributo : BuiltInRegistries.ATTRIBUTE.holders().toList()) {
 			AttributeInstance instancia = viva.getAttribute(atributo);
 			if (instancia == null) {
 				continue;
 			}
-			for (AttributeModifier modificador : List.copyOf(instancia.getPermanentModifiers())) {
+			for (AttributeModifier modificador : List.copyOf(instancia.getModifiers())) {
 				if (modificador.id().getNamespace().equals(ID_VIEJO)) {
 					instancia.removeModifier(modificador.id());
 					instancia.addOrReplacePermanentModifier(new AttributeModifier(BloodmoonAndBosses.id(modificador.id().getPath()),
@@ -154,7 +154,7 @@ public final class MigracionDeId {
 		throw new IllegalArgumentException("No hay un attachment viejo " + path);
 	}
 
-	public static Identifier viejo(String path) {
-		return Identifier.fromNamespaceAndPath(ID_VIEJO, path);
+	public static ResourceLocation viejo(String path) {
+		return ResourceLocation.fromNamespaceAndPath(ID_VIEJO, path);
 	}
 }

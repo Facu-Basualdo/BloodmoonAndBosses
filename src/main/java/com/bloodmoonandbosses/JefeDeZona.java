@@ -5,7 +5,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 import com.mojang.serialization.Codec;
 import org.jspecify.annotations.Nullable;
@@ -22,7 +21,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -35,7 +34,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -48,7 +47,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
-import net.minecraft.world.scores.TeamColor;
 
 /**
  * Un mob mucho más fuerte que aparece cerca de un jugador, con escoltas y barra de jefe. No depende de memoria: el
@@ -71,8 +69,8 @@ public final class JefeDeZona {
 	public static final TagKey<EntityType<?>> TIPOS_NETHER = tipos("nether");
 	public static final TagKey<EntityType<?>> TIPOS_END = tipos("end");
 
-	private static final Identifier MODIFICADOR = BloodmoonAndBosses.id("jefe");
-	private static final Identifier MODIFICADOR_FURIA = BloodmoonAndBosses.id("furia");
+	private static final ResourceLocation MODIFICADOR = BloodmoonAndBosses.id("jefe");
+	private static final ResourceLocation MODIFICADOR_FURIA = BloodmoonAndBosses.id("furia");
 	// El aviso de una habilidad: lo justo para alejarse dos o tres bloques, o cubrirse
 	private static final int TICKS_DE_AVISO = 20;
 	// Cuánto se queda lejos del jefe el que trae el tirón: si llegara encima, el siguiente golpe sería seguro
@@ -155,7 +153,7 @@ public final class JefeDeZona {
 		}
 
 		int nivelZona = NivelDeZona.calcular(level, pos, random);
-		Mob jefe = NivelDeMob.invocarConNivel(tipo, level, pos, EntitySpawnReason.EVENT, nivelZona + config.nivelesExtra(), true);
+		Mob jefe = NivelDeMob.invocarConNivel(tipo, level, pos, MobSpawnType.EVENT, nivelZona + config.nivelesExtra(), true);
 		if (jefe == null) {
 			return null;
 		}
@@ -164,7 +162,7 @@ public final class JefeDeZona {
 		for (int i = 0; i < config.escoltas(); i++) {
 			BlockPos lugar = Eventos.lugarCerca(level, pos, 1, 4, null, tipo, false, random);
 			if (lugar != null) {
-				Mob escolta = NivelDeMob.invocarConNivel(tipo, level, lugar, EntitySpawnReason.EVENT, NivelDeZona.calcular(level, lugar, random), false);
+				Mob escolta = NivelDeMob.invocarConNivel(tipo, level, lugar, MobSpawnType.EVENT, NivelDeZona.calcular(level, lugar, random), false);
 				if (escolta != null) {
 					escolta.setTarget(jugador);
 				}
@@ -211,7 +209,7 @@ public final class JefeDeZona {
 		if (SEGUIDOS.containsKey(jefe) || !(jefe.level() instanceof ServerLevel level)) {
 			return;
 		}
-		ServerBossEvent barra = new ServerBossEvent(UUID.randomUUID(), nombreDeLaBarra(jefe), colorDeLaBarra(jefe), BossEvent.BossBarOverlay.NOTCHED_10);
+		ServerBossEvent barra = new ServerBossEvent(nombreDeLaBarra(jefe), colorDeLaBarra(jefe), BossEvent.BossBarOverlay.NOTCHED_10);
 		long ahora = level.getGameTime();
 		SEGUIDOS.put(jefe, new Seguido(barra, ahora, ahora + BloodmoonAndBosses.config().jefeDeZona().segundosEntreHabilidades() * 20L));
 		resaltar(jefe, BloodmoonAndBosses.config().jefeDeZona().contorno());
@@ -233,18 +231,18 @@ public final class JefeDeZona {
 			}
 			return;
 		}
-		PlayerTeam equipo = estaFurioso(jefe) ? equipo(scoreboard, EQUIPO_FURIA, TeamColor.RED) : equipo(scoreboard, EQUIPO, TeamColor.DARK_PURPLE);
+		PlayerTeam equipo = estaFurioso(jefe) ? equipo(scoreboard, EQUIPO_FURIA, ChatFormatting.RED) : equipo(scoreboard, EQUIPO, ChatFormatting.DARK_PURPLE);
 		// Sólo si cambia: cada alta en un equipo se les manda a todos los jugadores
 		if (actual != equipo) {
 			scoreboard.addPlayerToTeam(nombre, equipo);
 		}
 	}
 
-	private static PlayerTeam equipo(Scoreboard scoreboard, String nombre, TeamColor color) {
+	private static PlayerTeam equipo(Scoreboard scoreboard, String nombre, ChatFormatting color) {
 		PlayerTeam equipo = scoreboard.getPlayerTeam(nombre);
 		if (equipo == null) {
 			equipo = scoreboard.addPlayerTeam(nombre);
-			equipo.setColor(Optional.of(color));
+			equipo.setColor(color);
 		}
 		return equipo;
 	}
@@ -274,7 +272,7 @@ public final class JefeDeZona {
 		int radio = BloodmoonAndBosses.config().jefeDeZona().radioDeBarra();
 		for (Player jugador : level.getEntitiesOfClass(Player.class, muerto.getBoundingBox().inflate(radio), Entity::isAlive)) {
 			ServerPlayer servidor = jugador instanceof ServerPlayer conectado ? conectado : null;
-			jugador.sendSystemMessage(Idioma.tr(servidor, "bloodmoonandbosses.jefe.cayo", nombre).withStyle(ChatFormatting.GOLD));
+			jugador.displayClientMessage(Idioma.tr(servidor, "bloodmoonandbosses.jefe.cayo", nombre).withStyle(ChatFormatting.GOLD), false);
 		}
 	}
 
@@ -357,7 +355,7 @@ public final class JefeDeZona {
 		for (int i = 0; i < config.escoltasFuria(); i++) {
 			BlockPos lugar = Eventos.lugarCerca(level, jefe.blockPosition(), 1, 4, null, jefe.getType(), false, random);
 			if (lugar != null) {
-				Mob escolta = NivelDeMob.invocarConNivel(jefe.getType(), level, lugar, EntitySpawnReason.EVENT, NivelDeZona.calcular(level, lugar, random), false);
+				Mob escolta = NivelDeMob.invocarConNivel(jefe.getType(), level, lugar, MobSpawnType.EVENT, NivelDeZona.calcular(level, lugar, random), false);
 				if (escolta != null && objetivo != null) {
 					escolta.setTarget(objetivo);
 				}
@@ -429,12 +427,12 @@ public final class JefeDeZona {
 		float danio = (float) ((ataque == null ? 0 : ataque.getValue()) * config.danioOnda());
 		for (ServerPlayer jugador : jugadoresEntre(jefe, 0, config.radioOnda())) {
 			if (danio > 0) {
-				jugador.hurtServer(level, jefe.damageSources().mobAttack(jefe), danio);
+				jugador.hurt(jefe.damageSources().mobAttack(jefe), danio);
 			}
 			Vec3 afuera = horizontal(jugador.position().subtract(jefe.position()));
 			jugador.push(afuera.x * config.fuerzaOnda(), 0.5, afuera.z * config.fuerzaOnda());
 			// El cliente es dueño de su movimiento: sin esto el empujón sólo pasa en el servidor y el jugador "rebota" atrás
-			jugador.needsSync = true;
+			jugador.hurtMarked = true;
 		}
 		level.playSound(null, jefe.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 2.0f, 0.7f);
 		for (int i = 0; i < 16; i++) {
@@ -452,8 +450,8 @@ public final class JefeDeZona {
 			double velocidad = Math.min(Math.max(distancia - DISTANCIA_DEL_TIRON, 0) / 11, VELOCIDAD_MAXIMA_DEL_TIRON);
 			Vec3 direccion = horizontal(hacia);
 			jugador.push(direccion.x * velocidad, 0.6, direccion.z * velocidad);
-			jugador.needsSync = true;
-			jugador.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 40, 1), jefe);
+			jugador.hurtMarked = true;
+			jugador.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 1), jefe);
 			level.sendParticles(ParticleTypes.REVERSE_PORTAL, jugador.getX(), jugador.getY(0.5), jugador.getZ(), 20, 0.3, 0.5, 0.3, 0.05);
 		}
 		level.playSound(null, jefe.blockPosition(), SoundEvents.BREEZE_WIND_CHARGE_BURST.value(), SoundSource.HOSTILE, 3.0f, 0.5f);

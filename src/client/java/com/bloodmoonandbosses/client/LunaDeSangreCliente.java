@@ -3,11 +3,9 @@ package com.bloodmoonandbosses.client;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.joml.Vector4f;
-import org.joml.Vector4fc;
 
 import net.minecraft.util.Mth;
-import net.minecraft.world.attribute.EnvironmentAttribute;
-import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * El cielo rojo de la luna de sangre. Lo que vale es lo que dice el servidor (PaqueteLunaDeSangre): el cliente no
@@ -15,15 +13,14 @@ import net.minecraft.world.attribute.EnvironmentAttributes;
  */
 public final class LunaDeSangreCliente {
 	private static final float TICKS_DE_TRANSICION = 60;
-	// Hacia qué color va cada cosa y cuánto (1 = del todo). La luz del cielo, poco: es la que tiñe el mundo afuera
+	// Hacia qué color va cada cosa y cuánto (1 = del todo). En 1.21.1 la luz del cielo (la que en 26.x tiñe apenas el
+	// mundo afuera) se calcula adentro del lightmap y no se toca
 	private static final Vector3fc CIELO = new Vector3f(0.32f, 0.03f, 0.04f);
 	private static final float FUERZA_CIELO = 0.75f;
 	private static final Vector3fc NIEBLA = new Vector3f(0.30f, 0.04f, 0.04f);
 	private static final float FUERZA_NIEBLA = 0.7f;
 	private static final Vector3fc NUBES = new Vector3f(0.45f, 0.12f, 0.12f);
 	private static final float FUERZA_NUBES = 0.6f;
-	private static final Vector3fc LUZ_DEL_CIELO = new Vector3f(1.0f, 0.35f, 0.30f);
-	private static final float FUERZA_LUZ_DEL_CIELO = 0.45f;
 	// La luna: roja y más grande
 	private static final float VERDE_DE_LA_LUNA = 0.25f;
 	private static final float AZUL_DE_LA_LUNA = 0.2f;
@@ -56,24 +53,22 @@ public final class LunaDeSangreCliente {
 		return Mth.lerp(parcial, anterior, actual);
 	}
 
-	/** El valor de vanilla, corrido hacia el rojo si es uno de los colores del cielo. Lo demás vuelve igual. */
-	public static Object colorear(EnvironmentAttribute<?> atributo, Object valor, float intensidad) {
-		if (atributo == EnvironmentAttributes.SKY_COLOR && valor instanceof Vector3fc color) {
-			return hacia(color, CIELO, FUERZA_CIELO * intensidad);
-		} else if (atributo == EnvironmentAttributes.FOG_COLOR && valor instanceof Vector3fc color) {
-			return hacia(color, NIEBLA, FUERZA_NIEBLA * intensidad);
-		} else if (atributo == EnvironmentAttributes.SKY_LIGHT_COLOR && valor instanceof Vector3fc color) {
-			return hacia(color, LUZ_DEL_CIELO, FUERZA_LUZ_DEL_CIELO * intensidad);
-		} else if (atributo == EnvironmentAttributes.CLOUD_COLOR && valor instanceof Vector4fc color) {
-			Vector3f rgb = hacia(new Vector3f(color.x(), color.y(), color.z()), NUBES, FUERZA_NUBES * intensidad);
-			return new Vector4f(rgb, color.w());
-		}
-		return valor;
+	/** El color del cielo de vanilla, corrido hacia el rojo. */
+	public static Vec3 cielo(Vec3 color, float intensidad) {
+		return hacia(color, CIELO, FUERZA_CIELO * intensidad);
 	}
 
-	// Uno nuevo: el de vanilla puede ser una constante compartida
-	private static Vector3f hacia(Vector3fc color, Vector3fc objetivo, float fuerza) {
-		return new Vector3f(color).lerp(objetivo, fuerza);
+	public static Vec3 nubes(Vec3 color, float intensidad) {
+		return hacia(color, NUBES, FUERZA_NUBES * intensidad);
+	}
+
+	/** La niebla, que en 1.21.1 son tres floats sueltos. */
+	public static Vector3f niebla(float rojo, float verde, float azul, float intensidad) {
+		return new Vector3f(rojo, verde, azul).lerp(NIEBLA, FUERZA_NIEBLA * intensidad);
+	}
+
+	private static Vec3 hacia(Vec3 color, Vector3fc objetivo, float fuerza) {
+		return color.lerp(new Vec3(objetivo.x(), objetivo.y(), objetivo.z()), fuerza);
 	}
 
 	/** El color de la luna multiplicado: rojo, sin tocar la transparencia (que la esconde con lluvia o de día). */

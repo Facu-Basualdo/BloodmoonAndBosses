@@ -26,7 +26,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
-import net.minecraft.client.gui.components.ScrollableLayout;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.layouts.GridLayout;
@@ -37,7 +36,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ARGB;
+import net.minecraft.util.FastColor;
 
 /**
  * Edita un archivo de config JSON sin conocer sus campos: una fila por valor (sí/no, una lista de opciones, o un
@@ -55,7 +54,7 @@ public abstract class PantallaDeConfiguracion extends Screen {
 	private static final int ANCHO_FILA = ANCHO_ETIQUETA + 8 + ANCHO_CONTROL;
 	private static final int ALTO_FILA = 20;
 	private static final int SANGRIA = 10;
-	private static final int ROJO = ARGB.opaque(0xFF5555);
+	private static final int ROJO = FastColor.ARGB32.opaque(0xFF5555);
 
 	private sealed interface Entrada permits Seccion, Valor {
 		String ruta();
@@ -88,7 +87,7 @@ public abstract class PantallaDeConfiguracion extends Screen {
 	private final Map<String, String> textos = new HashMap<>();
 	private final Map<String, String> textosOriginales = new HashMap<>();
 	private HeaderAndFooterLayout marco = new HeaderAndFooterLayout(this);
-	private @Nullable ScrollableLayout lista;
+	private @Nullable ListaDesplazable lista;
 	private @Nullable Button botonGuardar;
 	private List<Component> problemas = List.of();
 	private boolean guardando;
@@ -207,7 +206,7 @@ public abstract class PantallaDeConfiguracion extends Screen {
 			fila++;
 		}
 		contenido.addChild(grilla);
-		lista = marco.addToContents(new ScrollableLayout(minecraft, contenido, marco.getContentHeight()));
+		lista = marco.addToContents(new ListaDesplazable(contenido, marco.getContentHeight()));
 
 		LinearLayout pie = marco.addToFooter(LinearLayout.horizontal().spacing(8));
 		botonGuardar = pie.addChild(Button.builder(tr("guardar"), boton -> guardar()).width(100).build());
@@ -268,8 +267,9 @@ public abstract class PantallaDeConfiguracion extends Screen {
 			if (!opciones.contains(actual.getAsString())) {
 				opciones.add(actual.getAsString());
 			}
-			return CycleButton.builder(this::nombreDeOpcion, actual.getAsString())
+			return CycleButton.builder(this::nombreDeOpcion)
 					.withValues(opciones)
+					.withInitialValue(actual.getAsString())
 					.displayOnlyValue()
 					.create(0, 0, ANCHO_CONTROL, ALTO_FILA, nombre, (boton, nuevo) -> valor.objeto().addProperty(valor.clave(), nuevo));
 		}
@@ -420,11 +420,11 @@ public abstract class PantallaDeConfiguracion extends Screen {
 	private void terminar(List<Component> rechazado) {
 		guardando = false;
 		// Si se cerró mientras el servidor recargaba, no hay que volver a abrir nada
-		if (minecraft.gui.screen() != this) {
+		if (minecraft.screen != this) {
 			return;
 		}
 		if (rechazado.isEmpty()) {
-			minecraft.gui.setScreen(anterior);
+			minecraft.setScreen(anterior);
 			return;
 		}
 		problemas = rechazado;
@@ -433,7 +433,7 @@ public abstract class PantallaDeConfiguracion extends Screen {
 
 	@Override
 	public void onClose() {
-		minecraft.gui.setScreen(anterior);
+		minecraft.setScreen(anterior);
 	}
 
 	private MutableComponent tr(String clave, Object... args) {

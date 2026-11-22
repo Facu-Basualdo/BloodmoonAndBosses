@@ -1,11 +1,12 @@
 {
 	"required": true,
 	"package": "com.bloodmoonandbosses.client.mixin",
-	"compatibilityLevel": "JAVA_25",
+	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"EnvironmentAttributeProbeMixin",
-		"LivingEntityRendererMixin",
-		"SkyRendererMixin"
+		"ClientLevelMixin",
+		"FogRendererMixin",
+		"LevelRendererMixin",
+		"LivingEntityRendererMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

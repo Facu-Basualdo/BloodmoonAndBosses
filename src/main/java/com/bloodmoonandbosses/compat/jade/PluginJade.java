@@ -6,10 +6,9 @@ import snownee.jade.api.EntityAccessor;
 import snownee.jade.api.IWailaClientRegistration;
 import snownee.jade.api.IWailaPlugin;
 import snownee.jade.api.WailaPlugin;
-import snownee.jade.api.config.ConfigIcon;
 import snownee.jade.api.config.IWailaConfig;
 
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.HitResult;
 
@@ -19,19 +18,19 @@ import net.minecraft.world.phys.HitResult;
  */
 @WailaPlugin(BloodmoonAndBosses.MOD_ID)
 public class PluginJade implements IWailaPlugin {
-	public static final Identifier ALCANCE = BloodmoonAndBosses.id("alcance");
+	public static final ResourceLocation ALCANCE = BloodmoonAndBosses.id("alcance");
 	public static final float ALCANCE_POR_DEFECTO = 48;
 	public static final float ALCANCE_MAXIMO = 128;
 
 	@Override
 	public void registerClient(IWailaClientRegistration registration) {
-		registration.addConfig(ALCANCE, ConfigIcon.none(), ALCANCE_POR_DEFECTO, 0, ALCANCE_MAXIMO, true);
+		registration.addConfig(ALCANCE, ALCANCE_POR_DEFECTO, 0, ALCANCE_MAXIMO, true);
 		registration.addRayTraceCallback(PluginJade::sinOtrasEntidadesLejos);
 	}
 
 	/** El de la config de Jade, o el suyo si es mayor: con 0 queda como sin el mod. Lo usa {@code RayTracingMixin}. */
 	public static double alcanceContraEntidades(double alcanceDeJade) {
-		return Math.max(alcanceDeJade, IWailaConfig.get().plugin().getFloat(ALCANCE));
+		return Math.max(alcanceDeJade, IWailaConfig.get().getPlugin().getFloat(ALCANCE));
 	}
 
 	/**
@@ -42,7 +41,7 @@ public class PluginJade implements IWailaPlugin {
 		if (!(accessor instanceof EntityAccessor entidad) || entidad.getEntity() instanceof Mob) {
 			return accessor;
 		}
-		double alcanceNormal = accessor.getPlayer().entityInteractionRange() + IWailaConfig.get().general().getExtendedReach();
+		double alcanceNormal = accessor.getPlayer().entityInteractionRange() + IWailaConfig.get().getGeneral().getExtendedReach();
 		double distancia = accessor.getPlayer().getEyePosition().distanceTo(entidad.getHitResult().getLocation());
 		return distancia > alcanceNormal ? null : accessor;
 	}

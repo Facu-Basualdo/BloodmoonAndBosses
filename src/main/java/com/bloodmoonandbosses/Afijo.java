@@ -20,7 +20,7 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -32,7 +32,7 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -73,7 +73,7 @@ public enum Afijo implements StringRepresentable {
 	// Mobs que no pueden llamar copias de sí mismos: un vex sin evocador no desaparece nunca
 	public static final TagKey<EntityType<?>> NO_INVOCAN = TagKey.create(Registries.ENTITY_TYPE, BloodmoonAndBosses.id("no_invocan"));
 
-	private static final Identifier MODIFICADOR = BloodmoonAndBosses.id("afijo");
+	private static final ResourceLocation MODIFICADOR = BloodmoonAndBosses.id("afijo");
 	// Más lejos, vanilla no le manda las partículas al cliente igual (sendParticles sin forzar llega a 32 bloques)
 	private static final double RADIO_DE_PARTICULAS = 32;
 
@@ -135,7 +135,7 @@ public enum Afijo implements StringRepresentable {
 			if (afijo == VAMPIRO && mob instanceof Creeper) {
 				continue;
 			}
-			if (afijo == INVOCADOR && mob.is(NO_INVOCAN)) {
+			if (afijo == INVOCADOR && mob.getType().is(NO_INVOCAN)) {
 				continue;
 			}
 			posibles.add(afijo);
@@ -198,7 +198,7 @@ public enum Afijo implements StringRepresentable {
 			} else if (afijo == VENENOSO) {
 				victima.addEffect(new MobEffectInstance(MobEffects.POISON, config.segundosVeneno() * 20, config.nivelVeneno() - 1), atacante);
 			} else if (afijo == CONGELANTE) {
-				victima.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, config.segundosCongelante() * 20, config.nivelCongelante() - 1), atacante);
+				victima.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, config.segundosCongelante() * 20, config.nivelCongelante() - 1), atacante);
 				// La escarcha de la nieve polvo, sólo para que se vea: fuera de la nieve baja 2 por tick, y por debajo del
 				// máximo de vanilla no lastima
 				int escarcha = Math.min(victima.getTicksRequiredToFreeze() - 1, config.segundosCongelante() * 40);
@@ -260,7 +260,7 @@ public enum Afijo implements StringRepresentable {
 				continue;
 			}
 			// Con el nivel de la zona y no el del invocador: si no, cada campeón sería un criadero de campeones
-			Mob refuerzo = NivelDeMob.invocarConNivel(invocador.getType(), level, pos, EntitySpawnReason.MOB_SUMMONED,
+			Mob refuerzo = NivelDeMob.invocarConNivel(invocador.getType(), level, pos, MobSpawnType.MOB_SUMMONED,
 					NivelDeZona.calcular(level, pos, random), false);
 			if (refuerzo != null && enemigo != null) {
 				refuerzo.setTarget(enemigo);

@@ -1,5 +1,5 @@
 plugins {
-	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
 	// Sube el jar a CurseForge: gradlew publishMods (ver abajo)
 	id 'me.modmuss50.mod-publish-plugin' version '2.2.1'
 }
@@ -47,16 +47,22 @@ loom {
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	// Esta versión de Minecraft todavía viene ofuscada: con los nombres oficiales de Mojang el código queda igual
+	// que en la rama de 26.x
+	mappings loom.officialMojangMappings()
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	// Fabric API
-	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
 	// Jade es opcional: sólo para compilar el plugin (compat/jade). Para probarlo en runClient, poné su jar en run/mods
-	compileOnly "maven.modrinth:jade:${project.jade_version}"
+	modCompileOnly "maven.modrinth:jade:${project.jade_version}"
 
 	// Mod Menu también es opcional: sólo para compilar IntegracionConModMenu, que Mod Menu carga si está instalado
-	compileOnly "maven.modrinth:modmenu:${project.modmenu_version}"
+	modCompileOnly "maven.modrinth:modmenu:${project.modmenu_version}"
+
+	// Minecraft 26.x trae las anotaciones de JSpecify y 1.21.1 no: sólo hacen falta para compilar
+	compileOnly "org.jspecify:jspecify:1.0.0"
 }
 
 processResources {
@@ -69,7 +75,7 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 25
+	it.options.release = 21
 }
 
 // MIT pide que el aviso de copyright viaje con cada copia, y el jar es la copia que circula.
@@ -80,8 +86,8 @@ jar {
 java {
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_25
-	targetCompatibility = JavaVersion.VERSION_25
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
 }
 
 // Pruebas automáticas dentro del juego (src/gametest): gradlew runGameTest
@@ -90,7 +96,7 @@ fabricApi {
 		createSourceSet = true
 		modId = "bloodmoonandbosses-test"
 		enableGameTests = true
-		enableClientGameTests = true
+		enableClientGameTests = false
 		eula = true
 	}
 }
@@ -119,7 +125,8 @@ def tokenDeCurseForge = providers.environmentVariable("CURSEFORGE_TOKEN").orElse
 def versionDelMod = project.version.toString()
 
 publishMods {
-	file = jar.archiveFile
+	// Con Loom con remapeo, jar es el de desarrollo (build/devlibs): el que se publica es el de remapJar
+	file = remapJar.archiveFile
 	displayName = "Bloodmoon & Bosses ${versionDelMod}"
 	version = versionDelMod
 	changelog = providers.fileContents(layout.projectDirectory.file("CHANGELOG.md")).asText.map { texto ->
